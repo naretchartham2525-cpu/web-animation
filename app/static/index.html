@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AutoClip สตูดิโอหนังสั้น AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0f1115;--panel:#171a21;--panel2:#1e222b;--line:#2a2f3a;--text:#e8eaf0;--muted:#8b93a5;
+  --accent:#ff7a45;--accent2:#ffb347;--ok:#3ecf8e;--warn:#f5b942;--err:#ff5d5d;--info:#5aa9ff;
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:15px}
+a{color:var(--accent2)}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{display:flex;min-height:100vh}
+nav{width:220px;background:var(--panel);border-right:1px solid var(--line);padding:18px 12px;position:sticky;top:0;height:100vh;flex-shrink:0;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;padding:4px 10px 18px}
+.brand .logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#1a1a1a;font-size:16px}
+nav a.item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--muted);text-decoration:none;margin-bottom:2px;cursor:pointer}
+nav a.item:hover{background:var(--panel2);color:var(--text)}
+nav a.item.on{background:rgba(255,122,69,.12);color:var(--accent)}
+nav .ico{width:20px;text-align:center}
+nav .foot{margin-top:auto;font-size:12px;color:var(--muted);padding:10px}
+main{flex:1;padding:26px 30px 60px;max-width:1200px;min-width:0}
+h1{font-size:24px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 22px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.g3{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.card h3{margin:0 0 10px;font-size:16px}
+.stat .n{font-size:28px;font-weight:700}
+.stat .l{color:var(--muted);font-size:13px}
+.btn{border:1px solid var(--line);background:var(--panel2);padding:9px 14px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:#3a4150}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#16110d;font-weight:600}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn.danger{color:var(--err);border-color:rgba(255,93,93,.4)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+input[type=text],input[type=number],input[type=password],select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 11px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{min-height:90px;resize:vertical;line-height:1.55}
+label.f{display:block;margin-bottom:12px}
+label.f.row>span{display:inline}
+label.f>span{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+.badge{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+.b-ok{color:var(--ok);border-color:rgba(62,207,142,.4)}
+.b-run{color:var(--info);border-color:rgba(90,169,255,.4)}
+.b-warn{color:var(--warn);border-color:rgba(245,185,66,.4)}
+.b-err{color:var(--err);border-color:rgba(255,93,93,.4)}
+.bar{height:8px;background:var(--panel2);border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s}
+.logs{background:#0a0b0e;border:1px solid var(--line);border-radius:9px;padding:10px;font-family:ui-monospace,monospace;font-size:12.5px;max-height:260px;overflow:auto;white-space:pre-wrap;color:#c8ccd6;margin-top:10px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+th{color:var(--muted);font-weight:500;font-size:13px}
+.empty{color:var(--muted);text-align:center;padding:30px}
+.pcard{cursor:pointer;transition:border-color .15s}
+.pcard:hover{border-color:var(--accent)}
+.pcard .t{font-weight:600;font-size:16px;margin-bottom:6px}
+.pcard .d{color:var(--muted);font-size:13px;height:38px;overflow:hidden;margin-bottom:10px}
+.skillpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;max-height:260px;overflow:auto;padding:2px}
+.sk{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;background:var(--bg)}
+.sk:hover{border-color:#4a5263}
+.sk.on{border-color:var(--accent);background:rgba(255,122,69,.08)}
+.sk .n{font-weight:600;font-size:14px}
+.sk .d{font-size:12px;color:var(--muted);margin-top:3px;max-height:34px;overflow:hidden}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;justify-content:center;z-index:50;padding:40px 14px;overflow:auto}
+.modal.on{display:flex}
+.modal .box{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:100%;max-width:720px;padding:22px}
+.modal h2{margin:0 0 14px;font-size:20px}
+.toast{position:fixed;right:20px;bottom:20px;background:var(--panel2);border:1px solid var(--line);padding:12px 16px;border-radius:10px;z-index:99;max-width:380px;display:none}
+.toast.err{border-color:var(--err)}
+.demo{background:rgba(245,185,66,.1);border:1px solid rgba(245,185,66,.4);color:var(--warn);padding:9px 14px;border-radius:10px;margin-bottom:18px;font-size:14px}
+video{width:100%;border-radius:9px;background:#000;max-height:420px}
+.vids{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.scene{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--bg)}
+.scene .h{font-size:13px;color:var(--muted);margin-bottom:6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tabs .btn.on{border-color:var(--accent);color:var(--accent)}
+.kbd{font-family:ui-monospace,monospace;background:var(--panel2);padding:1px 6px;border-radius:5px;font-size:13px}
+.drop{border:1.5px dashed var(--line);border-radius:10px;padding:16px;text-align:center;color:var(--muted);cursor:pointer}
+.drop:hover{border-color:var(--accent);color:var(--text)}
+@media (max-width:820px){
+  .app{flex-direction:column}
+  nav{width:100%;height:auto;position:sticky;flex-direction:row;overflow-x:auto;padding:8px;gap:4px;z-index:20}
+  .brand,nav .foot{display:none}
+  nav a.item{flex-shrink:0;padding:8px 10px;font-size:14px}
+  main{padding:18px 14px 60px}
+  .two{grid-template-columns:1fr}
+  .g4{grid-template-columns:1fr 1fr}
+  .stat .n{font-size:22px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav id="nav">
+    <div class="brand"><div class="logo">▶</div>AutoClip</div>
+    <a class="item" data-p="dash"><span class="ico">📊</span>แดชบอร์ด</a>
+    <a class="item" data-p="projects"><span class="ico">📁</span>โปรเจกต์</a>
+    <a class="item" data-p="jobs"><span class="ico">⚙️</span>สั่งงาน</a>
+    <a class="item" data-p="skills"><span class="ico">🧩</span>คลังสกิล</a>
+    <a class="item" data-p="outputs"><span class="ico">🎬</span>ผลงาน</a>
+    <a class="item" data-p="settings"><span class="ico">🔧</span>ตั้งค่า</a>
+    <div class="foot" id="navfoot">—</div>
+  </nav>
+  <main id="main"></main>
+</div>
+
+<!-- popup สร้างเรื่อง + เลือกสกิล -->
+<div class="modal" id="mNew"><div class="box">
+  <h2>＋ สร้างเรื่องใหม่</h2>
+  <label class="f"><span>1) เลือกสกิล / สไตล์</span>
+    <div class="skillpick" id="newSkills"></div>
+    <div class="hint">เพิ่มสกิลได้ที่ Drive → AutoClip/skills แล้วกด "โหลดสกิลใหม่" ในเมนูคลังสกิล</div>
+  </label>
+  <div class="row between" style="margin-bottom:6px"><b style="font-size:14px">2) รายละเอียดเรื่อง</b>
+    <button class="btn sm" id="btnIdea">✨ ให้ AI คิดเรื่องให้</button></div>
+  <label class="f"><span>ชื่อเรื่อง (= ชื่อโฟลเดอร์)</span><input type="text" id="nName" placeholder="เช่น แมวน้อยผู้กล้าหาญ"></label>
+  <label class="f"><span>หัวข้อ / พล็อต (ปล่อยว่างได้ AI จะคิดตามสกิล)</span><textarea id="nTopic" placeholder="เล่าเรื่องสั้นๆ ว่าอยากได้แนวไหน"></textarea></label>
+  <div class="two">
+    <label class="f"><span>จำนวนตอนที่วางแผน</span><input type="number" id="nEps" min="1" max="100" value="3"></label>
+    <label class="f"><span>สัดส่วนจอ</span><select id="nAspect"><option value="">ตามตั้งค่า</option><option>9:16</option><option>16:9</option><option>1:1</option><option>4:5</option></select></label>
+    <label class="f"><span>เสียงพากย์</span><select id="nTts"><option value="">ตามตั้งค่า</option><option value="openrouter">Gemini TTS (OpenRouter, เสียเงิน)</option><option value="edge">Edge TTS (ฟรี)</option></select></label>
+    <label class="f"><span>ชื่อเสียง (ว่าง = ตามตั้งค่า)</span><input type="text" id="nVoice" placeholder="เช่น Kore หรือ th-TH-NiwatNeural"></label>
+  </div>
+  <div class="row" style="justify-content:flex-end;margin-top:6px">
+    <button class="btn" onclick="closeM('mNew')">ยกเลิก</button>
+    <button class="btn pri" id="btnCreate">สร้างโฟลเดอร์</button>
+  </div>
+</div></div>
+
+<!-- popup ดูสกิล -->
+<div class="modal" id="mSkill"><div class="box">
+  <h2 id="skTitle">สกิล</h2>
+  <div class="logs" id="skBody" style="max-height:60vh"></div>
+  <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn" onclick="closeM('mSkill')">ปิด</button></div>
+</div></div>
+
+<!-- popup ตรวจบท -->
+<div class="modal" id="mReview"><div class="box" style="max-width:860px">
+  <h2 id="rvTitle">ตรวจบท</h2>
+  <label class="f"><span>ชื่อตอน</span><input type="text" id="rvName"></label>
+  <div id="rvScenes"></div>
+  <div class="row" style="justify-content:flex-end">
+    <button class="btn" onclick="closeM('mReview')">ปิด</button>
+    <button class="btn" id="rvSave">💾 บันทึก</button>
+    <button class="btn pri" id="rvApprove">✅ บันทึก + อนุมัติ ทำต่อ</button>
+  </div>
+</div></div>
+
+<!-- popup login -->
+<div class="modal" id="mLogin"><div class="box" style="max-width:380px">
+  <h2>🔒 เข้าสู่ระบบ</h2>
+  <label class="f"><span>รหัสผ่าน (ตั้งใน Colab Secrets: AUTOCLIP_PASSWORD)</span><input type="password" id="lgPw"></label>
+  <div class="row" style="justify-content:flex-end"><button class="btn pri" id="lgBtn">เข้าสู่ระบบ</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ================= helpers =================
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const enc = encodeURIComponent;
+const q = s => encodeURIComponent(s).replace(/'/g, "%27");
+const dq = decodeURIComponent;
+let DEMO = new URLSearchParams(location.search).has("demo") || location.protocol === "file:";
+let page = "dash", projectOpen = null, timer = null, openLogs = {}, newSkill = "";
+
+function toast(msg, err) {
+  const t = $("#toast"); t.textContent = msg; t.className = "toast" + (err ? " err" : "");
+  t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", 3500);
+}
+const ask = m => DEMO ? true : confirm(m);
+function openM(id) { $("#" + id).classList.add("on"); }
+function closeM(id) { $("#" + id).classList.remove("on"); }
+function fmtTime(ts) { if (!ts) return "-"; const d = new Date(ts * 1000); return d.toLocaleString("th-TH", {dateStyle:"short", timeStyle:"short"}); }
+function fmtDur(s) { if (!s && s !== 0) return "-"; s = Math.round(s); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }
+function fmtUsd(x) { return "$" + (Number(x)||0).toFixed(4); }
+const ST = {queued:["รอคิว","b-warn"], running:["กำลังทำ","b-run"], review:["รอตรวจบท","b-warn"], done:["เสร็จ","b-ok"],
+            stopped:["หยุด",""], error:["ผิดพลาด","b-err"], interrupted:["ถูกตัด","b-err"]};
+const badge = s => { const [t,c] = ST[s] || [s,""]; return `<span class="badge ${c}">${t}</span>`; };
+const EPS = {new:"ใหม่", script:"เขียนบท", review:"รอตรวจบท", tts:"พากย์เสียง", render:"ตัดต่อ", done:"เสร็จ", reset:"รีเซ็ต"};
+
+async function api(method, path, body) {
+  if (DEMO) return mock(method, path, body);
+  let r;
+  try {
+    const opt = {method, headers:{}, credentials:"same-origin"};
+    if (body instanceof FormData) opt.body = body;
+    else if (body !== undefined) { opt.headers["Content-Type"] = "application/json"; opt.body = JSON.stringify(body); }
+    r = await fetch(path, opt);
+  } catch (e) {
+    DEMO = true; render(); toast("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ → เปิดโหมดตัวอย่าง", true);
+    return mock(method, path, body);
+  }
+  const j = await r.json().catch(() => ({ok:false, error:"HTTP " + r.status}));
+  if (r.status === 401 && j.auth) { openM("mLogin"); throw new Error("ต้องเข้าสู่ระบบ"); }
+  if (!j.ok) throw new Error(j.error || "ผิดพลาด");
+  return j.data;
+}
+async function call(fn) { try { return await fn(); } catch (e) { toast(e.message, true); } }
+
+// ================= โหมดตัวอย่าง (ไม่มีเซิร์ฟเวอร์) =================
+const MOCK = (() => {
+  const now = Date.now()/1000;
+  const skills = [
+    {id:"anime-adventure", name:"อนิเมะผจญภัย", description:"แอ็กชันสดใส ตัวเอกเด็ก มีเพื่อนคู่หู จบตอนด้วยปมค้าง", chars:2100},
+    {id:"ghibli-cozy", name:"อบอุ่นสไตล์ชนบท", description:"เรื่องอบอุ่นหัวใจ จังหวะช้า บรรยากาศธรรมชาติ", chars:1800},
+    {id:"horror-short", name:"สยองขวัญสั้น", description:"หลอนเบาๆ หักมุมท้ายเรื่อง เหมาะคลิป 60 วิ", chars:1500},
+    {id:"comedy-cat", name:"ตลกแมวเหมียว", description:"มุกตลกสั้น ตัวละครแมวพูดได้ เน้นจังหวะเร็ว", chars:1200},
+  ];
+  const projects = [
+    {name:"แมวน้อยผู้กล้าหาญ", topic:"ลูกแมวกำพร้าออกตามหาแม่ข้ามป่าใหญ่ ได้เพื่อนเป็นนกฮูกขี้บ่น", skill:"anime-adventure", episodes_total:5, done_count:2, input_count:14, cost_usd:0.0312, created:now-86400*2, aspect:"9:16", tts_engine:"openrouter", voice:"Kore", notes:""},
+    {name:"บ้านร้างริมคลอง", topic:"วัยรุ่น 3 คนท้ากันค้างคืนในบ้านร้าง", skill:"horror-short", episodes_total:3, done_count:3, input_count:9, cost_usd:0.0201, created:now-86400*5, aspect:"9:16", tts_engine:"edge", voice:"", notes:""},
+    {name:"สวนของยาย", topic:"", skill:"ghibli-cozy", episodes_total:1, done_count:0, input_count:0, cost_usd:0, created:now-3600, aspect:"16:9", tts_engine:"", voice:"", notes:""},
+  ];
+  const eps = {"แมวน้อยผู้กล้าหาญ":[
+    {ep:1, stage:"done", title:"ก้าวแรกในป่าใหญ่", duration:62.4, final:"ep01/final.mp4", srt:"ep01/subs.srt"},
+    {ep:2, stage:"done", title:"นกฮูกขี้บ่น", duration:58.9, final:"ep02/final.mp4", srt:"ep02/subs.srt"},
+    {ep:3, stage:"tts", title:"สะพานไม้ผุ", duration:null, final:null, srt:null}]};
+  const script = {title:"สะพานไม้ผุ", summary:"มิวกับฮูทต้องข้ามสะพานผุเพื่อไปหมู่บ้านแมว", scenes:[
+    {narration:"ยามเช้าในป่าใหญ่ มิวลืมตาขึ้นพร้อมความหวังใหม่", subtitle:"", visual:"ป่ายามเช้า แสงลอดใบไม้", clip:"forest_morning.mp4"},
+    {narration:"ฮูทบ่นอุบอิบ ว่าทำไมต้องเดินทางแต่เช้าขนาดนี้", subtitle:"", visual:"นกฮูกหน้างอเกาะกิ่งไม้", clip:"owl_grumpy.png"},
+    {narration:"ตรงหน้าพวกเขาคือสะพานไม้เก่า ที่โยกเยกตามแรงลม", subtitle:"", visual:"สะพานแขวนเก่าเหนือหุบเขา", clip:"bridge.mp4"}]};
+  const jobs = [
+    {id:"a1b2c3d4", project:"แมวน้อยผู้กล้าหาญ", count:3, done:0, status:"running", stage:"ตอน 3: tts", progress:34, episode:3, cost_usd:0.0061, created:now-300, started:now-290, finished:null, error:null, review:null,
+     logs:["22:31:02 📥 เข้าคิว: ทำ 3 ตอน","22:31:03 🚀 เริ่มตอน 3","22:31:03 ✍️ เขียนบทด้วย google/gemini-3.8-flash","22:31:19 📝 บทเสร็จ: สะพานไม้ผุ (8 ฉาก)","22:31:20 🎙️ พากย์ฉาก 1/8","22:31:26 🎙️ พากย์ฉาก 2/8","22:31:31 🎙️ พากย์ฉาก 3/8"]},
+    {id:"e5f6a7b8", project:"บ้านร้างริมคลอง", count:3, done:3, status:"done", stage:"เสร็จ 3 ตอน", progress:100, episode:3, cost_usd:0.0201, created:now-86400, started:now-86400, finished:now-85000, error:null, review:null,
+     logs:["…","✅ ตอน 3 เสร็จ (59.2 วินาที)"]},
+    {id:"c9d0e1f2", project:"แมวน้อยผู้กล้าหาญ", count:1, done:0, status:"error", stage:"ผิดพลาด", progress:12, episode:2, cost_usd:0.002, created:now-86400*2, started:now-86400*2, finished:now-86400*2,
+     error:"OpenRouter HTTP 402: Insufficient credits", review:null, logs:["❌ OpenRouter HTTP 402: Insufficient credits"]},
+  ];
+  return {skills, projects, eps, script, jobs, settings:null};
+})();
+const DEF_SET = {draft_model:"google/gemini-3.8-flash",polish_enabled:false,polish_model:"google/gemini-3.8-flash",helper_model:"google/gemini-3.8-flash",language:"ไทย",scenes_per_episode:8,target_seconds:60,tts_engine:"openrouter",openrouter_tts_model:"google/gemini-3.8-flash-tts",openrouter_voice:"Kore",edge_voice:"th-TH-PremwadeeNeural",edge_rate:"+0%",aspect:"9:16",fps:30,crf:20,preset:"veryfast",scene_gap:0.35,ken_burns:true,subtitles:true,subtitle_font:"Loma",subtitle_size:0,subtitle_max_chars:0,bgm_volume:0.12,review_script:false};
+
+function mock(method, path, body) {
+  const M = MOCK, p = decodeURIComponent(path.split("?")[0]);
+  if (method !== "GET" && !p.startsWith("/api/ai")) toast("โหมดตัวอย่าง: ปุ่มนี้จะทำงานจริงเมื่อรันบน Colab");
+  if (p === "/api/ping") return {auth_required:false};
+  if (p === "/api/status") return {version:"0.1.0 (ตัวอย่าง)", root:"/content/drive/MyDrive/AutoClip", keys:{openrouter:true}, ffmpeg:true, busy:true, queue:1, projects:M.projects.length, episodes_done:5, cost_usd:0.0513, skills:M.skills.length};
+  if (p === "/api/skills" || p === "/api/skills/reload") return M.skills;
+  if (p.startsWith("/api/skills/")) { const s = M.skills.find(x => x.id === p.split("/")[3]); return {...s, content:"---\nname: " + s.name + "\ndescription: " + s.description + "\n---\n\n# " + s.name + "\n\n## โทน\n- ...\n\n## โครงเรื่อง\n1. เปิดด้วยภาพสวย 1 ประโยคดึงคนดู\n2. ...\n\n## กฎการเขียนบทพากย์\n- ประโยคสั้น อ่านออกเสียงลื่น\n- ..."}; }
+  if (p === "/api/projects" && method === "GET") return M.projects;
+  if (p === "/api/projects" && method === "POST") { const np = {...body, done_count:0, input_count:0, cost_usd:0, created:Date.now()/1000}; M.projects.unshift(np); return np; }
+  let m = p.match(/^\/api\/projects\/([^/]+)$/);
+  if (m) { const pr = M.projects.find(x => x.name === m[1]) || M.projects[0];
+    return {...pr, episodes: M.eps[pr.name] || [], inputs: pr.input_count ? ["forest_morning.mp4","owl_grumpy.png","bridge.mp4","village_night.mp4","mew_smile.png"] : [],
+      bible: pr.done_count ? "## ตัวละคร\n- **มิว**: ลูกแมวส้ม กล้าหาญ ขี้สงสัย\n- **ฮูท**: นกฮูกแก่ ขี้บ่นแต่ใจดี\n\n## ปมค้าง\n- แม่ของมิวอยู่ที่หมู่บ้านแมวหลังภูเขา" : ""}; }
+  if (/\/script$/.test(p)) return M.script;
+  if (p === "/api/outputs") return [
+    {project:"แมวน้อยผู้กล้าหาญ", ep:2, title:"นกฮูกขี้บ่น", path:"ep02/final.mp4", srt:"ep02/subs.srt", duration:58.9, mtime:Date.now()/1000-7200, size:24e6},
+    {project:"แมวน้อยผู้กล้าหาญ", ep:1, title:"ก้าวแรกในป่าใหญ่", path:"ep01/final.mp4", srt:"ep01/subs.srt", duration:62.4, mtime:Date.now()/1000-9000, size:26e6},
+    {project:"บ้านร้างริมคลอง", ep:3, title:"เสียงเคาะจากใต้ถุน", path:"ep03/final.mp4", srt:"ep03/subs.srt", duration:59.2, mtime:Date.now()/1000-86400, size:22e6}];
+  if (p === "/api/ai/idea") return {name:"หุ่นยนต์ทำสวน", topic:"หุ่นยนต์เก่าในเมืองร้างค้นพบเมล็ดพันธุ์สุดท้ายของโลก และต้องปกป้องมันจากพายุทราย", episodes_total:4};
+  if (p === "/api/jobs" && method === "GET") return M.jobs;
+  if (p === "/api/settings" && method === "GET") return M.settings || DEF_SET;
+  if (p === "/api/settings") { M.settings = {...DEF_SET, ...(M.settings||{}), ...body}; return M.settings; }
+  return {};
+}
+
+// ================= router =================
+document.querySelectorAll("nav a.item").forEach(a => a.onclick = () => go(a.dataset.p));
+function go(p, arg) {
+  page = p; projectOpen = p === "project" ? arg : null;
+  document.querySelectorAll("nav a.item").forEach(a => a.classList.toggle("on", a.dataset.p === (p === "project" ? "projects" : p)));
+  render(); window.scrollTo(0, 0);
+}
+async function render() {
+  clearInterval(timer);
+  const m = $("#main");
+  const banner = DEMO ? `<div class="demo">👀 โหมดตัวอย่าง: ข้อมูลในหน้านี้เป็นข้อมูลสมมติ เมื่อรันบน Colab จะเป็นข้อมูลจริงจาก Drive</div>` : "";
+  try {
+    const html = await PAGES[page](projectOpen);
+    m.innerHTML = banner + html;
+    AFTER[page] && AFTER[page](projectOpen);
+  } catch (e) { m.innerHTML = banner + `<div class="card empty">โหลดไม่สำเร็จ: ${esc(e.message)}</div>`; }
+  if (["dash","jobs"].includes(page)) timer = setInterval(refreshLive, 2500);
+}
+const AFTER = {};
+
+// ================= แดชบอร์ด =================
+const PAGES = {};
+PAGES.dash = async () => {
+  const [st, jobs, outs] = await Promise.all([api("GET","/api/status"), api("GET","/api/jobs"), api("GET","/api/outputs")]);
+  $("#navfoot").textContent = "v" + st.version;
+  const active = jobs.filter(j => ["running","review","queued"].includes(j.status));
+  const k = st.keys.openrouter ? `<span class="badge b-ok">✓ OpenRouter key</span>` : `<span class="badge b-err">✗ ไม่พบ OPENROUTER_API_KEY</span>`;
+  return `
+  <div class="row between"><div><h1>แดชบอร์ด</h1><p class="sub">ภาพรวมสตูดิโอ</p></div>
+    <div class="row"><button class="btn" onclick="newProject(true)">✨ ให้ AI คิดเรื่องใหม่</button><button class="btn pri" onclick="newProject()">＋ สร้างเรื่องใหม่</button></div></div>
+  <div class="grid g4" style="margin-bottom:16px">
+    <div class="card stat"><div class="n">${st.projects}</div><div class="l">โปรเจกต์</div></div>
+    <div class="card stat"><div class="n">${st.episodes_done}</div><div class="l">ตอนที่เสร็จแล้ว</div></div>
+    <div class="card stat"><div class="n">${fmtUsd(st.cost_usd)}</div><div class="l">ค่าเขียนบท AI รวม*</div></div>
+    <div class="card stat"><div class="n">${st.skills}</div><div class="l">สกิลในคลัง</div></div>
+  </div>
+  <div class="card" style="margin-bottom:16px"><div class="row between"><h3 style="margin:0">ระบบ</h3>
+    <div class="row">${k} ${st.ffmpeg ? '<span class="badge b-ok">✓ ffmpeg</span>' : '<span class="badge b-err">✗ ffmpeg</span>'}
+    <span class="badge">${st.busy ? "กำลังทำงาน" : "ว่าง"} · คิว ${st.queue}</span></div></div>
+    <div class="hint">โฟลเดอร์: <span class="kbd">${esc(st.root)}</span> · *ยังไม่รวมค่าเสียง Gemini TTS ดูยอดจริงที่หน้า Activity ของ OpenRouter</div></div>
+  <h3>งานที่กำลังทำ</h3>
+  <div id="liveJobs">${active.length ? active.map(jobCard).join("") : `<div class="card empty">ไม่มีงานค้าง <a onclick="go('jobs')" style="cursor:pointer">ไปสั่งงาน →</a></div>`}</div>
+  <h3 style="margin-top:22px">ผลงานล่าสุด</h3>
+  ${outs.length ? `<div class="grid vids">${outs.slice(0,4).map(vidCard).join("")}</div>` : `<div class="card empty">ยังไม่มีคลิปที่เสร็จ</div>`}`;
+};
+
+async function refreshLive() {
+  const el = $("#liveJobs"), el2 = $("#jobList");
+  if (!el && !el2) return;
+  const jobs = await api("GET", "/api/jobs").catch(() => null);
+  if (!jobs) return;
+  if (el) { const a = jobs.filter(j => ["running","review","queued"].includes(j.status));
+    el.innerHTML = a.length ? a.map(jobCard).join("") : `<div class="card empty">ไม่มีงานค้าง</div>`; }
+  if (el2) el2.innerHTML = jobs.length ? jobs.map(jobCard).join("") : `<div class="card empty">ยังไม่มีงาน</div>`;
+  document.querySelectorAll(".logs[data-j]").forEach(l => l.scrollTop = l.scrollHeight);
+}
+
+function jobCard(j) {
+  const act = [];
+  if (["running","queued","review"].includes(j.status)) act.push(`<button class="btn sm danger" onclick="stopJob('${j.id}')">⏹ หยุด</button>`);
+  if (j.status === "review") act.push(`<button class="btn sm pri" onclick="openReview(dq('${q(j.review?.project||j.project)}'),${j.review?.ep||j.episode},'${j.id}')">📝 ตรวจบท</button>`);
+  if (["stopped","error","interrupted"].includes(j.status)) act.push(`<button class="btn sm" onclick="resumeJob('${j.id}')">▶ ทำต่อ</button>`);
+  act.push(`<button class="btn sm" onclick="toggleLog('${j.id}')">📜 log</button>`);
+  return `<div class="card" style="margin-bottom:10px">
+    <div class="row between"><div><b>${esc(j.project)}</b> ${badge(j.status)} <span class="hint">#${j.id} · ${j.done}/${j.count} ตอน · ${fmtUsd(j.cost_usd)}</span></div><div class="row">${act.join("")}</div></div>
+    <div class="row between" style="margin:10px 0 6px"><span style="font-size:14px">${esc(j.stage||"")}</span><span class="hint">${j.progress||0}%</span></div>
+    <div class="bar"><i style="width:${j.progress||0}%"></i></div>
+    ${j.error ? `<div style="color:var(--err);font-size:13px;margin-top:8px">${esc(j.error)}</div>` : ""}
+    ${openLogs[j.id] ? `<div class="logs" data-j="${j.id}">${esc((j.logs||[]).join("\n"))}</div>` : ""}
+  </div>`;
+}
+function toggleLog(id) { openLogs[id] = !openLogs[id]; refreshLive(); }
+async function stopJob(id) { if (!ask("หยุดงานนี้? (งานที่ทำไปแล้วไม่หาย กดทำต่อได้)")) return; await call(() => api("POST", `/api/jobs/${id}/stop`)); refreshLive(); }
+async function resumeJob(id) { await call(() => api("POST", `/api/jobs/${id}/resume`)); toast("เข้าคิวแล้ว"); refreshLive(); }
+
+function vidCard(o) {
+  const src = `/media/${enc(o.project)}/${o.path}`;
+  return `<div class="card" style="padding:10px">
+    ${DEMO ? `<div style="aspect-ratio:9/16;max-height:300px;background:linear-gradient(160deg,#2a2140,#13202a);border-radius:9px;display:grid;place-items:center;color:var(--muted)">▶ ตัวอย่างวิดีโอ</div>` : `<video src="${src}" controls preload="metadata"></video>`}
+    <div style="margin-top:8px;font-weight:600">${esc(o.project)} · ตอน ${o.ep}</div>
+    <div class="hint">${esc(o.title||"")} · ${fmtDur(o.duration)}</div>
+    <div class="row" style="margin-top:8px"><a class="btn sm" href="${src}?dl=1">⬇ MP4</a>${o.srt ? `<a class="btn sm" href="/media/${enc(o.project)}/${o.srt}?dl=1">⬇ ซับ SRT</a>` : ""}</div>
+  </div>`;
+}
+
+// ================= โปรเจกต์ =================
+PAGES.projects = async () => {
+  const [ps, sk] = await Promise.all([api("GET","/api/projects"), api("GET","/api/skills")]);
+  const skName = id => (sk.find(s => s.id === id) || {}).name || id || "ไม่มีสกิล";
+  return `<div class="row between"><div><h1>โปรเจกต์</h1><p class="sub">1 เรื่อง = 1 โฟลเดอร์ใน Drive (AutoClip/projects)</p></div>
+    <button class="btn pri" onclick="newProject()">＋ สร้างเรื่องใหม่</button></div>
+  ${ps.length ? `<div class="grid g3">${ps.map(p => `<div class="card pcard" onclick="go('project', dq('${q(p.name)}'))">
+      <div class="t">📁 ${esc(p.name)}</div><div class="d">${esc(p.topic || "— ให้ AI คิดพล็อตตามสกิล —")}</div>
+      <div class="row"><span class="badge">🧩 ${esc(skName(p.skill))}</span><span class="badge ${p.done_count >= p.episodes_total ? "b-ok" : ""}">${p.done_count}/${p.episodes_total} ตอน</span><span class="badge">🖼 ${p.input_count} ไฟล์</span></div>
+    </div>`).join("")}</div>` : `<div class="card empty">ยังไม่มีโปรเจกต์ กด "สร้างเรื่องใหม่"</div>`}`;
+};
+
+async function newProject(withIdea) {
+  const sk = await call(() => api("GET", "/api/skills")) || [];
+  newSkill = sk[0]?.id || "";
+  const draw = () => $("#newSkills").innerHTML = sk.length ? sk.map(s => `<div class="sk ${s.id === newSkill ? "on" : ""}" data-id="${esc(s.id)}"><div class="n">${esc(s.name)}</div><div class="d">${esc(s.description)}</div></div>`).join("")
+     + `<div class="sk ${newSkill === "" ? "on" : ""}" data-id=""><div class="n">ไม่ใช้สกิล</div><div class="d">ให้ AI เขียนอิสระ</div></div>`
+     : `<div class="hint">ยังไม่มีสกิล ใส่ไฟล์ SKILL.md ไว้ใน AutoClip/skills/ชื่อสกิล/</div>`;
+  draw();
+  $("#newSkills").onclick = e => { const c = e.target.closest(".sk"); if (c) { newSkill = c.dataset.id; draw(); } };
+  ["nName","nTopic","nVoice"].forEach(i => $("#" + i).value = ""); $("#nEps").value = 3; $("#nAspect").value = ""; $("#nTts").value = "";
+  openM("mNew");
+  if (withIdea) aiIdea();
+}
+async function aiIdea() {
+  const b = $("#btnIdea"); b.disabled = true; b.textContent = "⏳ กำลังคิด...";
+  const d = await call(() => api("POST", "/api/ai/idea", {skill:newSkill, hint:$("#nTopic").value}));
+  b.disabled = false; b.textContent = "✨ ให้ AI คิดเรื่องให้";
+  if (d) { $("#nName").value = d.name || ""; $("#nTopic").value = d.topic || ""; if (d.episodes_total) $("#nEps").value = d.episodes_total; }
+}
+$("#btnIdea").onclick = aiIdea;
+$("#btnCreate").onclick = async () => {
+  const body = {name:$("#nName").value.trim(), topic:$("#nTopic").value.trim(), skill:newSkill, episodes_total:+$("#nEps").value || 1,
+                aspect:$("#nAspect").value, tts_engine:$("#nTts").value, voice:$("#nVoice").value.trim()};
+  if (!body.name) return toast("ใส่ชื่อเรื่องก่อน", true);
+  const r = await call(() => api("POST", "/api/projects", body));
+  if (r) { closeM("mNew"); toast("สร้างโฟลเดอร์แล้ว"); go("project", r.name); }
+};
+
+PAGES.project = async (name) => {
+  const [p, sk] = await Promise.all([api("GET", "/api/projects/" + enc(name)), api("GET", "/api/skills")]);
+  const nextEp = (p.episodes.filter(e => e.final).length) + 1;
+  return `<div class="row between"><div><a onclick="go('projects')" style="cursor:pointer;font-size:14px">← โปรเจกต์ทั้งหมด</a><h1 style="margin-top:6px">📁 ${esc(p.name)}</h1>
+     <p class="sub">เสร็จ ${p.done_count}/${p.episodes_total} ตอน · ค่าเขียนบท ${fmtUsd(p.cost_usd)}</p></div>
+    <div class="card" style="padding:12px"><div class="row"><span style="font-size:14px">ทำต่อ</span>
+      <input type="number" id="pCount" value="1" min="1" max="50" style="width:70px"> <span style="font-size:14px">ตอน (เริ่มตอน ${nextEp})</span>
+      <button class="btn pri" onclick="startJob(dq('${q(p.name)}'), +$('#pCount').value)">▶ สั่งงาน</button></div></div></div>
+  <div class="two">
+    <div class="card"><h3>ตั้งค่าเรื่อง</h3>
+      <label class="f"><span>สกิล / สไตล์ (เปลี่ยนได้ มีผลกับตอนถัดไป)</span><select id="pSkill"><option value="">ไม่ใช้สกิล</option>${sk.map(s => `<option value="${esc(s.id)}" ${s.id === p.skill ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select></label>
+      <label class="f"><span>หัวข้อ / พล็อต</span><textarea id="pTopic">${esc(p.topic)}</textarea></label>
+      <label class="f"><span>หมายเหตุถึง AI (เช่น "ตอนนี้ให้ฮูทเป็นตัวเอก")</span><textarea id="pNotes" style="min-height:60px">${esc(p.notes||"")}</textarea></label>
+      <div class="two">
+        <label class="f"><span>จำนวนตอนที่วางแผน</span><input type="number" id="pEps" value="${p.episodes_total}" min="1"></label>
+        <label class="f"><span>สัดส่วนจอ</span><select id="pAspect">${["","9:16","16:9","1:1","4:5"].map(a => `<option value="${a}" ${a === (p.aspect||"") ? "selected" : ""}>${a || "ตามตั้งค่า"}</option>`).join("")}</select></label>
+        <label class="f"><span>เสียงพากย์</span><select id="pTts">${[["","ตามตั้งค่า"],["openrouter","Gemini TTS"],["edge","Edge TTS (ฟรี)"]].map(([v,t]) => `<option value="${v}" ${v === (p.tts_engine||"") ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+        <label class="f"><span>ชื่อเสียง</span><input type="text" id="pVoice" value="${esc(p.voice||"")}" placeholder="ตามตั้งค่า"></label>
+      </div>
+      <button class="btn pri" onclick="saveProject(dq('${q(p.name)}'))">💾 บันทึก</button>
+    </div>
+    <div class="card"><h3>ภาพ / คลิปต้นฉบับ (${p.inputs.length})</h3>
+      <div class="hint" style="margin-bottom:8px">ใส่ไฟล์ใน Drive: <span class="kbd">projects/${esc(p.name)}/input</span> หรืออัปโหลดตรงนี้ · ตั้งชื่อไฟล์ให้บอกเนื้อหา (เช่น <span class="kbd">cat_running_forest.mp4</span>) AI จะเลือกให้ตรงฉาก</div>
+      <div class="drop" onclick="$('#upIn').click()">⬆ คลิกเพื่ออัปโหลดภาพ/คลิป</div><input type="file" id="upIn" multiple accept="video/*,image/*" hidden>
+      <div class="logs" style="max-height:130px">${p.inputs.length ? esc(p.inputs.join("\n")) : "(ยังไม่มีไฟล์ → จะใช้พื้นสีเรียบ)"}</div>
+      <h3 style="margin-top:16px">เพลงประกอบ</h3>
+      <div class="drop" onclick="$('#upMu').click()">🎵 อัปโหลดเพลง (mp3/wav)</div><input type="file" id="upMu" multiple accept="audio/*" hidden>
+      <div class="hint">หรือใส่ใน <span class="kbd">projects/${esc(p.name)}/music</span> ระบบจะวนใช้ทีละตอน</div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px"><h3>ตอนทั้งหมด</h3>
+    ${p.episodes.length ? `<table><tr><th>ตอน</th><th>ชื่อตอน</th><th>สถานะ</th><th>ความยาว</th><th></th></tr>
+    ${p.episodes.map(e => `<tr><td>${e.ep}</td><td>${esc(e.title||"-")}</td><td>${e.final ? '<span class="badge b-ok">เสร็จ</span>' : `<span class="badge b-warn">${EPS[e.stage]||e.stage}</span>`}</td><td>${fmtDur(e.duration)}</td>
+      <td class="row" style="justify-content:flex-end">
+        <button class="btn sm" onclick="openReview(dq('${q(p.name)}'),${e.ep})">📝 บท</button>
+        ${e.final ? `<a class="btn sm" target="_blank" href="/media/${enc(p.name)}/${e.final}">▶ ดู</a>` : ""}
+        <button class="btn sm" onclick="resetEp(dq('${q(p.name)}'),${e.ep})">↺ ทำใหม่</button></td></tr>`).join("")}</table>`
+    : `<div class="empty">ยังไม่มีตอน กด "สั่งงาน" ด้านบน</div>`}
+  </div>
+  <div class="card" style="margin-top:14px"><h3>Series bible (ตัวละคร/โลกของเรื่อง)</h3>
+    <div class="hint" style="margin-bottom:8px">AI อัปเดตอัตโนมัติหลังจบแต่ละตอน ใช้คุมความต่อเนื่องและประหยัด token · แก้เองได้</div>
+    <textarea id="pBible" style="min-height:160px">${esc(p.bible)}</textarea>
+    <button class="btn" style="margin-top:8px" onclick="saveBible(dq('${q(p.name)}'))">💾 บันทึก bible</button>
+  </div>`;
+};
+AFTER.project = (name) => {
+  const up = async (inp, target) => {
+    const fd = new FormData(); fd.append("target", target);
+    [...inp.files].forEach(f => fd.append("files", f));
+    toast("กำลังอัปโหลด " + inp.files.length + " ไฟล์...");
+    const r = await call(() => api("POST", `/api/projects/${enc(name)}/upload`, fd));
+    if (r) { toast("อัปโหลดแล้ว " + r.length + " ไฟล์"); render(); }
+  };
+  $("#upIn").onchange = e => up(e.target, "input");
+  $("#upMu").onchange = e => up(e.target, "music");
+};
+async function saveProject(name) {
+  const r = await call(() => api("PATCH", "/api/projects/" + enc(name), {skill:$("#pSkill").value, topic:$("#pTopic").value, notes:$("#pNotes").value,
+    episodes_total:+$("#pEps").value || 1, aspect:$("#pAspect").value, tts_engine:$("#pTts").value, voice:$("#pVoice").value.trim()}));
+  if (r) toast("บันทึกแล้ว");
+}
+async function saveBible(name) { if (await call(() => api("PATCH", "/api/projects/" + enc(name), {bible:$("#pBible").value}))) toast("บันทึก bible แล้ว"); }
+async function startJob(name, count) {
+  const r = await call(() => api("POST", "/api/jobs", {project:name, count:count || 1}));
+  if (r) { toast("เข้าคิวแล้ว"); go("jobs"); }
+}
+async function resetEp(name, ep) {
+  if (DEMO) return toast("โหมดตัวอย่าง: จะมีให้เลือก 1 ตัดต่อใหม่ / 2 พากย์ใหม่ / 3 ทำใหม่หมด");
+  const mode = prompt("ทำตอน " + ep + " ใหม่แบบไหน?\n1 = ตัดต่อใหม่ (ใช้บท+เสียงเดิม ไม่เสีย credit)\n2 = พากย์+ตัดต่อใหม่ (ใช้บทเดิม)\n3 = ทำใหม่หมด (เขียนบทใหม่)", "1");
+  const m = {"1":"render","2":"voice","3":"all"}[mode]; if (!m) return;
+  if (await call(() => api("POST", `/api/projects/${enc(name)}/episodes/${ep}/reset`, {mode:m}))) { toast("รีเซ็ตแล้ว กดสั่งงานเพื่อทำตอนนี้"); render(); }
+}
+
+// ================= ตรวจบท =================
+let rv = null;
+async function openReview(project, ep, jobId) {
+  const s = await call(() => api("GET", `/api/projects/${enc(project)}/episodes/${ep}/script`)); if (!s) return;
+  rv = {project, ep, jobId, s};
+  $("#rvTitle").textContent = `ตรวจบท: ${project} ตอน ${ep}`;
+  $("#rvName").value = s.title || "";
+  $("#rvScenes").innerHTML = s.scenes.map((sc, i) => `<div class="scene"><div class="h">ฉาก ${i+1} · ภาพ: ${esc(sc.visual||"-")} ${sc.clip ? "· ไฟล์: " + esc(sc.clip) : ""}</div>
+     <textarea data-i="${i}" style="min-height:60px">${esc(sc.narration)}</textarea></div>`).join("");
+  $("#rvApprove").style.display = jobId ? "" : "none";
+  openM("mReview");
+}
+function collectReview() {
+  const s = rv.s; s.title = $("#rvName").value;
+  document.querySelectorAll("#rvScenes textarea").forEach(t => { s.scenes[+t.dataset.i].narration = t.value; s.scenes[+t.dataset.i].subtitle = ""; });
+  s.scenes = s.scenes.filter(x => x.narration.trim()); return s;
+}
+$("#rvSave").onclick = async () => { if (await call(() => api("PUT", `/api/projects/${enc(rv.project)}/episodes/${rv.ep}/script`, collectReview()))) toast("บันทึกบทแล้ว (ถ้าพากย์ไปแล้ว ต้องกด ทำใหม่ → 2)"); };
+$("#rvApprove").onclick = async () => {
+  if (!await call(() => api("PUT", `/api/projects/${enc(rv.project)}/episodes/${rv.ep}/script`, collectReview()))) return;
+  if (await call(() => api("POST", `/api/jobs/${rv.jobId}/approve`))) { closeM("mReview"); toast("อนุมัติแล้ว ทำต่อ"); refreshLive(); }
+};
+
+// ================= สั่งงาน =================
+PAGES.jobs = async () => {
+  const [ps, jobs] = await Promise.all([api("GET","/api/projects"), api("GET","/api/jobs")]);
+  return `<h1>สั่งงาน</h1><p class="sub">งานรันทีละงานตามคิว หยุดแล้วทำต่อได้ ไม่เสียของที่ทำไปแล้ว</p>
+  <div class="card" style="margin-bottom:16px"><div class="row">
+    <select id="jProj" style="max-width:320px">${ps.map(p => `<option value="${esc(p.name)}">${esc(p.name)} (${p.done_count}/${p.episodes_total})</option>`).join("")}</select>
+    <input type="number" id="jCount" value="1" min="1" max="50" style="width:80px"><span>ตอน</span>
+    <button class="btn pri" onclick="startJob($('#jProj').value, +$('#jCount').value)" ${ps.length ? "" : "disabled"}>▶ เริ่มงาน</button>
+    <button class="btn" onclick="newProject(true)">✨ ให้ AI คิดเรื่องใหม่</button>
+    <button class="btn danger" style="margin-left:auto" onclick="stopAll()">⏹ หยุดทั้งหมด</button>
+  </div></div>
+  <div id="jobList">${jobs.length ? jobs.map(jobCard).join("") : `<div class="card empty">ยังไม่มีงาน</div>`}</div>`;
+};
+async function stopAll() { if (!ask("หยุดงานทั้งหมด (รวมคิว)?")) return; const n = await call(() => api("POST", "/api/jobs/stop_all")); toast("หยุด " + (n ?? 0) + " งาน"); refreshLive(); }
+
+// ================= คลังสกิล =================
+PAGES.skills = async () => {
+  const sk = await api("GET", "/api/skills");
+  return `<div class="row between"><div><h1>คลังสกิล</h1><p class="sub">สกิล = สไตล์/วิธีเขียนบท ที่ AI ต้องทำตาม</p></div>
+    <button class="btn pri" onclick="reloadSkills()">🔄 โหลดสกิลใหม่</button></div>
+  <div class="card" style="margin-bottom:16px;font-size:14px;line-height:1.7">
+    <b>วิธีเพิ่มสกิล:</b> ใน Drive ไปที่ <span class="kbd">AutoClip/skills/</span> → สร้างโฟลเดอร์ชื่อสกิล (ภาษาอังกฤษ ไม่มีเว้นวรรค เช่น <span class="kbd">anime-adventure</span>) → ใส่ไฟล์ <span class="kbd">SKILL.md</span> → กลับมากด "โหลดสกิลใหม่"<br>
+    หัวไฟล์ใส่ <span class="kbd">name:</span> กับ <span class="kbd">description:</span> ได้ (ดูตัวอย่างในสกิล example) · ส่งเฉพาะ SKILL.md ให้ AI เพื่อประหยัด token</div>
+  ${sk.length ? `<div class="grid g3">${sk.map(s => `<div class="card pcard" onclick="viewSkill('${esc(s.id)}')"><div class="t">🧩 ${esc(s.name)}</div><div class="d">${esc(s.description)}</div>
+     <div class="row"><span class="badge">${esc(s.id)}</span><span class="badge">${s.chars.toLocaleString()} ตัวอักษร</span></div></div>`).join("")}</div>`
+   : `<div class="card empty">ยังไม่มีสกิล</div>`}`;
+};
+async function reloadSkills() { const r = await call(() => api("POST", "/api/skills/reload")); if (r) { toast("โหลดแล้ว " + r.length + " สกิล"); render(); } }
+async function viewSkill(id) { const s = await call(() => api("GET", "/api/skills/" + enc(id))); if (!s) return; $("#skTitle").textContent = "🧩 " + s.name; $("#skBody").textContent = s.content; openM("mSkill"); }
+
+// ================= ผลงาน =================
+PAGES.outputs = async () => {
+  const o = await api("GET", "/api/outputs");
+  return `<h1>ผลงาน</h1><p class="sub">คลิปที่เสร็จแล้ว (เก็บใน Drive: projects/ชื่อเรื่อง/epXX/final.mp4)</p>
+  ${o.length ? `<div class="grid vids">${o.map(vidCard).join("")}</div>` : `<div class="card empty">ยังไม่มีคลิปที่เสร็จ</div>`}`;
+};
+
+// ================= ตั้งค่า =================
+const FIELDS = [
+  ["AI เขียนบท (OpenRouter)", [
+    ["draft_model","Model เขียนบท","text","เช่น google/gemini-3.8-flash · ดูชื่อที่ openrouter.ai/models"],
+    ["polish_enabled","ขัดเกลาบทรอบ 2 (เพิ่มคุณภาพ แต่เสีย credit เพิ่ม)","bool"],
+    ["polish_model","Model ขัดเกลา","text"],
+    ["helper_model","Model งานเล็ก (คิดไอเดีย/อัปเดต bible)","text","ใช้รุ่นถูกได้"],
+    ["language","ภาษาของบท","text"],
+    ["scenes_per_episode","จำนวนฉากต่อตอน","number"],
+    ["target_seconds","ความยาวเป้าหมาย (วินาที)","number"],
+    ["review_script","หยุดให้ตรวจบทก่อนพากย์ทุกตอน","bool","ปลอดภัยกว่า กันเสียค่าเสียงกับบทที่ไม่ชอบ"]]],
+  ["เสียงพากย์", [
+    ["tts_engine","ระบบเสียงเริ่มต้น","select",[["openrouter","Gemini TTS ผ่าน OpenRouter (เสียเงิน คุณภาพสูง)"],["edge","Edge TTS (ฟรี)"]]],
+    ["openrouter_tts_model","Model TTS","text","google/gemini-3.8-flash-tts หรือ -lite-tts (ถูกกว่า)"],
+    ["openrouter_voice","เสียง Gemini","text","เช่น Kore, Puck, Charon, Aoede, Leda, Orus, Zephyr"],
+    ["edge_voice","เสียง Edge (ฟรี)","select",[["th-TH-PremwadeeNeural","Premwadee (หญิง)"],["th-TH-NiwatNeural","Niwat (ชาย)"],["th-TH-AcharaNeural","Achara (หญิง)"]]],
+    ["edge_rate","ความเร็วเสียง Edge","text","เช่น +10% หรือ -5%"]]],
+  ["วิดีโอ", [
+    ["aspect","สัดส่วนจอเริ่มต้น","select",[["9:16","9:16 (TikTok/Reels/Shorts)"],["16:9","16:9 (YouTube)"],["1:1","1:1"],["4:5","4:5"]]],
+    ["fps","FPS","number"], ["crf","คุณภาพ CRF (ต่ำ = ชัด ไฟล์ใหญ่, 18-23)","number"],
+    ["preset","ความเร็ว encode","select",[["veryfast","veryfast (แนะนำ)"],["fast","fast"],["medium","medium (ช้า ชัดขึ้นนิด)"]]],
+    ["scene_gap","เว้นระหว่างฉาก (วินาที)","number"], ["ken_burns","ภาพนิ่งซูมเคลื่อนไหว","bool"],
+    ["subtitles","ฝังซับ","bool"], ["subtitle_font","ฟอนต์ซับ","text","Loma, Garuda, Kinnari หรือใส่ไฟล์ฟอนต์ใน AutoClip/fonts"],
+    ["subtitle_size","ขนาดซับ (0 = อัตโนมัติ)","number"], ["subtitle_max_chars","ตัวอักษรต่อบรรทัด (0 = อัตโนมัติ)","number"],
+    ["bgm_volume","ความดังเพลงประกอบ (0-1)","number"]]],
+];
+PAGES.settings = async () => {
+  const s = await api("GET", "/api/settings");
+  const field = ([k, label, type, extra]) => {
+    const v = s[k];
+    if (type === "bool") return `<label class="f row" style="gap:8px"><input type="checkbox" data-k="${k}" ${v ? "checked" : ""}> <span style="margin:0;color:var(--text)">${label}</span>${extra ? `<div class="hint" style="width:100%">${extra}</div>` : ""}</label>`;
+    if (type === "select") return `<label class="f"><span>${label}</span><select data-k="${k}">${extra.map(([a,b]) => `<option value="${a}" ${a == v ? "selected" : ""}>${b}</option>`).join("")}</select></label>`;
+    return `<label class="f"><span>${label}</span><input type="${type === "number" ? "number" : "text"}" step="any" data-k="${k}" value="${esc(v)}">${extra ? `<div class="hint">${extra}</div>` : ""}</label>`;
+  };
+  return `<h1>ตั้งค่า</h1><p class="sub">ค่าเริ่มต้นของทุกเรื่อง (แต่ละเรื่องเปลี่ยนสัดส่วนจอ/เสียงเองได้)</p>
+  <div class="tabs">${FIELDS.map((g, i) => `<button class="btn ${i ? "" : "on"}" data-t="${i}">${g[0]}</button>`).join("")}</div>
+  ${FIELDS.map((g, i) => `<div class="card tabp" data-t="${i}" style="${i ? "display:none" : ""}"><div class="two">${g[1].map(field).join("")}</div></div>`).join("")}
+  <div class="card" style="margin-top:14px"><h3>API key</h3><div class="hint" style="font-size:14px;line-height:1.7">เพื่อความปลอดภัย key ไม่ถูกเก็บหรือแสดงในเว็บนี้ ใส่ใน <b>Colab → 🔑 Secrets</b> ชื่อ <span class="kbd">OPENROUTER_API_KEY</span> แล้วรัน notebook ใหม่</div></div>
+  <div class="row" style="margin-top:14px"><button class="btn pri" onclick="saveSettings()">💾 บันทึกตั้งค่า</button></div>`;
+};
+AFTER.settings = () => document.querySelectorAll(".tabs .btn").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tabs .btn").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll(".tabp").forEach(p => p.style.display = p.dataset.t === b.dataset.t ? "" : "none");
+});
+async function saveSettings() {
+  const body = {};
+  document.querySelectorAll("[data-k]").forEach(el => body[el.dataset.k] = el.type === "checkbox" ? el.checked : el.value);
+  if (await call(() => api("POST", "/api/settings", body))) toast("บันทึกตั้งค่าแล้ว");
+}
+
+// ================= login + start =================
+$("#lgBtn").onclick = async () => {
+  try { await api("POST", "/api/login", {password:$("#lgPw").value}); closeM("mLogin"); render(); }
+  catch (e) { toast(e.message, true); }
+};
+$("#lgPw").onkeydown = e => { if (e.key === "Enter") $("#lgBtn").click(); };
+document.querySelectorAll(".modal").forEach(m => m.addEventListener("mousedown", e => { if (e.target === m && m.id !== "mLogin") m.classList.remove("on"); }));
+const h0 = location.hash.slice(1); go(PAGES[h0] && h0 !== "project" ? h0 : "dash");
+</script>
+</body>
+</html>

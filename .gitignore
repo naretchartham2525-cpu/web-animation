@@ -1,0 +1,9 @@
+# ข้อมูลส่วนตัว/งาน อยู่ใน Google Drive ไม่ขึ้น GitHub
+settings.json
+jobs.json
+projects/
+fonts/
+*.tmp
+__pycache__/
+*.pyc
+.env
