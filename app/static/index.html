@@ -159,7 +159,20 @@ body.eng .noeng{display:none!important}
 .tarow textarea{flex:1;border:none;outline:none;resize:none;background:none;font-size:15.5px;line-height:1.55;padding:6px 2px;min-height:34px;max-height:180px}
 .ib{border:none;background:none;border-radius:50%;width:34px;height:34px;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
 .ib:hover{background:var(--soft);color:var(--ink)}
-.opts{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-top:6px}
+.steps{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:8px;padding:8px 0 2px;border-top:1px solid var(--line);margin-top:4px;counter-reset:st}
+.grp{display:flex;flex-direction:column;gap:5px;padding:6px 8px 8px;border-radius:16px;background:rgba(240,232,220,.35)}
+.glab{font-size:11.5px;color:var(--muted);padding-left:4px;letter-spacing:.2px}
+.glab::before{counter-increment:st;content:counter(st);display:inline-grid;place-items:center;width:16px;height:16px;margin-right:6px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:10px;font-weight:600}
+.gctl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.grp .chip,.grp .seg,.grp .dur{height:36px;box-sizing:border-box}
+.grp .seg{align-items:center}
+.grp .chip select{max-width:230px}
+.grp .chip{flex:1;min-width:0;justify-content:space-between}
+.grp .chip select{flex:1;min-width:0;text-align:left}
+.ib.sm{width:32px;height:32px;background:var(--soft)}
+.ib.sm:hover{background:var(--bg2);color:var(--ink)}
+.tsep{width:1px;height:20px;background:var(--line);margin:0 4px 7px}
+.actions{display:flex;align-items:center;gap:6px;padding-top:8px}
 .seg{display:inline-flex;background:var(--soft);border-radius:99px;padding:3px;gap:2px}
 .seg button{border:none;background:none;border-radius:99px;padding:6px 12px;cursor:pointer;color:var(--muted);white-space:nowrap;font-size:13.5px}
 .seg button.on{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(60,40,20,.15);font-weight:500}
@@ -249,7 +262,12 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
   .composer{bottom:8px;padding:0 8px}
   .lbl,.credit,.brand small{display:none}
   .dur input[type=range]{width:80px}
-  .go{width:100%;justify-content:center;margin:4px 0 0}
+  .go{flex:1;justify-content:center}
+  .steps{grid-template-columns:1fr}
+  .tarow{flex-wrap:wrap}
+  .tarow textarea{flex:1 1 100%}
+  .tarow .ib:first-of-type{margin-left:auto}
+  .grp{padding:5px 7px 7px}
   .two{grid-template-columns:1fr}
   .pop{width:auto;left:0;right:0}
 }
@@ -326,23 +344,30 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
       <textarea id="idea" rows="1"></textarea>
       <button class="ib" title="คัดลอกคำสั่งให้ Claude ในแชทเขียนบท (ฟรี)" onclick="openPromptNew()" id="promptBtn"><svg class="i"><use href="#i-copy"/></svg></button>
       <button class="ib noeng" title="ให้ AI ช่วยคิดไอเดีย" onclick="aiIdea()" id="ideaBtn"><svg class="i"><use href="#i-spark"/></svg></button>
-      <button class="ib" title="เสียงตัวละคร (Edge ฟรี / ElevenLabs)" onclick="openVoices('main')"><svg class="i"><use href="#i-users"/></svg></button>
-      <button class="ib" title="บทพากย์แยกตัวละคร (.txt) สำหรับอัดเสียงเอง" onclick="voiceSheet('main')"><svg class="i"><use href="#i-mic"/></svg></button>
+      <span class="tsep"></span>
       <button class="ib" title="เปิดไฟล์บท (.txt .json .md .py) หรือไฟล์เสียงพากย์ (.mp3 .wav .m4a) · ลากมาวางที่หน้าเว็บก็ได้" onclick="$('#fileIn').click()"><svg class="i"><use href="#i-clip"/></svg></button>
       <input type="file" id="fileIn" multiple accept=".txt,.md,.json,.py,text/plain,application/json,audio/*,.mp3,.wav,.m4a,.aac,.ogg,.opus,.flac" hidden onchange="loadFiles([...this.files]); this.value=''">
       <button class="ib" title="หยิบจากคลังข้อความ" onclick="openLib(true)"><svg class="i"><use href="#i-book"/></svg></button>
       <button class="ib" title="เก็บข้อความนี้ลงคลัง" onclick="saveToLib()"><svg class="i"><use href="#i-save"/></svg></button>
     </div>
     <div class="tweakrow" id="twRow"></div>
-    <div class="opts">
-      <div class="seg noeng" id="segMode"><button data-v="manual" class="on">วางบท (ฟรี)</button><button data-v="ai">AI เขียนบท</button></div>
-      <div class="dur noeng" title="ความยาวต่อ EP"><svg class="i"><use href="#i-clock"/></svg><button class="stp" data-d="-5" aria-label="ลด 5 วินาที"><svg class="i"><use href="#i-minus"/></svg></button><input type="range" id="oDur" min="5" max="180" step="1"><button class="stp" data-d="5" aria-label="เพิ่ม 5 วินาที"><svg class="i"><use href="#i-plus"/></svg></button><input type="number" id="durNum" min="5" max="600" step="1" aria-label="วินาที"><span class="small">วิ</span></div>
-      <div class="seg" id="segQ"><button data-v="sd">มาตรฐาน</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div>
-      <label class="chip" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ซับไทย</option><option value="en">ซับอังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label>
-      <label class="chip" title="เสียงพากย์"><svg class="i"><use href="#i-mic"/></svg><select id="oVoice"></select></label>
-      <span class="swl" id="oWm" title="ลายน้ำชื่อช่อง"><span class="sw"><i></i></span>ลายน้ำ</span>
+    <div class="steps">
+      <div class="grp noeng"><span class="glab">บท</span>
+        <div class="seg" id="segMode"><button data-v="manual" class="on">วางบท (ฟรี)</button><button data-v="ai">AI เขียนบท</button></div></div>
+      <div class="grp"><span class="glab">ความยาว · ความคมชัด</span><div class="gctl">
+        <div class="dur noeng" title="ความยาวต่อ EP (กดค้างเพื่อเพิ่ม/ลดต่อเนื่อง)"><button class="stp" data-d="-1" aria-label="ลด 1 วินาที"><svg class="i"><use href="#i-minus"/></svg></button><input type="range" id="oDur" min="5" max="180" step="1"><button class="stp" data-d="1" aria-label="เพิ่ม 1 วินาที"><svg class="i"><use href="#i-plus"/></svg></button><input type="number" id="durNum" min="5" max="600" step="1" aria-label="วินาที"><span class="small">วิ</span></div>
+        <div class="seg" id="segQ"><button data-v="sd">มาตรฐาน</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div></div></div>
+      <div class="grp"><span class="glab">เสียง</span><div class="gctl">
+        <label class="chip" title="เสียงพากย์"><svg class="i"><use href="#i-mic"/></svg><select id="oVoice"></select></label>
+        <button class="ib sm" title="เสียงตัวละคร: ดู/เปลี่ยนเสียงรายตัว" onclick="openVoices('main')"><svg class="i"><use href="#i-users"/></svg></button>
+        <button class="ib sm" title="ดาวน์โหลดบทพากย์แยกตัวละคร (.txt) สำหรับอัดเสียงเอง" onclick="voiceSheet('main')"><svg class="i"><use href="#i-down"/></svg></button></div></div>
+      <div class="grp"><span class="glab">ซับ · ลายน้ำ</span><div class="gctl">
+        <label class="chip" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ซับไทย</option><option value="en">ซับอังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label>
+        <span class="swl" id="oWm" title="ลายน้ำชื่อช่อง"><span class="sw"><i></i></span>ลายน้ำ</span></div></div>
+    </div>
+    <div class="actions">
       <button class="chip noeng" id="twBtn" title="สั่งปรับแต่งเพิ่มเติมครั้งนี้ (ไม่เปลี่ยนเทมเพลต)"><svg class="i"><use href="#i-wand"/></svg>ปรับแต่ง</button>
-      <button class="chip" id="moreBtn" title="ปรับเพิ่มเติม"><svg class="i"><use href="#i-sliders"/></svg></button>
+      <button class="chip" id="moreBtn" title="ตั้งค่าเพิ่มเติม"><svg class="i"><use href="#i-sliders"/></svg>ตั้งค่าเพิ่ม</button>
       <button class="go" id="goBtn" onclick="create()"><span id="goTxt">สร้าง</span><svg class="i"><use href="#i-send"/></svg></button>
     </div>
   </div>
@@ -738,7 +763,14 @@ function renderComposer() {
 ["#segMode:mode","#segQ:q","#segEngine:engine","#segVis:vis","#segPreset:preset","#segFps:fps","#segSub:sub"].forEach(x => { const [id, k] = x.split(":"); segBind(id, k); });
 $("#oDur").oninput = e => { O.dur = +e.target.value; $("#durNum").value = O.dur; };
 $("#durNum").onchange = e => { O.dur = Math.max(5, Math.min(600, Math.round(+e.target.value || 30))); renderComposer(); };
-document.querySelectorAll(".stp").forEach(b => b.onclick = () => { O.dur = Math.max(5, Math.min(600, O.dur + +b.dataset.d)); renderComposer(); });
+document.querySelectorAll(".stp").forEach(b => {
+  let t1, t2;
+  const step = () => { O.dur = Math.max(5, Math.min(600, O.dur + +b.dataset.d)); $("#oDur").value = Math.min(180, O.dur); $("#durNum").value = O.dur; };
+  const stop = () => { clearTimeout(t1); clearInterval(t2); if (t1) { t1 = 0; renderComposer(); } };
+  b.onpointerdown = e => { e.preventDefault(); step(); t1 = setTimeout(() => { t2 = setInterval(step, 70); }, 380); };
+  b.onpointerup = b.onpointerleave = b.onpointercancel = stop;
+  b.onclick = e => { e.preventDefault(); if (e.detail === 0) { step(); renderComposer(); } };   // กดด้วยคีย์บอร์ด
+});
 $("#oRate").oninput = e => { O.rate = +e.target.value; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%"; };
 $("#oFont").onchange = e => O.font = e.target.value;
 $("#oSub").onchange = e => { O.lang = e.target.value; renderComposer(); };
@@ -1003,10 +1035,14 @@ function playClip(project, ep) {
   const o = OUTS.find(x => x.project === project && x.ep === ep); if (!o) return;
   vCur = o; vMuted = false;
   const src = `/media/${enc(project)}/${o.path}`;
-  $("#vTitle").textContent = `${project} · EP ${ep}${o.title ? " · " + o.title : ""}`;
+  $("#vTitle").textContent = `${project} · EP ${ep}${epTitle(o.title) ? " · " + epTitle(o.title) : ""}`;
   $("#vBody").innerHTML = DEMO ? `<div style="aspect-ratio:9/16;max-height:62vh;margin:auto;border-radius:16px;background:linear-gradient(160deg,${TONES[hashN(project) % TONES.length]});display:grid;place-items:center;color:#fff">${ic("play")}</div>` : `<video id="vid" src="${src}" controls autoplay playsinline></video>`;
+  const v = $("#vid");
+  if (v) v.onvolumechange = () => { if (vMuted !== v.muted) { vMuted = v.muted; vidActs(); } };   // ปุ่มเสียงของตัวเล่น ↔ ปุ่มเสียงของเรา ให้ตรงกันเสมอ
   vidActs(); openM("mVid");
 }
+// ชื่อตอนที่ขึ้นต้นด้วย "EP1 ..." อยู่แล้ว → ตัดออก ไม่ให้ซ้ำกับ "EP 1"
+const epTitle = t => String(t || "").replace(/^\s*EP\s*\d+\s*[:：.\-·]?\s*/i, "").trim();
 function toggleMute() { vMuted = !vMuted; const v = $("#vid"); if (v) v.muted = vMuted; vidActs(); }
 function vidActs() {
   const o = vCur, src = `/media/${enc(o.project)}/${o.path}`;
