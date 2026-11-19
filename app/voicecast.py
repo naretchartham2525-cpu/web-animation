@@ -137,7 +137,40 @@ def provider_for(skill):
     return "eleven" if pref != "edge" and eleven.enabled() else "edge"
 
 
-def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, known=None):
+def _fits(v, arch, el_voices):
+    """เสียงใน My Voices ตรงเพศไหม (Edge ถือว่าตรงเสมอ)"""
+    if not v.startswith("eleven:"):
+        return True
+    g, ages = _gender_age(arch)
+    m = next((x for x in el_voices or [] if "eleven:" + x["id"] == v), None)
+    age = (m or {}).get("age", "").lower().replace(" ", "_")
+    return bool(m) and (m.get("gender") or "").lower() == g and (not age or age in ages)
+
+
+def _from_library(arch, used, mem):
+    from . import eleven
+    g, ages = _gender_age(arch)
+    added = mem.setdefault("library_added", {})
+    for age in ages + ("",):
+        try:
+            cands = eleven.library(gender=g, age=age)
+        except Exception:
+            return None
+        for c in cands:
+            vid = added.get(c["id"])
+            if vid and "eleven:" + vid in used:
+                continue
+            if not vid:
+                try:
+                    vid = eleven.add_shared(c)
+                except Exception:
+                    return None           # ช่องเสียงเต็ม/ไม่มีสิทธิ์ → ใช้เสียงที่มี
+                added[c["id"]] = vid
+            return "eleven:" + vid
+    return None
+
+
+def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, known=None, preview=False):
     """คืน (voice_map ครบทุกผู้พูด, มีการเปลี่ยนความจำเทมเพลตไหม) · ไม่ทับที่ผู้ใช้/เรื่องกำหนดไว้แล้ว"""
     sid = (skill or {}).get("id") or ""
     provider = provider_for(skill)
@@ -170,7 +203,11 @@ def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, kno
             v = slots[i] if i < len(slots) and valid(slots[i]) else None
             if not v:
                 pool = _pool(provider, el_voices or [], arch)
-                v = next((x for x in pool if x not in used), pool[i % len(pool)] if pool else "")
+                v = next((x for x in pool if x not in used and _fits(x, arch, el_voices)), None)
+                if not v and provider == "eleven" and not preview:
+                    v = _from_library(arch, used, mem)       # My Voices ไม่มีที่เข้ากัน → หาเสียงไทยจาก Voice Library
+                if not v:
+                    v = next((x for x in pool if x not in used), pool[i % len(pool)] if pool else "")
                 if v:
                     if i < len(slots):
                         slots[i] = v

@@ -67,6 +67,40 @@ def voices():
     return sorted(out, key=lambda x: x["name"].lower())
 
 
+AGE_MAP = {"young": "young", "middle_aged": "middle_aged", "old": "old"}
+
+
+def library(gender="", age="", language="th", page_size=30):
+    """ค้นเสียงใน Voice Library (เสียงที่คนอื่นแชร์) · กรองภาษาไทย/เพศ/วัย · ตัดเสียงที่คิดเครดิตแพงกว่าปกติ"""
+    params = {"page_size": page_size, "language": language, "sort": "usage_character_count_1y"}
+    if gender:
+        params["gender"] = gender
+    if age:
+        params["age"] = age
+    r = requests.get(f"{BASE}/shared-voices", headers=_h(), params=params, timeout=30)
+    if r.status_code != 200:
+        raise _err(r)
+    out = []
+    for v in r.json().get("voices") or []:
+        rate = v.get("rate")
+        if rate not in (None, 0, 1, 1.0):
+            continue          # ตัวคูณราคา > 1 = แพงกว่าปกติ
+        out.append({"id": v.get("voice_id"), "owner": v.get("public_owner_id"), "name": v.get("name") or "",
+                    "gender": v.get("gender") or "", "age": v.get("age") or "", "language": v.get("language") or "",
+                    "accent": v.get("accent") or "", "use_case": v.get("use_case") or "", "preview": v.get("preview_url") or "",
+                    "desc": v.get("descriptive") or ""})
+    return out
+
+
+def add_shared(v):
+    """เพิ่มเสียงจาก Voice Library เข้า My Voices (ใช้ช่องเสียงของแผน) → คืน voice_id ในบัญชี"""
+    r = requests.post(f"{BASE}/voices/add/{v['owner']}/{v['id']}", headers={**_h(), "Content-Type": "application/json"},
+                      json={"new_name": f"สตูดิโอเถื่อน · {v.get('name') or v['id']}"[:60]}, timeout=30)
+    if r.status_code != 200:
+        raise _err(r)
+    return r.json().get("voice_id") or v["id"]
+
+
 def subscription():
     r = requests.get(f"{BASE}/user/subscription", headers=_h(), timeout=20)
     if r.status_code != 200:

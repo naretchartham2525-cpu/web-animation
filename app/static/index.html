@@ -582,7 +582,7 @@ function vcRender() {
   $("#vcBody").innerHTML = `${rows || '<div class="small">ไม่พบตัวละครในบท</div>'}
     ${el ? `<label class="f" style="margin-top:12px"><span>โมเดล ElevenLabs (อ่านภาษาไทยได้)</span><select class="in" id="vcModel">${EL.models.map(m => `<option value="${m.id}" ${m.id === model ? "selected" : ""}>${m.name}</option>`).join("")}</select></label>` :
       `<div class="note">ยังไม่ได้เชื่อม ElevenLabs: ใส่ ELEVENLABS_API_KEY ใน Colab Secrets แล้วรันช่องใหม่ (ตอนนี้เลือกได้แค่ Edge ฟรี)</div>`}
-    <div class="vcsum">${credits ? `ใช้ ElevenLabs ≈ <b>${credits.toLocaleString()}</b> เครดิต/EP ${sub ? "· " + sub : ""}<br><span class="small">ระบบเลือกเสียงให้เองตามเพศ/วัย และจำไว้ทั้งเรื่องนี้และเรื่องใหม่ของเทมเพลตนี้ · ประโยคที่เคยสร้างแล้วไม่คิดซ้ำ · tag อารมณ์ใส่ให้อัตโนมัติ</span>` : "ใช้เสียงฟรีทั้งหมด"}</div>`;
+    <div class="vcsum">${credits ? `ใช้ ElevenLabs ≈ <b>${credits.toLocaleString()}</b> เครดิต/EP ${sub ? "· " + sub : ""}<br><span class="small">ระบบเลือกเสียงให้เองตามเพศ/วัย (My Voices ไม่พอ → หาเสียงไทยจาก Voice Library เพิ่มให้ตอนสร้าง) และจำไว้ทั้งเรื่องนี้และเรื่องใหม่ของเทมเพลตนี้ · ประโยคที่เคยสร้างแล้วไม่คิดซ้ำ · tag อารมณ์ใส่ให้อัตโนมัติ</span>` : "ใช้เสียงฟรีทั้งหมด"}</div>`;
   $("#vcBody").querySelectorAll("select[data-k]").forEach(x => x.onchange = () => { st.map[x.dataset.k] = x.value; vcRender(); });
   const m = $("#vcModel"); if (m) m.onchange = () => { st.model = m.value; vcRender(); };
 }
