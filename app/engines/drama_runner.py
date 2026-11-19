@@ -1,5 +1,5 @@
 """เรียกเอนจินของสกิลแบบ drama-json (เช่น thai-drama-script)
-สกิลวาดแอนิเมชัน · ระบบสตูดิโอเถื่อนคุมเสียง (เลือกเสียงผู้บรรยาย/ตัวละคร, ความเร็ว, Gemini หรือ Edge)
+สกิลวาดแอนิเมชัน · ระบบสตูดิโอเถื่อนคุมเสียง (เลือกเสียงผู้บรรยาย/ตัวละคร, ความเร็ว, Edge ฟรี หรือไฟล์เสียงที่อัปเอง)
 
 python -m app.engines.drama_runner <skill_dir> <episode.json> --out raw.mp4 --opts '{"voice": "edge:th-TH-NiwatNeural"}'
 """
@@ -29,7 +29,9 @@ def load_engine(skill_dir):
 
 def patch_voices(R, opts):
     main_voice = str(opts.get("voice") or "")          # เสียงพระเอก/ผู้บรรยาย
-    voice_map = opts.get("voice_map") or {}             # {cast_id หรือ man/woman/...: "edge:..."|"gemini:..."}
+    voice_map = {k: v for k, v in (opts.get("voice_map") or {}).items() if str(v).startswith("edge:")}  # {cast_id: "edge:..."}
+    if main_voice.startswith("gemini:"):
+        main_voice = ""   # เสียงเสียเงินตัดออกแล้ว
     rate_add = int(opts.get("rate_add") or 0)
     orig_voice = R.Cast.voice
 
@@ -39,39 +41,22 @@ def patch_voices(R, opts):
         chosen = voice_map.get(cid) or voice_map.get(c.get("voice") or "")
         if not chosen and cid in ("hero", "narration") and main_voice:
             chosen = main_voice
-        if chosen:
-            if chosen.startswith("gemini:"):
-                v, pitch = chosen, "+0Hz"
-            elif chosen.startswith("edge:"):
-                v = chosen[5:]
+        if chosen and chosen.startswith("edge:"):
+            v = chosen[5:]
         return v, pitch, _rate(rate, rate_add)
 
     R.Cast.voice = voice
 
     orig_synth = R._synth_all
-    tts_model = opts.get("tts_model") or "google/gemini-3.8-flash-tts"
-
     async def synth(items, outdir):
         # ไฟล์ที่มีแล้ว (เสียงที่ผู้ใช้อัป/แคช) ไม่ต้องสร้าง · สร้างไม่สำเร็จ = เฉพาะประโยคนั้นเงียบ ไม่ทำให้เสียงทั้งตอนหาย
         items = [it for it in items if not ((Path(outdir) / f"{it['key']}.mp3").exists()
                                             and (Path(outdir) / f"{it['key']}.mp3").stat().st_size > 800)]
-        gem = [it for it in items if str(it["voice"]).startswith("gemini:")]
-        rest = [it for it in items if not str(it["voice"]).startswith("gemini:")]
-        if rest:
+        if items:
             try:
-                await orig_synth(rest, outdir)
+                await orig_synth(items, outdir)
             except Exception as ex:
-                print(f"WARNING AI voice failed for {len(rest)} lines (they stay silent): {str(ex)[:150]}", flush=True)
-        if gem:
-            from app import llm
-            for it in gem:
-                p = Path(outdir) / f"{it['key']}.mp3"
-                if not (p.exists() and p.stat().st_size > 800):
-                    try:
-                        llm.tts(tts_model, it["tts"], it["voice"][7:], p)
-                    except Exception as ex:
-                        print(f"WARNING Gemini voice failed (line stays silent): {str(ex)[:150]}", flush=True)
-
+                print(f"WARNING AI voice failed for {len(items)} lines (they stay silent): {str(ex)[:150]}", flush=True)
     R._synth_all = synth
 
 

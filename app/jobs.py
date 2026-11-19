@@ -121,7 +121,7 @@ class Ctx:
                 if "No module named edge_tts" in err:
                     raise RuntimeError("ยังไม่ได้ติดตั้งเสียงฟรี (edge-tts) → รันช่อง 2 ใน Colab แล้วกดทำต่อ")
                 if "edge" in label and ("403" in err or "Connect" in err or "WSServerHandshake" in err):
-                    raise RuntimeError("เชื่อมต่อเสียงฟรี Edge ไม่ได้ ลองใหม่อีกครั้ง หรือเปลี่ยนเสียงเป็น Gemini/ปิดเสียง")
+                    raise RuntimeError("เชื่อมต่อเสียงฟรี Edge ไม่ได้ ลองใหม่อีกครั้ง หรือปิดเสียง/ใช้ไฟล์เสียงที่อัดเอง")
                 raise RuntimeError(f"{label} ล้มเหลว: {err.strip()[-800:]}")
         finally:
             self.mgr.proc = None

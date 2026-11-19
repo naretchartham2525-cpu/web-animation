@@ -138,34 +138,6 @@ def parse_json(text):
         raise LLMError("AI ตอบกลับไม่ใช่ JSON: " + text[:300])
 
 
-def tts(model, text, voice, out_path, retries=3):
-    """OpenRouter /audio/speech → mp3 (Gemini 3.8 TTS อ่านตามตัวอักษร ห้ามใส่คำสั่งน้ำเสียงในข้อความ)"""
-    body = {"model": model, "input": text, "voice": voice, "response_format": "mp3"}
-    last = None
-    for attempt in range(retries):
-        try:
-            r = requests.post(f"{BASE}/audio/speech", headers=_headers(), json=body, timeout=300)
-            if r.status_code == 200 and r.content:
-                with open(out_path, "wb") as f:
-                    f.write(r.content)
-                c = r.headers.get("x-openrouter-cost") or r.headers.get("X-Openrouter-Cost")
-                ledger("เสียง AI", model, float(c) if c else None, {"chars": len(text)},
-                       note="" if c else "ราคาต่อครั้งไม่แจ้ง ดูยอดรวมงานแทน")
-                return
-            last = f"HTTP {r.status_code}: {r.text[:300]}"
-            if r.status_code not in (429, 500, 502, 503, 504):
-                break
-        except requests.RequestException as e:
-            last = str(e)
-        time.sleep(3 * (attempt + 1))
-    raise LLMError(f"TTS ไม่สำเร็จ: {last}")
-
-
-# ---------------- ภาพฟรี (Pollinations, ไม่ต้องใช้ key) ----------------
-POLLINATIONS = os.environ.get("POLLINATIONS_BASE", "https://image.pollinations.ai")
-_last_img = [0.0]
-
-
 def free_image(prompt, out_path, width, height, seed=1, model="", retries=4):
     """ฟรีแบบไม่ใช้ key จำกัด ~1 ภาพ/15 วินาที → เว้นจังหวะให้เอง"""
     from urllib.parse import quote

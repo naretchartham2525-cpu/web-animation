@@ -83,13 +83,13 @@ def apply_tweaks(s):
 
 
 def _apply_voice(s, v):
-    """เสียง: 'edge:th-TH-NiwatNeural' | 'gemini:Kore' | ชื่อเสียงเฉยๆ"""
+    """เสียง: 'edge:th-TH-NiwatNeural' | ชื่อเสียง Edge · เสียงเสียเงิน (gemini:) ถูกตัดออก → ใช้เสียงฟรีหลัก"""
     v = str(v).strip()
+    if v.startswith("gemini:"):
+        v = ""
     s["_voice_full"] = v
     if v.startswith("edge:"):
         s["tts_engine"], s["_voice"] = "edge", v[5:]
-    elif v.startswith("gemini:"):
-        s["tts_engine"], s["_voice"] = "openrouter", v[7:]
     elif v:
         s["_voice"] = v
         if v.startswith(("th-", "en-")):
@@ -121,11 +121,10 @@ def effective_settings(proj, skill, ep_opts=None):
     # ค่าจาก project แบบเก่า
     if proj.get("aspect"):
         s["aspect"] = proj["aspect"]
-    if proj.get("tts_engine"):
-        s["tts_engine"] = proj["tts_engine"]
-    if proj.get("voice"):
+    if proj.get("voice") and not str(proj["voice"]).startswith("gemini:"):
         s["_voice"] = proj["voice"]
     s["aspect"] = "9:16"   # ทำสำหรับ TikTok / Reels เท่านั้น
+    s["tts_engine"] = "edge"   # เสียง AI เสียเงิน (Gemini) ตัดออกแล้ว: ใช้ Edge ฟรีเท่านั้น
     apply_tweaks(s)
     if not int(s.get("scenes_per_episode") or 0):
         # 1 EP ไม่ต้องหลายฉาก แค่ครอบคลุมเรื่อง (~8 วิ/ฉาก)
@@ -425,14 +424,11 @@ def voice_file_path(s):
 
 def make_tts(ctx, text, out, s):
     voice = s.get("_voice") or ""
-    if s.get("tts_engine") == "openrouter":
-        llm.tts(s["openrouter_tts_model"], text, voice or s["openrouter_voice"], out)
-    else:
-        if voice and not voice.startswith(("th-", "en-")):
-            voice = ""  # ชื่อเสียง Gemini ใช้กับ Edge ไม่ได้
-        cmd = [sys.executable, "-m", "edge_tts", "--voice", voice or s["edge_voice"],
-               f"--rate={s.get('edge_rate', '+0%')}", "--text", text, "--write-media", str(out)]
-        ctx.run(cmd, "edge-tts")
+    if voice and not voice.startswith(("th-", "en-")):
+        voice = ""  # ไม่ใช่ชื่อเสียง Edge → เสียงฟรีหลัก
+    cmd = [sys.executable, "-m", "edge_tts", "--voice", voice or s["edge_voice"],
+           f"--rate={s.get('edge_rate', '+0%')}", "--text", text, "--write-media", str(out)]
+    ctx.run(cmd, "edge-tts")
 
 
 # ---------------- ภาพ ----------------

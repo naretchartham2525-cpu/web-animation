@@ -504,9 +504,7 @@ async function call(fn) { try { return await fn(); } catch (e) { toast(e.message
 
 // ================= เสียง =================
 const VOICE_GROUPS = [
-  ["Edge · ฟรี", [["edge:th-TH-PremwadeeNeural", "เปรมวดี · หญิง"], ["edge:th-TH-AcharaNeural", "อัจฉรา · หญิง"], ["edge:th-TH-NiwatNeural", "นิวัฒน์ · ชาย"]]],
-  ["Gemini · เสียเงิน", [["gemini:Kore", "Kore · หญิง"], ["gemini:Aoede", "Aoede · หญิง"], ["gemini:Leda", "Leda · หญิง"],
-                         ["gemini:Puck", "Puck · ชาย"], ["gemini:Charon", "Charon · ชาย"], ["gemini:Orus", "Orus · ชาย"]]]];
+  ["Edge · ฟรี", [["edge:th-TH-PremwadeeNeural", "เปรมวดี · หญิง"], ["edge:th-TH-AcharaNeural", "อัจฉรา · หญิง"], ["edge:th-TH-NiwatNeural", "นิวัฒน์ · ชาย"]]]];
 const VOICES = [["", "เสียงตามเทมเพลต"]].concat(...VOICE_GROUPS.map(([g, vs]) => vs.map(([v, t]) => [v, `${t} (${g.split(" · ")[1]})`])));
 const voiceOpts = (sel, first) => `<option value="" ${!sel ? "selected" : ""}>${first || VOICES[0][1]}</option>` +
   VOICE_GROUPS.map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t} · ${g.split(" · ")[1]}</option>`).join("")}</optgroup>`).join("");
@@ -613,7 +611,7 @@ function segSet(id, v) { document.querySelectorAll(id + " button").forEach(b => 
 function autoGrow() { const t = $("#idea"); t.style.height = "auto"; t.style.height = Math.min(180, t.scrollHeight) + "px"; }
 function tplVoice() { return tplSel?.options?.voice || ""; }
 function effVoice() { return O.voice || tplVoice(); }
-function isFree() { return (O.mode === "manual" || O.engine === "free") && !effVoice().startsWith("gemini:"); }
+function isFree() { return O.mode === "manual" || O.engine === "free"; }
 function goLabel() { const n = O.mode === "manual" ? countEps($("#idea").value) : 1; $("#goTxt").textContent = `สร้าง${n > 1 ? ` ${n} EP` : ""}${isFree() ? " · ฟรี" : ""}`; }
 function renderComposer() {
   const eng = !!tplSel?.engine;
@@ -634,9 +632,8 @@ function renderComposer() {
   if (O.mode === "ai") notes.push(O.engine === "free" ? "AI ฟรี: จำกัดประมาณ 50 ครั้ง/วัน" : "Claude API: เสียเครดิตประมาณ $0.001 ต่อ EP");
   if (O.vis === "ai") notes.push("ภาพ AI ฟรี ใช้เวลาราว 15 วิ/ภาพ · แผนฟรีห้ามใช้เชิงพาณิชย์");
   if (O.vis === "drive") notes.push("ใช้ภาพ/คลิปจาก Drive: projects/<ชื่อเรื่อง>/input");
-  if (effVoice().startsWith("gemini:")) notes.push("เสียง Gemini เสียเครดิต");
   if (O.lang === "en" || O.lang === "both") notes.push("ซับอังกฤษ: ใส่ในบทเป็นช่องที่ 3 (บท | ภาพ | English) หรือให้ระบบแปลด้วย AI ฟรี");
-  if (eng) { notes.length = 0; notes.push("สกิลนี้มีเอนจินของตัวเอง: สกิลวาดแอนิเมชันและฉาก · ระบบคุมเสียง ลายน้ำ ความคมชัด"); if (effVoice().startsWith("gemini:")) notes.push("เสียง Gemini เสียเครดิต"); }
+  if (eng) { notes.length = 0; notes.push("สกิลนี้มีเอนจินของตัวเอง: สกิลวาดแอนิเมชันและฉาก · ระบบคุมเสียง ลายน้ำ ความคมชัด"); }
   $("#popNote").innerHTML = notes.map(esc).join("<br>");
   autoGrow();
 }
@@ -1036,7 +1033,7 @@ const MOCK = {
     {id:"thai-drama-script", name:"ละครสั้นดราม่า (ตัวการ์ตูน)", description:"ดราม่าแนวตั้ง ตัวการ์ตูนขยับท่า มีเอนจินเรนเดอร์ของตัวเอง", engine:"drama-json", options:{}},
     {id:"cloud-girl", name:"เด็กหญิงซ่อมเมฆ", description:"แฟนตาซีอบอุ่น ภาพสีพาสเทล", options:{duration:"30", voice:"edge:th-TH-AcharaNeural"}},
     {id:"night-ghost", name:"หลอนกลางดึก", description:"หลอนเบาๆ หักมุมท้ายเรื่อง", options:{duration:"60", voice:"edge:th-TH-NiwatNeural"}},
-    {id:"cat-office", name:"แมวมนุษย์เงินเดือน", description:"ตลกสั้น แมวทำงานออฟฟิศ", options:{duration:"20", voice:"gemini:Puck"}},
+    {id:"cat-office", name:"แมวมนุษย์เงินเดือน", description:"ตลกสั้น แมวทำงานออฟฟิศ", options:{duration:"20", voice:"edge:th-TH-NiwatNeural"}},
     {id:"moral-tale", name:"นิทานก่อนนอน", description:"นิทานมีข้อคิด เสียงนุ่ม", options:{duration:"90"}},
     {id:"street-food", name:"ตำนานร้านริมทาง", description:"เรื่องเล่าอาหารไทย อบอุ่น", options:{duration:"45"}},
   ],
@@ -1062,7 +1059,7 @@ function mock(m, path, body) {
   if (p === "/api/library") { MOCK.lib.unshift({id:"t" + Date.now(), title: body.title || body.text.slice(0, 30), text: body.text}); return {}; }
   if (p.startsWith("/api/library/")) { MOCK.lib = MOCK.lib.filter(x => x.id !== p.split("/")[3]); return true; }
   if (p === "/api/credits") return {free_model_daily_requests:{remaining:46, limit:50}, limit:5, limit_remaining:4.931, usage:0.069, usage_daily:0.041, usage_weekly:0.069, usage_monthly:0.069};
-  if (p === "/api/usage") { const n = Date.now()/1000; return {today:[{kind:"เสียง AI", model:"google/gemini-3.8-flash-tts", calls:14, cost:0, unknown:14, fail:0},{kind:"บท/ข้อความ", model:"openrouter/free", calls:3, cost:0, unknown:0, fail:0},{kind:"ภาพฟรี", model:"pollinations", calls:7, cost:0, unknown:0, fail:0}], jobs:[{t:n-600, tag:"ประธานล้างจาน · งาน a1b2", cost:0.041}], recent:[{t:n-620, tag:"ประธานล้างจาน · EP 1", kind:"เสียง AI", model:"google/gemini-3.8-flash-tts", cost:null, units:{chars:42}, note:"ราคาต่อครั้งไม่แจ้ง ดูยอดรวมงานแทน"},{t:n-700, tag:"ประธานล้างจาน · EP 1", kind:"บท/ข้อความ", model:"openrouter/free", cost:0, units:{in:820,out:310}}]}; }
+  if (p === "/api/usage") { const n = Date.now()/1000; return {today:[{kind:"เสียง AI", model:"edge-tts", calls:14, cost:0, unknown:0, fail:0},{kind:"บท/ข้อความ", model:"openrouter/free", calls:3, cost:0, unknown:0, fail:0},{kind:"ภาพฟรี", model:"pollinations", calls:7, cost:0, unknown:0, fail:0}], jobs:[{t:n-600, tag:"ประธานล้างจาน · งาน a1b2", cost:0.041}], recent:[{t:n-620, tag:"ประธานล้างจาน · EP 1", kind:"บท/ข้อความ", model:"openrouter/free", cost:0, units:{in:400,out:120}},{t:n-700, tag:"ประธานล้างจาน · EP 1", kind:"บท/ข้อความ", model:"openrouter/free", cost:0, units:{in:820,out:310}}]}; }
   if (p === "/api/prompt") return {prompt:"ช่วยเขียนบทพากย์หนังสั้นแอนิเมชัน EP 5 ต่อจากเรื่องเดิม\n\n=== เทมเพลต / สไตล์ ===\n(เนื้อหาเทมเพลต)\n\nตอนที่ผ่านมา:\nEP 1: เมฆรั่ว\nEP 2: สะพานรุ้ง\n…\n\nรูปแบบคำตอบ:\n- แต่ละตอนขึ้นต้นด้วย \"# EP <เลข>: <ชื่อตอน>\"\n- 1 บรรทัด = 1 ฉาก: บทพากย์ภาษาไทย | english image prompt"};
   if (p === "/api/ai/idea") return {topic:"หุ่นยนต์เก่าในเมืองร้างพบเมล็ดพันธุ์สุดท้ายของโลก"};
   if (p === "/api/create") { const name = body.idea.replace(/^#\s*(EP\s*\d+\s*:\s*)?/i, "").split("\n")[0].slice(0, 40); MOCK.jobs.unshift({id:"n" + Date.now(), project:name, count:1, done:0, status:"queued", stage:"รอคิว", progress:0, cost_usd:0, logs:[]}); return {project:{name}, episodes: countEps(body.idea) || 1}; }

@@ -37,9 +37,7 @@ DEFAULT_SETTINGS = {
     "image_style": "",
     # --- เสียงพากย์ ---
     "voice_on": True,
-    "tts_engine": "edge",                         # edge (ฟรี) | openrouter (Gemini, เสียเงิน)
-    "openrouter_tts_model": "google/gemini-3.8-flash-tts",
-    "openrouter_voice": "Kore",
+    "tts_engine": "edge",                         # เสียง AI ใช้ Edge ฟรีเท่านั้น (Gemini ตัดออกแล้ว)
     "edge_voice": "th-TH-PremwadeeNeural",
     "edge_rate": "+0%",
     # --- วิดีโอ ---

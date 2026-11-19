@@ -328,7 +328,7 @@ def run_episode(ctx, proj, ep, s, skill):
     work.mkdir(parents=True)
     opts = {"voice": s.get("_voice_full") or "", "voice_map": s.get("voice_map") or {},
             "rate_add": int(str(s.get("edge_rate") or "+0%").replace("%", "") or 0),
-            "tts_model": s.get("openrouter_tts_model"), "mute": not s.get("voice_on", True),
+            "mute": not s.get("voice_on", True),
             "sub_mode": sub_mode(s)}
     from .pipeline import voice_file_path
     own = voice_file_path(s)
