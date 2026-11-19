@@ -11,6 +11,23 @@ from . import core, llm, pipeline
 MAX_LOG = 400
 
 
+_HINTS = [
+    ("cannot open resource", "ไฟล์ฟอนต์ของสกิลหาย → รันเซลล์ใน Colab ใหม่ (ระบบเติมไฟล์ที่ขาดให้) แล้วกด ทำงานที่ค้างต่อ"),
+    ("ModuleNotFoundError", "ขาดไลบรารีที่สกิลต้องใช้ → รันเซลล์ใน Colab ใหม่ (ระบบติดตั้งให้)"),
+    ("No such file or directory", "ไฟล์ของสกิลหาย → รันเซลล์ใน Colab ใหม่ แล้วกด ทำงานที่ค้างต่อ"),
+    ("MemoryError", "หน่วยความจำ Colab ไม่พอ → ลดความคมชัด หรือ Runtime > Restart แล้วรันใหม่"),
+]
+
+
+def _friendly(label, lines):
+    """ข้อความผิดพลาดสั้นๆ: บรรทัดสาเหตุสุดท้าย + วิธีแก้ (รายละเอียดเต็มอยู่ใน log)"""
+    lines = [l for l in lines if l.strip()]
+    last = lines[-1].strip() if lines else "ไม่ทราบสาเหตุ"
+    text = "\n".join(lines[-15:])
+    hint = next((h for k, h in _HINTS if k in text), "")
+    return f"{label} ล้มเหลว: {last[-300:]}" + (f"\nวิธีแก้: {hint}" if hint else "") + "\n(รายละเอียดกด log)"
+
+
 def _acct_usage():
     try:
         a = llm.account()
@@ -83,7 +100,9 @@ class Ctx:
                 time.sleep(0.3)
             th.join(timeout=5)
             if proc.returncode != 0:
-                raise RuntimeError(f"{label} ล้มเหลว:\n" + "\n".join(tail[-12:]))
+                for ln in tail[-15:]:
+                    self.mgr._log(self.job, ln)
+                raise RuntimeError(_friendly(label, tail))
         finally:
             self.mgr.proc = None
 

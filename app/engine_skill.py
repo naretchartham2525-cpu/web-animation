@@ -189,11 +189,35 @@ def _cmd_output(sdir, cmd):
     return _CMD_CACHE[key]
 
 
+# ---------------- ซ่อมไฟล์สกิลที่หาย (เทียบกับสกิลใน repo) ----------------
+REPO_SKILLS = Path(__file__).resolve().parent.parent / "skills"
+
+
+def heal_skill(skill):
+    """คัดลอกไฟล์ที่มีในสกิลของ repo แต่ไม่มีในสกิลที่ใช้งาน (Drive) ไม่ทับไฟล์ที่มีอยู่"""
+    src = REPO_SKILLS / skill["id"]
+    dst = Path(skill["dir"])
+    if not src.is_dir() or src.resolve() == dst.resolve():
+        return []
+    fixed = []
+    for f in src.rglob("*"):
+        if f.is_file() and "__pycache__" not in f.parts:
+            t = dst / f.relative_to(src)
+            if not t.exists():
+                t.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(f, t)
+                fixed.append(str(f.relative_to(src)))
+    return fixed
+
+
 # ---------------- ทำ 1 EP ----------------
 def run_episode(ctx, proj, ep, s, skill):
     name = proj["name"]
     m = manifest(skill)
     skill_dir = Path(skill["dir"])
+    fixed = heal_skill(skill)
+    if fixed:
+        ctx.log(f"เติมไฟล์สกิลที่ขาด {len(fixed)} ไฟล์จากโค้ดล่าสุด: " + ", ".join(fixed[:5]))
     edir = core.ep_dir(name, ep)
     raw = core.read_json(edir / "engine_ep.json")
     if not raw:
