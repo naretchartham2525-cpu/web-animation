@@ -1,4 +1,4 @@
-# Studio Thuean (สตูดิโอเถื่อน): ทำหนังสั้นแอนิเมชัน AI อัตโนมัติ
+# Thuean Studio (สตูดิโอเถื่อน): ทำหนังสั้นแอนิเมชัน AI อัตโนมัติ
 
 รันบน Google Colab + Google Drive · เปิดเว็บผ่าน Cloudflare Tunnel (ฟรี) · เขียนบทและพากย์เสียงผ่าน OpenRouter
 

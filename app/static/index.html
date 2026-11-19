@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Studio Thuean</title>
+<title>Thuean Studio</title>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -361,9 +361,9 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
 </svg>
 
 <div id="dropZone"><div><svg class="i"><use href="#i-clip"/></svg><br>วางไฟล์บทที่นี่<small>บท: .txt .md .json .py · เสียงพากย์ของคุณ: .mp3 .wav .m4a</small></div></div>
-<div id="splash" class="pre"><div class="in2"><span class="reel"><svg class="i"><use href="#i-reel"/></svg></span><b>Studio Thuean</b><div class="strip"><i></i></div><div class="msg" id="splMsg"></div></div></div>
+<div id="splash" class="pre"><div class="in2"><span class="reel"><svg class="i"><use href="#i-reel"/></svg></span><b>Thuean Studio</b><div class="strip"><i></i></div><div class="msg" id="splMsg"></div></div></div>
 <div class="top"><div class="wrap"><div class="bar-top">
-  <div class="brand"><span class="mk"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span>Studio Thuean <small>AI Short Film</small></div>
+  <div class="brand"><span class="mk"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span>Thuean Studio <small>AI Short Film</small></div>
   <span class="credit" id="credit" title="ดูรายละเอียดค่าใช้จ่าย" onclick="openUsage()"></span>
   <button class="nb" onclick="openDrawer()" id="jobsBtn" title="งานที่กำลังทำ"><svg class="i"><use href="#i-reel"/></svg><span class="lbl">กำลังทำ</span><span class="cnt" id="jobCnt">0</span></button>
   <button class="nb" onclick="openClips()" title="คลังคลิปที่เสร็จแล้ว"><svg class="i"><use href="#i-film"/></svg><span class="lbl">คลังคลิป</span><span class="cnt soft" id="clipCnt">0</span></button>
@@ -492,7 +492,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
   <div class="sec" style="margin:16px 0 8px;font-size:15px">ลายน้ำ</div>
   <div class="note" style="margin:-4px 0 14px">สไตล์และเสียงมาจากเทมเพลต · สั่งปรับแต่งเฉพาะครั้งได้ที่ปุ่ม “ปรับแต่ง” ในแถบพิมพ์</div>
   <span class="swl" id="sWm" onclick="this.classList.toggle('on')" style="margin:0 0 14px -5px"><span class="sw"><i></i></span>ใส่ลายน้ำเป็นค่าเริ่มต้น</span>
-  <label class="f"><span>ข้อความลายน้ำ (มุมขวาบน)</span><input class="in" id="sWmText" placeholder="Studio Thuean หรือ @ชื่อช่อง"></label>
+  <label class="f"><span>ข้อความลายน้ำ (มุมขวาบน)</span><input class="in" id="sWmText" placeholder="Thuean Studio หรือ @ชื่อช่อง"></label>
   <div class="note"><svg class="i" style="width:14px;height:14px"><use href="#i-lock"/></svg> API key ไม่ถูกเก็บในเว็บนี้ ใส่ใน Colab Secrets</div>
   <div class="mfoot"><button class="sb" onclick="closeM('mSet')">ปิด</button><button class="sb dark" onclick="saveSettings()"><svg class="i"><use href="#i-check"/></svg>บันทึก</button></div>
 </div></div>
@@ -1287,7 +1287,7 @@ const MOCK = {
   outs: [{project:"มิลิน ช่างปะเมฆเวหา", ep:4, title:"ฝนสีทอง", path:"ep04/final.mp4", srt:"ep04/subs.srt", srt_en:"ep04/subs_en.srt", duration:31},{project:"มิลิน ช่างปะเมฆเวหา", ep:3, title:"เมฆรั่ว", path:"ep03/final.mp4", duration:29},{project:"หลอนกลางดึก", ep:1, title:"เสียงเคาะ", path:"ep01/final.mp4", duration:58}],
   lib: [{id:"t1", title:"บท EP 1–2 มิลิน", text:"# EP 1: เมฆรั่ว\nเช้าวันนั้น ฟ้าเหนือหมู่บ้านมีรูโหว่ | a small hole in the sky\n…"},{id:"t2", title:"ไอเดีย: แมวนักสืบ", text:"แมวดำนักสืบไขคดีขนมหายในร้านเบเกอรี่"}],
 };
-const DEF_SET = {watermark:true, watermark_text:"Studio Thuean", script_engine:"free", visual_source:"ai", quality:"hd", target_seconds:30};
+const DEF_SET = {watermark:true, watermark_text:"Thuean Studio", script_engine:"free", visual_source:"ai", quality:"hd", target_seconds:30};
 function mock(m, path, body) {
   const p = decodeURIComponent(path.split("?")[0]);
   if (p === "/api/skills" && m === "GET") return MOCK.skills;

@@ -361,7 +361,7 @@ def run_episode(ctx, proj, ep, s, skill):
     stage("post")
     w, h = video.resolution("9:16", s.get("quality", "hd"))
     total = video.probe_duration(rawmp4)
-    wm = (s.get("watermark_text") or "Studio Thuean") if s.get("watermark") else ""
+    wm = (s.get("watermark_text") or "Thuean Studio") if s.get("watermark") else ""
     vf = [f"scale={w}:{h}:flags=lanczos"]
     if wm:
         ass, _, _ = video.build_subs([], w, h, s, watermark=wm, total=total, mode="none")

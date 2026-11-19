@@ -44,7 +44,7 @@ DEFAULT_SETTINGS = {
     "aspect": "9:16",
     "quality": "hd",                              # sd (มาตรฐาน 540p) | hd (720p) | fhd (1080p)
     "watermark": True,
-    "watermark_text": "Studio Thuean",
+    "watermark_text": "Thuean Studio",
     "fps": 30,
     "crf": 20,
     "preset": "veryfast",
