@@ -881,7 +881,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { document.q
 let timer;
 $("#grid").innerHTML = Array(4).fill('<div class="card skel"><div class="cover"></div><div class="cfoot"><span></span></div></div>').join("");
 const t0 = Date.now();
-const LOGIN_SPLASH_MS = 10000;  // หน้าโหลดก่อนใส่รหัสผ่าน (มิลลิวินาที)
+const LOGIN_SPLASH_MS = 5000;  // หน้าโหลดก่อนใส่รหัสผ่าน (มิลลิวินาที)
 let needLogin = false, splashDone = false;
 function hideSplash() {
   if (splashDone) return; splashDone = true;
