@@ -573,9 +573,10 @@ function vcRender() {
   const rows = vcSpk.map(p => {
     const v = st.map[p.key] || vcAuto[p.key] || "";
     const auto = !st.map[p.key] && vcAuto[p.key];
-    const c = isEl(v) ? Math.round(p.chars * elRate(model)) : 0; credits += c;
+    const paid = p.paid_chars ?? p.chars, free = p.chars - paid;
+    const c = isEl(v) ? Math.round(paid * elRate(model)) : 0; credits += c;
     const pv = isEl(v) ? (EL.voices.find(x => "eleven:" + x.id === v) || {}).preview : "";
-    return `<div class="vcrow"><div><b>${esc(p.name)}</b><span class="small">${p.count} ประโยค · ${p.chars} ตัวอักษร${c ? ` · ≈ ${c.toLocaleString()} เครดิต` : ""}${auto ? " · เลือกให้อัตโนมัติ" : ""}</span></div>
+    return `<div class="vcrow"><div><b>${esc(p.name)}</b><span class="small">${p.count} ประโยค · ${p.chars} ตัวอักษร${c ? ` · ≈ ${c.toLocaleString()} เครดิต` : ""}${isEl(v) && free ? ` · ข้อความบนจอ ${free} ตัวใช้เสียงฟรี` : ""}${auto ? " · เลือกให้อัตโนมัติ" : ""}</span></div>
       <select class="in" data-k="${esc(p.key)}">${opts(st.map[p.key] || "", vcAuto[p.key] || "")}</select>${pv ? `<audio controls preload="none" src="${pv}"></audio>` : "<span></span>"}</div>`;
   }).join("");
   const sub = EL.sub && EL.sub.left != null ? `เหลือ ${EL.sub.left.toLocaleString()} จาก ${EL.sub.limit.toLocaleString()} เครดิต` : "";

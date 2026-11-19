@@ -6,6 +6,11 @@ import re
 from pathlib import Path
 
 NARRATOR = "ผู้บรรยาย"
+
+
+def is_free_line(ln):
+    """ประโยคที่ตัวละครไม่ได้พูดเอง → ใช้เสียงฟรี (ข้อความบนจอ, เสียงระบบ, ผู้บรรยายของเทมเพลตทั่วไป)"""
+    return ln.get("note") == "ข้อความบนจอ" or ln.get("key") in ("system", NARRATOR)
 # สีหน้า/ท่าในบท → audio tag ของ ElevenLabs v3 (ภาษาอังกฤษในวงเล็บ)
 EMO = {"angry": "angry", "yell": "shouting", "rage": "furious", "sad": "sad", "cry": "crying", "happy": "happy",
        "smug": "smug", "sly": "mischievously", "shock": "surprised", "scared": "scared", "worried": "nervous",
@@ -70,9 +75,11 @@ def speakers(lines, series=None):
     by = {c.get("id"): c for c in (series or {}).get("cast") or []}
     seen = {}
     for ln in lines:
-        s = seen.setdefault(ln["key"], {"key": ln["key"], "name": ln["name"], "count": 0, "chars": 0, "aliases": set()})
+        s = seen.setdefault(ln["key"], {"key": ln["key"], "name": ln["name"], "count": 0, "chars": 0, "paid_chars": 0, "aliases": set()})
         s["count"] += 1
         s["chars"] += len(ln["text"])
+        if not is_free_line(ln):
+            s["paid_chars"] += len(ln["text"])          # เฉพาะบทพูดของตัวละครที่จะใช้เสียงเสียเงินได้
         s["aliases"].update({ln["key"], ln["name"]})
         c = by.get(ln["key"])
         if c:

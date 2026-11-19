@@ -118,7 +118,7 @@ def _gender_age(arch):
 
 def _pool(provider, el_voices, arch):
     g, ages = _gender_age(arch)
-    if provider != "eleven":
+    if provider != "eleven" or arch in ("narrator", "system"):   # ผู้บรรยาย/ระบบ ไม่ใช่ตัวละคร → เสียงฟรีเสมอ
         return list(EDGE_ARCH.get(arch) or EDGE_ARCH["man"])
     def score(v):
         s = 0
@@ -183,7 +183,8 @@ def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, kno
     mem = load_mem(sid)
     pm = mem.setdefault(provider, {"names": {}, "slots": {}})
     out = {k: v for k, v in (project_map or {}).items() if v}
-    valid = (lambda v: v.startswith("eleven:")) if provider == "eleven" else (lambda v: v.startswith("edge:"))
+    _ok = (lambda v: v.startswith("eleven:")) if provider == "eleven" else (lambda v: v.startswith("edge:"))
+    valid = lambda v, arch="": bool(v) and (_ok(v) or (arch in ("narrator", "system") and v.startswith("edge:")))
     used = set(out.values())
     slot_n = {}
     changed = False
@@ -196,11 +197,11 @@ def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, kno
             continue
         name = spk.get("name") or key
         v = pm["names"].get(name)
-        if not v or not valid(v):
+        if not v or not valid(v, arch):
             slots = pm["slots"].setdefault(arch, [])
             i = slot_n.get(arch, 0)
             slot_n[arch] = i + 1
-            v = slots[i] if i < len(slots) and valid(slots[i]) else None
+            v = slots[i] if i < len(slots) and valid(slots[i], arch) else None
             if not v:
                 pool = _pool(provider, el_voices or [], arch)
                 v = next((x for x in pool if x not in used and _fits(x, arch, el_voices)), None)

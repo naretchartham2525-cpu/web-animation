@@ -32,6 +32,23 @@ class PaidVoiceError(BaseException):
 
 
 EMO = {}   # ข้อความที่อ่าน → tag อารมณ์ (ElevenLabs v3/v4)
+FREE = set()   # ข้อความที่ตัวละครไม่ได้พูดเอง (ข้อความบนจอ/เสียงระบบ) → เสียงฟรีเสมอ
+FREE_VOICE = {}   # ข้อความ → (เสียง Edge เดิมของสกิล, pitch)
+
+
+def patch_free_lines(R):
+    """ก่อนสร้างเสียง: จำเสียงฟรีเดิมของสกิลสำหรับข้อความบนจอ/เสียงระบบ (แต่ละตัวละครยังได้เสียงต่างกัน)"""
+    inner = R.voice_track
+
+    def voice_track(segs, cast, *a, **k):
+        orig = FREE_VOICE.get("_orig")
+        for sg in segs:
+            t = R.clean_tts(sg["text"])
+            if t in FREE and orig:
+                v, pitch, _ = orig(cast, sg["who"])
+                FREE_VOICE[t] = (v, pitch)
+        return inner(segs, cast, *a, **k)
+    R.voice_track = voice_track
 
 
 def load_emotions(skill_dir, episode):
@@ -42,6 +59,8 @@ def load_emotions(skill_dir, episode):
         for ln in voicesheet.lines_engine(skill_dir, series, ep):
             if ln.get("emo"):
                 EMO[ln["text"]] = ln["emo"]
+            if voicesheet.is_free_line(ln):
+                FREE.add(ln["text"])
     except Exception as ex:
         print(f"WARNING emotions: {ex}", flush=True)
 
@@ -70,12 +89,20 @@ def patch_voices(R, opts):
         return v, pitch, _rate(rate, rate_add)
 
     R.Cast.voice = voice
+    FREE_VOICE["_orig"] = orig_voice
 
     orig_synth = R._synth_all
     async def synth(items, outdir):
         # ไฟล์ที่มีแล้ว (เสียงที่ผู้ใช้อัป/แคช) ไม่ต้องสร้าง · Edge พัง = เฉพาะประโยคนั้นเงียบ · ElevenLabs พัง = หยุดงาน (กันคลิปเงียบทั้งที่จ่ายเงิน)
         items = [it for it in items if not ((Path(outdir) / f"{it['key']}.mp3").exists()
                                             and (Path(outdir) / f"{it['key']}.mp3").stat().st_size > 800)]
+        free_moved = 0
+        for it in items:
+            if str(it["voice"]).startswith("eleven:") and it["tts"] in FREE:
+                it["voice"], it["pitch"] = FREE_VOICE.get(it["tts"]) or ("th-TH-PremwadeeNeural", "+0Hz")
+                free_moved += 1
+        if free_moved:
+            print(f"voice: {free_moved} on-screen/system lines use free voice", flush=True)
         el = [it for it in items if str(it["voice"]).startswith("eleven:")]
         rest = [it for it in items if not str(it["voice"]).startswith("eleven:")]
         if el:
@@ -168,6 +195,7 @@ def main():
     R = load_engine(a.skill_dir)
     load_emotions(a.skill_dir, a.episode)
     patch_voices(R, opts)
+    patch_free_lines(R)
     patch_own_voice(R, opts)
     captured = patch_subs(R, opts)
     sys.argv = ["render_ep.py", a.episode, "--out", a.out] + (["--mute"] if a.mute or opts.get("mute") else [])

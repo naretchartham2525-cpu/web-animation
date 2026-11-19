@@ -373,7 +373,7 @@ def voice_auto():
         voicecast.save_mem(sid, mem_before)          # แค่ดูตัวอย่าง: ยังไม่จำการเลือกเสียง
     model = b.get("eleven_model") or ((p or {}).get("options") or {}).get("eleven_model") or eleven.DEFAULT_MODEL
     rate = eleven.model_info(model)[2]
-    credits = sum(int(x["chars"] * rate) for x in spk if str(vm.get(x["key"], "")).startswith("eleven:"))
+    credits = sum(int(x.get("paid_chars", x["chars"]) * rate) for x in spk if str(vm.get(x["key"], "")).startswith("eleven:"))
     return ok({"provider": provider, "voice_map": vm, "speakers": spk, "credits": credits, "model": model})
 
 
