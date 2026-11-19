@@ -327,6 +327,7 @@ def run_episode(ctx, proj, ep, s, skill):
     shutil.rmtree(work, ignore_errors=True)
     work.mkdir(parents=True)
     opts = {"voice": s.get("_voice_full") or "", "voice_map": s.get("voice_map") or {},
+            "eleven_model": s.get("eleven_model") or "",
             "rate_add": int(str(s.get("edge_rate") or "+0%").replace("%", "") or 0),
             "mute": not s.get("voice_on", True),
             "sub_mode": sub_mode(s)}

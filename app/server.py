@@ -324,6 +324,40 @@ def _voice_sheets(text=None, tpl=None, project=None, ep=None):
     return out
 
 
+@app.get("/api/eleven")
+def eleven_status():
+    """สถานะ ElevenLabs: มี key ไหม + รายชื่อเสียงในบัญชี + โมเดลที่อ่านไทยได้ + เครดิตคงเหลือ"""
+    from . import eleven
+    out = {"enabled": eleven.enabled(), "models": [{"id": m[0], "name": m[1], "rate": m[2], "tags": m[3]} for m in eleven.MODELS],
+           "default_model": eleven.DEFAULT_MODEL, "voices": [], "sub": None, "error": ""}
+    if out["enabled"]:
+        try:
+            out["voices"] = eleven.voices()
+        except Exception as e:
+            out["error"] = str(e)
+        try:
+            out["sub"] = eleven.subscription()
+        except Exception:
+            pass
+    return ok(out)
+
+
+@app.post("/api/projects/<name>/voices")
+def project_voices(name):
+    """บันทึกเสียงตัวละครของเรื่อง (ใช้ทุก EP ต่อจากนี้)"""
+    p = core.get_project(name)
+    if not p:
+        abort(404)
+    b = request.get_json(force=True)
+    opts = dict(p.get("options") or {})
+    if "voice_map" in b:
+        opts["voice_map"] = {k: v for k, v in (b.get("voice_map") or {}).items() if v}
+    if b.get("eleven_model"):
+        opts["eleven_model"] = b["eleven_model"]
+    core.update_project(name, {"options": opts})
+    return ok({"options": opts})
+
+
 @app.post("/api/voice-sheet")
 def voice_sheet():
     b = request.get_json(force=True)

@@ -138,6 +138,11 @@ def parse_json(text):
         raise LLMError("AI ตอบกลับไม่ใช่ JSON: " + text[:300])
 
 
+# ---------------- ภาพฟรี (Pollinations, ไม่ต้องใช้ key) ----------------
+POLLINATIONS = os.environ.get("POLLINATIONS_BASE", "https://image.pollinations.ai")
+_last_img = [0.0]
+
+
 def free_image(prompt, out_path, width, height, seed=1, model="", retries=4):
     """ฟรีแบบไม่ใช้ key จำกัด ~1 ภาพ/15 วินาที → เว้นจังหวะให้เอง"""
     from urllib.parse import quote

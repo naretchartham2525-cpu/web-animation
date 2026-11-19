@@ -27,9 +27,28 @@ def load_engine(skill_dir):
     return mod
 
 
+class PaidVoiceError(BaseException):
+    """BaseException: ทะลุ try/except ของเอนจิน → งานหยุดพร้อมข้อความ แทนที่จะเรนเดอร์เงียบ"""
+
+
+EMO = {}   # ข้อความที่อ่าน → tag อารมณ์ (ElevenLabs v3/v4)
+
+
+def load_emotions(skill_dir, episode):
+    try:
+        from app import voicesheet
+        ep = json.loads(Path(episode).read_text(encoding="utf-8"))
+        series = json.loads((Path(episode).parent / "series.json").read_text(encoding="utf-8"))
+        for ln in voicesheet.lines_engine(skill_dir, series, ep):
+            if ln.get("emo"):
+                EMO[ln["text"]] = ln["emo"]
+    except Exception as ex:
+        print(f"WARNING emotions: {ex}", flush=True)
+
+
 def patch_voices(R, opts):
     main_voice = str(opts.get("voice") or "")          # เสียงพระเอก/ผู้บรรยาย
-    voice_map = {k: v for k, v in (opts.get("voice_map") or {}).items() if str(v).startswith("edge:")}  # {cast_id: "edge:..."}
+    voice_map = {k: v for k, v in (opts.get("voice_map") or {}).items() if str(v).startswith(("edge:", "eleven:"))}  # {cast_id: "edge:..."|"eleven:<id>"}
     if main_voice.startswith("gemini:"):
         main_voice = ""   # เสียงเสียเงินตัดออกแล้ว
     rate_add = int(opts.get("rate_add") or 0)
@@ -38,25 +57,41 @@ def patch_voices(R, opts):
     def voice(self, cid):
         v, pitch, rate = orig_voice(self, cid)
         c = (self.by.get(cid) or {}) if hasattr(self, "by") else {}
-        chosen = voice_map.get(cid) or voice_map.get(c.get("voice") or "")
+        from app.voicesheet import engine_key
+        chosen = voice_map.get(engine_key(cid, getattr(self, "by", None))) or voice_map.get(cid) or voice_map.get(c.get("voice") or "")
         if not chosen and cid in ("hero", "narration") and main_voice:
             chosen = main_voice
         if chosen and chosen.startswith("edge:"):
             v = chosen[5:]
+        elif chosen and chosen.startswith("eleven:"):
+            v, pitch = chosen, "+0Hz"
         return v, pitch, _rate(rate, rate_add)
 
     R.Cast.voice = voice
 
     orig_synth = R._synth_all
     async def synth(items, outdir):
-        # ไฟล์ที่มีแล้ว (เสียงที่ผู้ใช้อัป/แคช) ไม่ต้องสร้าง · สร้างไม่สำเร็จ = เฉพาะประโยคนั้นเงียบ ไม่ทำให้เสียงทั้งตอนหาย
+        # ไฟล์ที่มีแล้ว (เสียงที่ผู้ใช้อัป/แคช) ไม่ต้องสร้าง · Edge พัง = เฉพาะประโยคนั้นเงียบ · ElevenLabs พัง = หยุดงาน (กันคลิปเงียบทั้งที่จ่ายเงิน)
         items = [it for it in items if not ((Path(outdir) / f"{it['key']}.mp3").exists()
                                             and (Path(outdir) / f"{it['key']}.mp3").stat().st_size > 800)]
-        if items:
+        el = [it for it in items if str(it["voice"]).startswith("eleven:")]
+        rest = [it for it in items if not str(it["voice"]).startswith("eleven:")]
+        if el:
+            from app import eleven
+            model = opts.get("eleven_model") or eleven.DEFAULT_MODEL
+            spent = 0
+            for it in el:
+                try:
+                    spent += eleven.tts(eleven.with_tag(it["tts"], EMO.get(it["tts"], ""), model), it["voice"][7:], model,
+                                        Path(outdir) / f"{it['key']}.mp3")
+                except Exception as ex:
+                    raise PaidVoiceError(str(ex))
+            print(f"voice: ElevenLabs {len(el)} lines · {spent} chars billed ({model})", flush=True)
+        if rest:
             try:
-                await orig_synth(items, outdir)
+                await orig_synth(rest, outdir)
             except Exception as ex:
-                print(f"WARNING AI voice failed for {len(items)} lines (they stay silent): {str(ex)[:150]}", flush=True)
+                print(f"WARNING AI voice failed for {len(rest)} lines (they stay silent): {str(ex)[:150]}", flush=True)
     R._synth_all = synth
 
 
@@ -129,11 +164,16 @@ def main():
     a = ap.parse_args()
     opts = json.loads(a.opts or "{}")
     R = load_engine(a.skill_dir)
+    load_emotions(a.skill_dir, a.episode)
     patch_voices(R, opts)
     patch_own_voice(R, opts)
     captured = patch_subs(R, opts)
     sys.argv = ["render_ep.py", a.episode, "--out", a.out] + (["--mute"] if a.mute or opts.get("mute") else [])
-    R.main()
+    try:
+        R.main()
+    except PaidVoiceError as ex:
+        print(f"ERROR ElevenLabs: {ex}", flush=True)
+        sys.exit(3)
     dump_timeline(captured, a.out)
 
 

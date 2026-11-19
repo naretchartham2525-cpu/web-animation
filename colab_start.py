@@ -70,6 +70,14 @@ if key:
 else:
     print('❌ ไม่พบ OPENROUTER_API_KEY → แถบซ้าย 🔑 Secrets → Add new secret → เปิด Notebook access')
 
+el = _get('ELEVENLABS_API_KEY')
+if el:
+    os.environ['ELEVENLABS_API_KEY'] = el
+    print('✅ ELEVENLABS_API_KEY: โหลดแล้ว (เสียง ElevenLabs ใช้ได้)')
+else:
+    os.environ.pop('ELEVENLABS_API_KEY', None)
+    print('ℹ️ ไม่มี ELEVENLABS_API_KEY → ใช้เสียง Edge ฟรี/ไฟล์เสียงที่อัปเอง (ไม่บังคับ)')
+
 pw = _get('AUTOCLIP_PASSWORD')
 if not pw:
     pw = _s.token_urlsafe(8)

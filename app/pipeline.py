@@ -88,7 +88,9 @@ def _apply_voice(s, v):
     if v.startswith("gemini:"):
         v = ""
     s["_voice_full"] = v
-    if v.startswith("edge:"):
+    if v.startswith("eleven:"):
+        s["_voice"] = v          # ElevenLabs (เสียเครดิต ElevenLabs) · make_tts แยกตาม prefix
+    elif v.startswith("edge:"):
         s["tts_engine"], s["_voice"] = "edge", v[5:]
     elif v:
         s["_voice"] = v
@@ -110,6 +112,8 @@ def effective_settings(proj, skill, ep_opts=None):
                 s["scenes_per_episode"] = int(float(v))
             elif k == "voice":
                 _apply_voice(s, v)
+            elif k == "voice_map" and isinstance(v, dict):
+                s["voice_map"] = {**(s.get("voice_map") or {}), **{a: b for a, b in v.items() if b}}
             elif k == "tweaks":
                 s["_tweaks"] = v          # ชั้นหลังแทนที่ชั้นก่อน (EP ต่อสั่งใหม่ได้)
             elif k == "tweak_text":
@@ -422,8 +426,22 @@ def voice_file_path(s):
     return own_voices(s) or None
 
 
-def make_tts(ctx, text, out, s):
-    voice = s.get("_voice") or ""
+def voice_for(s, speaker=""):
+    """เสียงของผู้พูด: voice_map[ผู้พูด] → เสียงหลักของเรื่อง"""
+    vm = s.get("voice_map") or {}
+    v = vm.get(speaker or "") or (vm.get("ผู้บรรยาย") if not speaker else "") or s.get("_voice") or ""
+    return str(v)
+
+
+def make_tts(ctx, text, out, s, speaker=""):
+    voice = voice_for(s, speaker)
+    if voice.startswith("eleven:"):
+        from . import eleven
+        n = eleven.tts(text, voice[7:], s.get("eleven_model") or eleven.DEFAULT_MODEL, out)
+        ctx.log(f"ElevenLabs: {n} ตัวอักษร" if n else "ElevenLabs: ใช้เสียงที่เคยสร้างไว้ (ไม่เสียเครดิต)")
+        return
+    if voice.startswith("edge:"):
+        voice = voice[5:]
     if voice and not voice.startswith(("th-", "en-")):
         voice = ""  # ไม่ใช่ชื่อเสียง Edge → เสียงฟรีหลัก
     cmd = [sys.executable, "-m", "edge_tts", "--voice", voice or s["edge_voice"],
@@ -556,7 +574,8 @@ def run_episode(ctx, proj_name, ep):
     adir = edir / "audio"
     adir.mkdir(exist_ok=True)
     own = own_voices(s)
-    sig = ("own:" + ",".join(f"{k}={v.name}" for k, v in sorted(own.items()))) if own else f"{s.get('voice_on')}|{s['tts_engine']}|{s.get('_voice', '')}"
+    sig = ("own:" + ",".join(f"{k}={v.name}" for k, v in sorted(own.items()))) if own else \
+        f"{s.get('voice_on')}|{s['tts_engine']}|{s.get('_voice', '')}|{json.dumps(s.get('voice_map') or {}, sort_keys=True)}|{s.get('eleven_model', '')}"
     if state.get("tts_sig") and state["tts_sig"] != sig:
         shutil.rmtree(adir, ignore_errors=True)
         adir.mkdir()
@@ -583,7 +602,7 @@ def run_episode(ctx, proj_name, ep):
             tmp = a.with_suffix(".part.mp3")
             if s.get("voice_on", True):
                 ctx.log(f"พากย์ฉาก {i}/{len(scenes)}")
-                make_tts(ctx, sc["narration"], tmp, s)
+                make_tts(ctx, sc["narration"], tmp, s, (sc.get("speaker") or "").strip())
             else:
                 ctx.run(video.silent_audio_cmd(tmp, video.estimate_speech_seconds(sc["narration"])), "เสียงเงียบ")
             tmp.replace(a)

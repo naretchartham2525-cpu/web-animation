@@ -61,6 +61,11 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .vfrow .small{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vfrow select.in{width:auto;max-width:200px;padding:4px 8px;font-size:12.5px;height:30px}
 .vfchip{align-items:flex-start}
+.vcrow{display:grid;grid-template-columns:1fr 210px auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.vcrow b{font-weight:600}
+.vcrow .small{display:block}
+.vcrow audio{height:28px;width:110px}
+.vcsum{margin:12px 0 4px;padding:10px 12px;border-radius:14px;background:var(--bg2);font-size:13px}
 #splash .msg{font-size:12.5px;color:var(--muted);min-height:18px}
 .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:26px 0 18px}
 .head h1{font-size:38px;margin:0 0 4px;line-height:1.15}
@@ -279,6 +284,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
     <symbol id="i-mute" viewBox="0 0 24 24"><path d="M5 9.5h3l4-3.5v12l-4-3.5H5z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></symbol>
     <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M6 11.5a6 6 0 0 0 12 0M12 17.5v3"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 5.2a3 3 0 0 1 0 5.6M18 19a5 5 0 0 0-2.5-4.3"/></symbol>
     <symbol id="i-clip" viewBox="0 0 24 24"><path d="M20 11.5l-7.8 7.8a5 5 0 0 1-7.1-7.1l8.3-8.3a3.4 3.4 0 0 1 4.8 4.8l-8.3 8.3a1.7 1.7 0 0 1-2.4-2.4l7.6-7.6"/></symbol>
     <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 4s5.5 6 5.5 10a5.5 5.5 0 0 1-11 0C6.5 10 12 4 12 4z"/></symbol>
     <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M5 7h9M18 7h1M5 17h3M12 17h7"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></symbol>
@@ -320,6 +326,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
       <textarea id="idea" rows="1"></textarea>
       <button class="ib" title="คัดลอกคำสั่งให้ Claude ในแชทเขียนบท (ฟรี)" onclick="openPromptNew()" id="promptBtn"><svg class="i"><use href="#i-copy"/></svg></button>
       <button class="ib noeng" title="ให้ AI ช่วยคิดไอเดีย" onclick="aiIdea()" id="ideaBtn"><svg class="i"><use href="#i-spark"/></svg></button>
+      <button class="ib" title="เสียงตัวละคร (Edge ฟรี / ElevenLabs)" onclick="openVoices('main')"><svg class="i"><use href="#i-users"/></svg></button>
       <button class="ib" title="บทพากย์แยกตัวละคร (.txt) สำหรับอัดเสียงเอง" onclick="voiceSheet('main')"><svg class="i"><use href="#i-mic"/></svg></button>
       <button class="ib" title="เปิดไฟล์บท (.txt .json .md .py) หรือไฟล์เสียงพากย์ (.mp3 .wav .m4a) · ลากมาวางที่หน้าเว็บก็ได้" onclick="$('#fileIn').click()"><svg class="i"><use href="#i-clip"/></svg></button>
       <input type="file" id="fileIn" multiple accept=".txt,.md,.json,.py,text/plain,application/json,audio/*,.mp3,.wav,.m4a,.aac,.ogg,.opus,.flac" hidden onchange="loadFiles([...this.files]); this.value=''">
@@ -394,6 +401,11 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
   <h2>ค่าใช้จ่าย AI</h2>
   <div id="uBody"><div class="small">กำลังโหลด…</div></div>
 </div></div>
+<div class="modal" id="mVoices"><div class="mbox" style="max-width:620px">
+  <h2>เสียงตัวละคร</h2>
+  <div id="vcBody"><div class="small">กำลังโหลด…</div></div>
+  <div class="mfoot"><button class="sb" onclick="closeM('mVoices')">ยกเลิก</button><button class="sb dark" onclick="saveVoices()"><svg class="i"><use href="#i-check"/></svg>บันทึก</button></div>
+</div></div>
 <div class="modal" id="mSet"><div class="mbox" style="max-width:560px">
   <h2>ลายน้ำ</h2>
   <div class="note" style="margin:-4px 0 14px">สไตล์และเสียงมาจากเทมเพลต · สั่งปรับแต่งเฉพาะครั้งได้ที่ปุ่ม “ปรับแต่ง” ในแถบพิมพ์</div>
@@ -427,6 +439,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
   </div>
   <div class="vfchip" id="nxVfChip"></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+    <button class="sb" onclick="openVoices('nx')"><svg class="i"><use href="#i-users"/></svg>เสียงตัวละคร</button>
     <button class="sb" onclick="voiceSheet('nx')"><svg class="i"><use href="#i-down"/></svg>บทพากย์แยกตัวละคร</button>
     <button class="sb" onclick="$('#fileIn').click()"><svg class="i"><use href="#i-mic"/></svg>ใส่ไฟล์เสียงพากย์ของฉัน (EP แรกที่วาง)</button>
   </div>
@@ -505,10 +518,71 @@ async function call(fn) { try { return await fn(); } catch (e) { toast(e.message
 // ================= เสียง =================
 const VOICE_GROUPS = [
   ["Edge · ฟรี", [["edge:th-TH-PremwadeeNeural", "เปรมวดี · หญิง"], ["edge:th-TH-AcharaNeural", "อัจฉรา · หญิง"], ["edge:th-TH-NiwatNeural", "นิวัฒน์ · ชาย"]]]];
-const VOICES = [["", "เสียงตามเทมเพลต"]].concat(...VOICE_GROUPS.map(([g, vs]) => vs.map(([v, t]) => [v, `${t} (${g.split(" · ")[1]})`])));
+let EL = {enabled:false, voices:[], models:[], sub:null};
+function elGroup() { return EL.enabled && EL.voices.length ? [["ElevenLabs · เสียเครดิต", EL.voices.map(v => ["eleven:" + v.id, `${v.name}${v.gender ? " · " + (v.gender === "female" ? "หญิง" : v.gender === "male" ? "ชาย" : v.gender) : ""}`])]] : []; }
+let VOICES = [["", "เสียงตามเทมเพลต"]].concat(...VOICE_GROUPS.map(([g, vs]) => vs.map(([v, t]) => [v, `${t} (${g.split(" · ")[1]})`])));
 const voiceOpts = (sel, first) => `<option value="" ${!sel ? "selected" : ""}>${first || VOICES[0][1]}</option>` +
-  VOICE_GROUPS.map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t} · ${g.split(" · ")[1]}</option>`).join("")}</optgroup>`).join("");
-const voiceName = v => (VOICES.find(x => x[0] === v) || [, v])[1];
+  VOICE_GROUPS.concat(elGroup()).map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t} · ${g.split(" · ")[1]}</option>`).join("")}</optgroup>`).join("");
+const voiceName = v => (VOICES.find(x => x[0] === v) || elGroup().flatMap(g => g[1]).find(x => x[0] === v) || [, v])[1];
+async function loadEleven() {
+  try { EL = await api("GET", "/api/eleven"); } catch (e) { EL = {enabled:false, voices:[], models:[]}; }
+  if (EL.error) toast(EL.error, true);
+  renderComposer();
+}
+const isEl = v => String(v || "").startsWith("eleven:");
+const elRate = m => (EL.models.find(x => x.id === m) || {rate:1}).rate;
+// ---------- เสียงตัวละคร ----------
+let VC = {main: {map:{}, model:""}, nx: {map:{}, model:""}}, vcCtx = "main", vcSpk = [];
+async function openVoices(k) {
+  vcCtx = k; openM("mVoices"); $("#vcBody").innerHTML = '<div class="small">กำลังโหลดรายชื่อตัวละครจากบท…</div>';
+  if (!EL.models.length) await loadEleven();
+  let r = null;
+  const text = vfText(k).trim();
+  try {
+    if (text) r = await api("POST", "/api/voice-sheet", {text, template: vfTpl(k), project: k === "nx" ? nx.project : undefined});
+    else if (k === "nx" && nx.lastEp) r = await api("GET", `/api/projects/${enc(nx.project)}/episodes/${nx.lastEp}/voice-sheet`);
+  } catch (e) { $("#vcBody").innerHTML = `<div class="small">${esc(e.message)}</div>`; return; }
+  if (!r) { $("#vcBody").innerHTML = '<div class="small">วางบทในช่องพิมพ์ก่อน ระบบจะดึงรายชื่อตัวละครจากบท</div>'; return; }
+  vcSpk = r[0].speakers;
+  if (k === "nx" && !Object.keys(VC.nx.map).length) {
+    const p = await api("GET", `/api/projects/${enc(nx.project)}`).catch(() => null);
+    VC.nx = {map: {...(p?.options?.voice_map || {})}, model: p?.options?.eleven_model || ""};
+  }
+  vcRender();
+}
+function vcRender() {
+  const st = VC[vcCtx];
+  const el = EL.enabled;
+  const opts = sel => `<option value="" ${!sel ? "selected" : ""}>ตามเสียงหลัก / สกิล</option>` +
+    VOICE_GROUPS.concat(elGroup()).map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t}</option>`).join("")}</optgroup>`).join("");
+  const model = st.model || EL.default_model || "eleven_v4";
+  let credits = 0;
+  const rows = vcSpk.map(p => {
+    const v = st.map[p.key] || "";
+    const c = isEl(v) ? Math.round(p.chars * elRate(model)) : 0; credits += c;
+    const pv = isEl(v) ? (EL.voices.find(x => "eleven:" + x.id === v) || {}).preview : "";
+    return `<div class="vcrow"><div><b>${esc(p.name)}</b><span class="small">${p.count} ประโยค · ${p.chars} ตัวอักษร${c ? ` · ≈ ${c.toLocaleString()} เครดิต` : ""}</span></div>
+      <select class="in" data-k="${esc(p.key)}">${opts(v)}</select>${pv ? `<audio controls preload="none" src="${pv}"></audio>` : "<span></span>"}</div>`;
+  }).join("");
+  const sub = EL.sub && EL.sub.left != null ? `เหลือ ${EL.sub.left.toLocaleString()} จาก ${EL.sub.limit.toLocaleString()} เครดิต` : "";
+  $("#vcBody").innerHTML = `${rows || '<div class="small">ไม่พบตัวละครในบท</div>'}
+    ${el ? `<label class="f" style="margin-top:12px"><span>โมเดล ElevenLabs (อ่านภาษาไทยได้)</span><select class="in" id="vcModel">${EL.models.map(m => `<option value="${m.id}" ${m.id === model ? "selected" : ""}>${m.name}</option>`).join("")}</select></label>` :
+      `<div class="note">ยังไม่ได้เชื่อม ElevenLabs: ใส่ ELEVENLABS_API_KEY ใน Colab Secrets แล้วรันช่องใหม่ (ตอนนี้เลือกได้แค่ Edge ฟรี)</div>`}
+    <div class="vcsum">${credits ? `ใช้ ElevenLabs ≈ <b>${credits.toLocaleString()}</b> เครดิต/EP ${sub ? "· " + sub : ""}<br><span class="small">ประโยคที่เคยสร้างแล้วไม่คิดซ้ำ · tag อารมณ์ใส่ให้อัตโนมัติ (v3/v4)</span>` : "ใช้เสียงฟรีทั้งหมด"}</div>`;
+  $("#vcBody").querySelectorAll("select[data-k]").forEach(x => x.onchange = () => { st.map[x.dataset.k] = x.value; vcRender(); });
+  const m = $("#vcModel"); if (m) m.onchange = () => { st.model = m.value; vcRender(); };
+}
+async function saveVoices() {
+  const st = VC[vcCtx];
+  Object.keys(st.map).forEach(k => { if (!st.map[k]) delete st.map[k]; });
+  if (Object.values(st.map).some(isEl) && !st.model) st.model = EL.default_model || "eleven_v4";
+  if (vcCtx === "nx") {
+    const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/voices`, {voice_map: st.map, eleven_model: st.model}));
+    if (!r) return;
+    toast("บันทึกเสียงตัวละครของเรื่องนี้แล้ว (ใช้ทุก EP ต่อจากนี้)");
+  } else toast("ตั้งเสียงตัวละครแล้ว");
+  closeM("mVoices"); renderComposer();
+}
 
 // ================= state =================
 let T = [], SET = {}, tplSel = null, JOBS = [], OUTS = [], openLog = {}, libPick = false, editingId = null;
@@ -611,7 +685,8 @@ function segSet(id, v) { document.querySelectorAll(id + " button").forEach(b => 
 function autoGrow() { const t = $("#idea"); t.style.height = "auto"; t.style.height = Math.min(180, t.scrollHeight) + "px"; }
 function tplVoice() { return tplSel?.options?.voice || ""; }
 function effVoice() { return O.voice || tplVoice(); }
-function isFree() { return O.mode === "manual" || O.engine === "free"; }
+const usesEl = () => isEl(effVoice()) || Object.values(VC.main.map).some(isEl);
+function isFree() { return (O.mode === "manual" || O.engine === "free") && !usesEl(); }
 function goLabel() { const n = O.mode === "manual" ? countEps($("#idea").value) : 1; $("#goTxt").textContent = `สร้าง${n > 1 ? ` ${n} EP` : ""}${isFree() ? " · ฟรี" : ""}`; }
 function renderComposer() {
   const eng = !!tplSel?.engine;
@@ -803,6 +878,8 @@ function buildOpts() {
   const o = {sub_lang:O.lang, duration:O.dur, quality:O.q, watermark:O.wm, script_engine:O.engine, visual_source:O.vis, preset:O.preset, fps:O.fps, subtitle_font:O.font};
   if (O.voice) o.voice = O.voice;
   const vf = vfOpt("main"); if (vf) o.voice_file = vf;
+  if (Object.keys(VC.main.map).length) o.voice_map = {...VC.main.map};
+  if (VC.main.model) o.eleven_model = VC.main.model;
   const tw = tweakVal($("#twRow")); if (tw.tweaks) o.tweaks = tw.tweaks; if (tw.tweak_text) o.tweak_text = tw.tweak_text;
   if (O.rate) o.edge_rate = (O.rate > 0 ? "+" : "") + O.rate + "%";
   if (O.sub === "s") o.subtitle_size = O.q === "sd" ? 26 : O.q === "hd" ? 36 : 54;
@@ -921,7 +998,7 @@ async function stopAll() { if (!ask("หยุดงานทั้งหมด?
 let nx = null;
 function nextEp(project) {
   const done = OUTS.filter(o => o.project === project).reduce((m, o) => Math.max(m, o.ep), 0);
-  nx = {project, start: done + 1}; closeM("mVid");
+  nx = {project, start: done + 1, lastEp: done}; VC.nx = {map:{}, model:""}; closeM("mVid");
   $("#nxTitle").textContent = `ทำ EP ต่อ · ${project}`;
   $("#nxCount").innerHTML = [1,2,3,4,5].map(n => `<option value="${n}">${n === 1 ? "EP " + nx.start : `EP ${nx.start}–${nx.start + n - 1}`}</option>`).join("");
   $("#nxVoice").innerHTML = voiceOpts("", "เสียงเดิมของเรื่อง");
@@ -1069,7 +1146,7 @@ function mock(m, path, body) {
 }
 
 // ================= เริ่มต้น =================
-$("#lgBtn").onclick = async () => { try { await api("POST", "/api/login", {password:$("#lgPw").value}); closeM("mLogin"); boot(); } catch (e) { toast(e.message, true); } };
+$("#lgBtn").onclick = async () => { try { await api("POST", "/api/login", {password:$("#lgPw").value}); closeM("mLogin"); needLogin = false; boot(); } catch (e) { toast(e.message, true); } };
 $("#lgPw").onkeydown = e => { if (e.key === "Enter") $("#lgBtn").click(); };
 document.querySelectorAll(".modal").forEach(m => m.addEventListener("mousedown", e => { if (e.target === m && m.id !== "mLogin") closeM(m.id); }));
 document.addEventListener("keydown", e => { if (e.key === "Escape") { document.querySelectorAll(".modal.on").forEach(m => m.id !== "mLogin" && closeM(m.id)); closeDrawer(); } });
@@ -1098,6 +1175,7 @@ async function boot() {
     O.dur = +(SET.target_seconds || O.dur);
   } catch (e) { if (/เข้าสู่ระบบ/.test(e.message)) needLogin = true; }
   renderGrid(); renderComposer(); refreshJobs(); refreshCredit(); hideSplash();
+  if (!needLogin && !DEMO) loadEleven();
   clearInterval(timer); timer = setInterval(refreshJobs, 2500);
 }
 boot();
