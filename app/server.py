@@ -104,6 +104,9 @@ def skill_cover(sid):
     sk = core.get_skill(sid)
     if not sk or not sk.get("cover"):
         abort(404)
+    if sk["cover"] == "sample":
+        t = core.sample_cover(sid)
+        return send_file(t, max_age=60) if t else abort(404)
     return send_file(core.SKILLS_DIR / sid / sk["cover"], max_age=3600)
 
 

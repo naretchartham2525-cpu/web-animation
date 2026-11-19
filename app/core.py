@@ -184,6 +184,8 @@ def _skill_from(p):
             if c.stem.lower() == "cover" and c.suffix.lower() in IMAGE_EXT:
                 cover = c.name
                 break
+    if not cover and sample_cover(sid):
+        cover = "sample"   # ยังไม่มี cover.* → ใช้ภาพนิ่งจากคลิปล่าสุดที่ทำด้วยเทมเพลตนี้
     opts = {k: meta[k] for k in SKILL_OPTION_KEYS if meta.get(k)}
     engine = read_json(p / "autoclip.json") if p.is_dir() else None   # สกิลที่มีเอนจินของตัวเอง
     return {
@@ -387,6 +389,24 @@ def add_cost(name, usd):
         p = read_json(d / "project.json") or {}
         p["cost_usd"] = round(float(p.get("cost_usd") or 0) + float(usd), 6)
         write_json(d / "project.json", p)
+
+
+def sample_cover(sid):
+    """ภาพตัวอย่างของเทมเพลต: thumb.jpg ของ EP ล่าสุดที่ทำด้วยเทมเพลตนี้"""
+    best = None
+    if not PROJECTS_DIR.exists():
+        return None
+    for d in PROJECTS_DIR.iterdir():
+        if d.name.startswith("_") or not d.is_dir():
+            continue
+        pj = read_json(d / "project.json") or {}
+        if pj.get("skill") != sid:
+            continue
+        for t in d.glob("ep*/thumb.jpg"):
+            m = t.stat().st_mtime
+            if not best or m > best[0]:
+                best = (m, t)
+    return best[1] if best else None
 
 
 def list_projects():

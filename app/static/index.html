@@ -487,11 +487,13 @@ async function api(method, path, body) {
 async function call(fn) { try { return await fn(); } catch (e) { toast(e.message, true); } }
 
 // ================= เสียง =================
-const VOICES = [["", "เสียงตามเทมเพลต"],
-  ["edge:th-TH-PremwadeeNeural", "เปรมวดี · หญิง (ฟรี)"], ["edge:th-TH-AcharaNeural", "อัจฉรา · หญิง (ฟรี)"], ["edge:th-TH-NiwatNeural", "นิวัฒน์ · ชาย (ฟรี)"],
-  ["gemini:Kore", "Gemini Kore · หญิง (เสียเงิน)"], ["gemini:Aoede", "Gemini Aoede · หญิง (เสียเงิน)"], ["gemini:Leda", "Gemini Leda · หญิง (เสียเงิน)"],
-  ["gemini:Puck", "Gemini Puck · ชาย (เสียเงิน)"], ["gemini:Charon", "Gemini Charon · ชาย (เสียเงิน)"], ["gemini:Orus", "Gemini Orus · ชาย (เสียเงิน)"]];
-const voiceOpts = (sel, first) => VOICES.map(([v, t], i) => `<option value="${v}" ${v === sel ? "selected" : ""}>${i === 0 && first ? first : t}</option>`).join("");
+const VOICE_GROUPS = [
+  ["Edge · ฟรี", [["edge:th-TH-PremwadeeNeural", "เปรมวดี · หญิง"], ["edge:th-TH-AcharaNeural", "อัจฉรา · หญิง"], ["edge:th-TH-NiwatNeural", "นิวัฒน์ · ชาย"]]],
+  ["Gemini · เสียเงิน", [["gemini:Kore", "Kore · หญิง"], ["gemini:Aoede", "Aoede · หญิง"], ["gemini:Leda", "Leda · หญิง"],
+                         ["gemini:Puck", "Puck · ชาย"], ["gemini:Charon", "Charon · ชาย"], ["gemini:Orus", "Orus · ชาย"]]]];
+const VOICES = [["", "เสียงตามเทมเพลต"]].concat(...VOICE_GROUPS.map(([g, vs]) => vs.map(([v, t]) => [v, `${t} (${g.split(" · ")[1]})`])));
+const voiceOpts = (sel, first) => `<option value="" ${!sel ? "selected" : ""}>${first || VOICES[0][1]}</option>` +
+  VOICE_GROUPS.map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t} · ${g.split(" · ")[1]}</option>`).join("")}</optgroup>`).join("");
 const voiceName = v => (VOICES.find(x => x[0] === v) || [, v])[1];
 
 // ================= state =================
@@ -510,7 +512,7 @@ const hashN = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>
 
 // ================= เทมเพลต =================
 function coverStyle(t) {
-  if (t.cover && !DEMO) return `background-image:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.55)),url('/skill-cover/${enc(t.id)}')`;
+  if (t.cover && !DEMO) return `background-image:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.55)),url('/skill-cover/${enc(t.id)}?v=${t.cover === 'sample' ? Date.now() / 6e4 | 0 : 1}')`;
   return `background-image:linear-gradient(160deg,${TONES[hashN(t.id) % TONES.length]})`;
 }
 function renderGrid() {
