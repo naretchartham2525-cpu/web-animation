@@ -12,12 +12,12 @@ from pathlib import Path
 import requests
 
 BASE = os.environ.get("ELEVENLABS_BASE", "https://api.elevenlabs.io/v1")
-MODELS = [  # (model_id, ชื่อในเว็บ, เครดิตต่อตัวอักษรโดยประมาณ, รองรับ [tag] อารมณ์)
-    ("eleven_v4", "Eleven v4 · อารมณ์ดีสุด", 1.0, True),
-    ("eleven_v4_turbo", "Eleven v4 Turbo · ครึ่งราคา", 0.5, True),
-    ("eleven_v3", "Eleven v3", 1.0, True),
+MODELS = [  # (model_id, ชื่อในเว็บ, เครดิตต่อตัวอักษรโดยประมาณ, รองรับ [tag] อารมณ์) · ค่าเริ่มต้น = ถูกสุดที่อ่านไทยได้
+    ("eleven_v4_turbo", "Eleven v4 Turbo · ประหยัดสุด (ค่าเริ่มต้น)", 0.5, True),
+    ("eleven_v4", "Eleven v4 · อารมณ์ดีสุด (2 เท่า)", 1.0, True),
+    ("eleven_v3", "Eleven v3 (2 เท่า)", 1.0, True),
 ]
-DEFAULT_MODEL = "eleven_v4"
+DEFAULT_MODEL = "eleven_v4_turbo"
 NO_THAI = ("eleven_flash", "eleven_turbo_v2", "eleven_multilingual_v2", "eleven_monolingual")
 
 

@@ -568,7 +568,7 @@ function vcRender() {
   const opts = (sel, auto) => `<option value="">อัตโนมัติ${auto ? ": " + esc(prettyVoice(auto)) : ""}</option>` +
     (sel && !all.some(g => g[1].some(x => x[0] === sel)) ? `<option value="${esc(sel)}" selected>${esc(prettyVoice(sel))}</option>` : "") +
     all.map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t}</option>`).join("")}</optgroup>`).join("");
-  const model = st.model || EL.default_model || "eleven_v4";
+  const model = st.model || EL.default_model || "eleven_v4_turbo";
   let credits = 0;
   const rows = vcSpk.map(p => {
     const v = st.map[p.key] || vcAuto[p.key] || "";
@@ -589,7 +589,7 @@ function vcRender() {
 async function saveVoices() {
   const st = VC[vcCtx];
   Object.keys(st.map).forEach(k => { if (!st.map[k]) delete st.map[k]; });
-  if (Object.values(st.map).some(isEl) && !st.model) st.model = EL.default_model || "eleven_v4";
+  if (Object.values(st.map).some(isEl) && !st.model) st.model = EL.default_model || "eleven_v4_turbo";
   if (vcCtx === "nx") {
     const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/voices`, {voice_map: st.map, eleven_model: st.model}));
     if (!r) return;
