@@ -95,7 +95,7 @@ def library(gender="", age="", language="th", page_size=30):
 def add_shared(v):
     """เพิ่มเสียงจาก Voice Library เข้า My Voices (ใช้ช่องเสียงของแผน) → คืน voice_id ในบัญชี"""
     r = requests.post(f"{BASE}/voices/add/{v['owner']}/{v['id']}", headers={**_h(), "Content-Type": "application/json"},
-                      json={"new_name": f"สตูดิโอเถื่อน · {v.get('name') or v['id']}"[:60]}, timeout=30)
+                      json={"new_name": f"Studio Thuean · {v.get('name') or v['id']}"[:60]}, timeout=30)
     if r.status_code != 200:
         raise _err(r)
     return r.json().get("voice_id") or v["id"]

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>สตูดิโอเถื่อน</title>
+<title>Studio Thuean</title>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -32,6 +32,8 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .nb{border:none;background:transparent;border-radius:99px;padding:8px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;color:var(--ink)}
 .nb:hover{background:var(--soft)}
 .nb .cnt{background:var(--ink);color:var(--paper);border-radius:99px;font-size:11.5px;padding:1px 7px;min-width:20px;text-align:center}
+.nb .cnt.soft{background:var(--soft);color:var(--muted)}
+.brand{letter-spacing:-.2px}
 .nb .live{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:pulse 1.2s infinite}
 @keyframes pulse{50%{opacity:.25}}
 .credit{font-size:12.5px;color:var(--muted);padding:4px 10px;border-radius:99px;cursor:pointer;border:1px solid transparent;transition:.2s}
@@ -169,23 +171,24 @@ body.eng .noeng{display:none!important}
 .tarow textarea{flex:1;border:none;outline:none;resize:none;background:none;font-size:15.5px;line-height:1.55;padding:6px 2px;min-height:34px;max-height:180px}
 .ib{border:none;background:none;border-radius:50%;width:34px;height:34px;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
 .ib:hover{background:var(--soft);color:var(--ink)}
-.steps{display:grid;grid-template-columns:auto auto auto minmax(0,1fr) auto;gap:0;padding:10px 0 2px;border-top:1px solid var(--line);margin-top:6px;counter-reset:st}
+.steps{display:grid;grid-template-columns:auto auto auto minmax(0,1fr) auto;gap:0;padding:8px 0 0;border-top:1px solid var(--line);margin-top:6px;counter-reset:st}
 .grp{display:flex;flex-direction:column;gap:6px;padding:0 12px;min-width:0}
-.grp .seg button{padding:5px 10px}
 .subc{width:116px}
 .grp:first-child{padding-left:2px}.grp:last-child{padding-right:2px}
 .grp+.grp{border-left:1px solid var(--line)}
 body.eng .steps{grid-template-columns:auto minmax(0,1fr) auto}
 body.eng .steps .grp:nth-child(3){border-left:none;padding-left:2px}
-.glab{font-size:11px;color:var(--muted);letter-spacing:.3px;white-space:nowrap}
-.glab::before{counter-increment:st;content:counter(st);display:inline-grid;place-items:center;width:15px;height:15px;margin-right:6px;border-radius:50%;border:1px solid #cdbfae;color:var(--ink);font-size:9.5px;font-weight:600;vertical-align:1px}
+.glab{font-size:10.5px;color:var(--muted);letter-spacing:.3px;white-space:nowrap;padding-left:2px}
 .gctl{display:flex;align-items:center;gap:4px}
-.grp .chip,.grp .seg,.grp .dur{height:34px;box-sizing:border-box}
+.grp .chip,.grp .seg,.grp .dur{height:30px;box-sizing:border-box}
+.grp .chip{padding:0 10px;font-size:12.5px}.grp .chip select{font-size:12.5px}.grp .chip svg{width:15px;height:15px}
+.grp .seg{padding:2px}.grp .seg button{padding:3px 10px;font-size:12.5px}
+.grp .stp{width:22px;height:22px}
 .grp .seg{align-items:center}
 .grp .chip{min-width:0}
 .gv .chip{flex:1;justify-content:space-between}
 .grp .chip select{flex:1;min-width:0;max-width:none;text-align:left}
-.ib.sm{width:32px;height:34px;border-radius:12px;background:var(--soft)}
+.ib.sm{width:30px;height:30px;border-radius:50%;background:var(--soft)}.ib.sm svg{width:15px;height:15px}
 .ib.sm:hover{background:var(--bg2);color:var(--ink)}
 .tsep{width:1px;height:20px;background:var(--line);margin:0 4px 7px}
 .actions{display:flex;align-items:center;gap:4px;padding-top:12px;margin-top:10px;border-top:1px solid var(--line)}
@@ -212,8 +215,13 @@ body.eng .steps .grp:nth-child(3){border-left:none;padding-left:2px}
 .stp svg{width:13px;height:13px}
 #durNum{width:30px;font-size:13.5px;border:none;background:transparent;text-align:right;font-weight:500;outline:none;-moz-appearance:textfield}
 #durNum::-webkit-inner-spin-button{display:none}
-.go{background:linear-gradient(180deg,#352d26,#211b16);color:#fffaf3;border:none;border-radius:14px;height:42px;padding:0 16px 0 20px;font-family:Kanit;font-weight:500;font-size:15px;letter-spacing:.2px;box-shadow:0 1px 0 rgba(255,255,255,.12) inset,0 6px 16px rgba(40,25,10,.22);cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
-.go:hover{background:linear-gradient(180deg,#40362e,#2a231d)}
+.go{position:relative;overflow:hidden;isolation:isolate;background:linear-gradient(135deg,#d0633a 0%,#b5532f 45%,#8f3b1f 100%);color:#fff;border:none;border-radius:14px;height:44px;padding:0 18px 0 22px;font-family:Kanit;font-weight:600;font-size:15.5px;letter-spacing:.4px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:10px;box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 8px 22px -6px rgba(181,83,47,.65),0 2px 4px rgba(90,35,15,.2);transition:transform .15s,box-shadow .2s}
+.go::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);transform:translateX(-120%);transition:transform .7s}
+.go:hover{transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 12px 26px -6px rgba(181,83,47,.75),0 2px 4px rgba(90,35,15,.2)}
+.go:hover::after{transform:translateX(120%)}
+.go:active{transform:translateY(0) scale(.98)}
+.go svg{width:17px;height:17px;padding:5px;box-sizing:content-box;border-radius:9px;background:rgba(255,255,255,.18);transition:transform .2s}
+.go:hover svg{transform:translateX(2px)}
 .go:disabled{opacity:.45;cursor:not-allowed}
 .pop{position:absolute;bottom:calc(100% + 10px);right:0;background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:0 14px 40px rgba(60,40,20,.18);padding:16px;width:350px;display:none;z-index:5}
 .pop.on{display:block}
@@ -248,11 +256,25 @@ body.eng .steps .grp:nth-child(3){border-left:none;padding-left:2px}
 .logs{background:#2a241e;color:#eadfd0;border-radius:12px;padding:10px;font-family:ui-monospace,monospace;font-size:12px;max-height:220px;overflow:auto;white-space:pre-wrap;margin-top:8px}
 .err{color:var(--err);font-size:12.5px;margin-top:6px;word-break:break-word}
 .clips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.clh{display:flex;align-items:center;gap:12px;margin-bottom:6px}.clh .x{margin-left:auto}
+.story{margin-top:18px}
+.story .sh{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.story .sh b{font-family:Kanit;font-weight:600;font-size:17px}
+.story .sh .small{flex:1}
+.lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px}
+.lib .clip .th{aspect-ratio:9/16}
+.donel{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;background:var(--soft);margin-bottom:6px;cursor:pointer;font-size:13.5px}
+.donel:hover{background:var(--bg2)}
+.donel .ok{color:var(--ok)}
+.donel span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .clip{background:var(--soft);border-radius:16px;overflow:hidden}
 .clip .th{aspect-ratio:9/12;background:#3a3129 center/cover;cursor:pointer;display:grid;place-items:center;color:#fff;margin:6px 6px 0;border-radius:12px}
 .clip .th svg{width:34px;height:34px;fill:rgba(255,255,255,.9);stroke:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
 .clip .i{padding:8px 10px 10px}
 .clip .t{font-family:Kanit;font-weight:500;font-size:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.setrow{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;cursor:pointer;background:var(--paper)}
+.setrow:hover{background:var(--soft)}
+.setrow b{font-family:Kanit;font-weight:500}
 .sec{font-family:Kanit;font-weight:600;font-size:16px;margin:18px 0 10px}
 .modal{position:fixed;inset:0;background:rgba(42,36,30,.42);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;z-index:80;padding:40px 14px;overflow:auto}
 .modal.on{display:flex}
@@ -339,13 +361,13 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
 </svg>
 
 <div id="dropZone"><div><svg class="i"><use href="#i-clip"/></svg><br>วางไฟล์บทที่นี่<small>บท: .txt .md .json .py · เสียงพากย์ของคุณ: .mp3 .wav .m4a</small></div></div>
-<div id="splash" class="pre"><div class="in2"><span class="reel"><svg class="i"><use href="#i-reel"/></svg></span><b>สตูดิโอเถื่อน</b><div class="strip"><i></i></div><div class="msg" id="splMsg"></div></div></div>
+<div id="splash" class="pre"><div class="in2"><span class="reel"><svg class="i"><use href="#i-reel"/></svg></span><b>Studio Thuean</b><div class="strip"><i></i></div><div class="msg" id="splMsg"></div></div></div>
 <div class="top"><div class="wrap"><div class="bar-top">
-  <div class="brand"><span class="mk"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span>สตูดิโอเถื่อน <small>หนังสั้น AI</small></div>
+  <div class="brand"><span class="mk"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span>Studio Thuean <small>AI Short Film</small></div>
   <span class="credit" id="credit" title="ดูรายละเอียดค่าใช้จ่าย" onclick="openUsage()"></span>
-  <button class="nb" onclick="openLib()" title="คลังข้อความ"><svg class="i"><use href="#i-book"/></svg><span class="lbl">คลังข้อความ</span></button>
-  <button class="nb" onclick="openDrawer()" id="jobsBtn" title="งานของฉัน"><svg class="i"><use href="#i-film"/></svg><span class="lbl">งานของฉัน</span><span class="cnt" id="jobCnt">0</span></button>
-  <button class="nb" onclick="openSettings()" title="ตั้งค่าลายน้ำ"><svg class="i"><use href="#i-gear"/></svg></button>
+  <button class="nb" onclick="openDrawer()" id="jobsBtn" title="งานที่กำลังทำ"><svg class="i"><use href="#i-reel"/></svg><span class="lbl">กำลังทำ</span><span class="cnt" id="jobCnt">0</span></button>
+  <button class="nb" onclick="openClips()" title="คลังคลิปที่เสร็จแล้ว"><svg class="i"><use href="#i-film"/></svg><span class="lbl">คลังคลิป</span><span class="cnt soft" id="clipCnt">0</span></button>
+  <button class="nb" onclick="openSettings()" title="ตั้งค่า"><svg class="i"><use href="#i-gear"/></svg></button>
 </div></div></div>
 
 <div class="wrap">
@@ -394,7 +416,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
       <button class="chip ghost" id="moreBtn" title="ตั้งค่าเพิ่มเติม"><svg class="i"><use href="#i-sliders"/></svg>ตั้งค่าเพิ่ม</button>
       <span class="swl" id="oWm" title="ลายน้ำชื่อช่อง"><span class="sw"><i></i></span>ลายน้ำ</span>
       <div class="gobox"><span class="cost" id="goCost"></span>
-        <button class="go" id="goBtn" onclick="create()"><span id="goTxt">สร้าง</span><svg class="i"><use href="#i-send"/></svg></button></div>
+        <button class="go" id="goBtn" onclick="create()"><span id="goTxt">Create</span><svg class="i"><use href="#i-send"/></svg></button></div>
     </div>
   </div>
   <div class="pop" id="pop">
@@ -412,7 +434,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
 
 <!-- งานของฉัน -->
 <div class="drawer" id="drawer">
-  <div class="dh"><h3>งานของฉัน</h3><div style="display:flex;gap:6px"><button class="sb" onclick="clearJobs()" title="ลบงานที่จบแล้ว/ผิดพลาด/หยุด ออกจากรายการ"><svg class="i"><use href="#i-trash"/></svg>ล้างงานเก่า</button><button class="sb red" onclick="stopAll()"><svg class="i"><use href="#i-stop"/></svg>หยุดทั้งหมด</button><button class="x" onclick="closeDrawer()"><svg class="i"><use href="#i-x"/></svg></button></div></div>
+  <div class="dh"><h3>กำลังทำ</h3><div style="display:flex;gap:6px"><button class="sb" onclick="clearJobs()" title="ลบงานที่จบแล้ว/ผิดพลาด/หยุด ออกจากรายการ"><svg class="i"><use href="#i-trash"/></svg>ล้างงานเก่า</button><button class="sb red" onclick="stopAll()"><svg class="i"><use href="#i-stop"/></svg>หยุดทั้งหมด</button><button class="x" onclick="closeDrawer()"><svg class="i"><use href="#i-x"/></svg></button></div></div>
   <div class="db" id="drawerBody"></div>
 </div>
 
@@ -447,6 +469,13 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
   <div class="mfoot"><button class="sb" onclick="closeM('mLib')">ปิด</button></div>
 </div></div>
 
+<!-- คลังคลิป -->
+<div class="modal" id="mClips"><div class="mbox" style="max-width:980px">
+  <div class="clh"><h2 style="margin:0">คลังคลิป</h2><div class="search" style="margin:0;height:38px;max-width:260px;flex:1"><svg class="i"><use href="#i-search"/></svg><input id="clQ" placeholder="ค้นหาเรื่อง" oninput="renderClips()"></div>
+    <button class="x" onclick="closeM('mClips')"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div id="clBody"></div>
+</div></div>
+
 <!-- ตั้งค่าช่อง -->
 <div class="modal" id="mUsage"><div class="mbox" style="max-width:640px">
   <h2>ค่าใช้จ่าย AI</h2>
@@ -458,10 +487,12 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
   <div class="mfoot"><button class="sb" onclick="closeM('mVoices')">ยกเลิก</button><button class="sb dark" onclick="saveVoices()"><svg class="i"><use href="#i-check"/></svg>บันทึก</button></div>
 </div></div>
 <div class="modal" id="mSet"><div class="mbox" style="max-width:560px">
-  <h2>ลายน้ำ</h2>
+  <h2>ตั้งค่า</h2>
+  <div class="setrow" onclick="closeM('mSet'); openLib()"><svg class="i"><use href="#i-book"/></svg><div><b>คลังข้อความ</b><div class="small">บทหรือไอเดียที่เก็บไว้ใช้ซ้ำ</div></div><svg class="i" style="margin-left:auto;transform:rotate(-90deg)"><use href="#i-chevron"/></svg></div>
+  <div class="sec" style="margin:16px 0 8px;font-size:15px">ลายน้ำ</div>
   <div class="note" style="margin:-4px 0 14px">สไตล์และเสียงมาจากเทมเพลต · สั่งปรับแต่งเฉพาะครั้งได้ที่ปุ่ม “ปรับแต่ง” ในแถบพิมพ์</div>
   <span class="swl" id="sWm" onclick="this.classList.toggle('on')" style="margin:0 0 14px -5px"><span class="sw"><i></i></span>ใส่ลายน้ำเป็นค่าเริ่มต้น</span>
-  <label class="f"><span>ข้อความลายน้ำ (มุมขวาบน)</span><input class="in" id="sWmText" placeholder="สตูดิโอเถื่อน หรือ @ชื่อช่อง"></label>
+  <label class="f"><span>ข้อความลายน้ำ (มุมขวาบน)</span><input class="in" id="sWmText" placeholder="Studio Thuean หรือ @ชื่อช่อง"></label>
   <div class="note"><svg class="i" style="width:14px;height:14px"><use href="#i-lock"/></svg> API key ไม่ถูกเก็บในเว็บนี้ ใส่ใน Colab Secrets</div>
   <div class="mfoot"><button class="sb" onclick="closeM('mSet')">ปิด</button><button class="sb dark" onclick="saveSettings()"><svg class="i"><use href="#i-check"/></svg>บันทึก</button></div>
 </div></div>
@@ -759,7 +790,7 @@ const usesEl = () => !VF.main.length && (Object.values(VC.main.map).some(isEl) |
 function isFree() { return (O.mode === "manual" || O.engine === "free") && !usesEl(); }
 function goLabel() {
   const n = O.mode === "manual" ? countEps($("#idea").value) : 1;
-  $("#goTxt").textContent = `สร้าง${n > 1 ? ` ${n} EP` : ""}`;
+  $("#goTxt").textContent = n > 1 ? `Create ${n} EPs` : "Create";
   const c = [];
   if (usesEl()) c.push(AUTO.provider === "eleven" && AUTO.credits ? `ElevenLabs ≈${AUTO.credits.toLocaleString()} เครดิต` : "ใช้เครดิต ElevenLabs");
   if (O.mode === "ai" && O.engine === "claude" && !tplSel?.engine) c.push("Claude API ≈$0.001/EP");
@@ -1007,7 +1038,7 @@ async function copyPrompt() {
 async function create() {
   const idea = $("#idea").value.trim();
   if (!idea) return toast(O.mode === "ai" ? "พิมพ์ไอเดียก่อน" : "วางบทก่อน (กดปุ่มคัดลอกคำสั่งไปถาม Claude ได้)", true);
-  $("#goBtn").disabled = true; const old = $("#goBtn").innerHTML; $("#goBtn").innerHTML = `<span class="reel">${ic("reel")}</span>กำลังส่ง`;
+  $("#goBtn").disabled = true; const old = $("#goBtn").innerHTML; $("#goBtn").innerHTML = `<span class="reel">${ic("reel")}</span>Sending…`;
   const r = await call(() => api("POST", "/api/create", {idea, mode:O.mode, template: tplSel?.id || "", options: buildOpts()}));
   $("#goBtn").disabled = false; $("#goBtn").innerHTML = old;
   if (r) { toast(`เริ่มสร้าง: ${r.project.name}${r.episodes > 1 ? ` (${r.episodes} EP)` : ""}`); $("#idea").value = ""; VF.main = []; vfRender(); tweakUI($("#twRow"), [], "", twCount); twCount(); renderComposer(); openDrawer(); }
@@ -1028,14 +1059,16 @@ async function refreshJobs() {
   if (!jobs) return;
   JOBS = jobs; OUTS = outs || [];
   const active = jobs.filter(j => ["running","queued","review"].includes(j.status));
-  $("#jobCnt").textContent = active.length;
+  $("#jobCnt").textContent = active.length; $("#clipCnt").textContent = OUTS.length;
+  notifyDone(jobs);
+  if ($("#mClips").classList.contains("on")) renderClips();
   $("#jobsBtn .live")?.remove();
   if (active.length) $("#jobsBtn").insertAdjacentHTML("afterbegin", '<span class="live"></span>');
   if (!$("#drawer").classList.contains("on")) return;
-  $("#drawerBody").innerHTML = `<div class="sec" style="margin-top:0">กำลังทำ / ล่าสุด</div>` +
-    (jobs.length ? jobs.slice(0, 10).map(jobCard).join("") : `<div class="small">ยังไม่มีงาน วางบทแล้วกดสร้าง</div>`) +
-    `<div class="sec">คลิปที่เสร็จแล้ว (${OUTS.length})</div>` +
-    (OUTS.length ? `<div class="clips">${OUTS.map(clipCard).join("")}</div>` : `<div class="small">ยังไม่มีคลิป</div>`);
+  const live = jobs.filter(j => j.status !== "done").slice(0, 10), done = jobs.filter(j => j.status === "done").slice(0, 6);
+  $("#drawerBody").innerHTML = (live.length ? live.map(jobCard).join("") : `<div class="small">ไม่มีงานที่กำลังทำ วางบทแล้วกดสร้าง</div>`) +
+    (done.length ? `<div class="sec">เสร็จแล้ว</div>` + done.map(doneLine).join("") +
+      `<button class="sb" style="width:100%;justify-content:center;margin-top:4px" onclick="closeDrawer(); openClips()">${ic("film")}เปิดคลังคลิป (${OUTS.length})</button>` : "");
   document.querySelectorAll(".logs").forEach(l => l.scrollTop = l.scrollHeight);
 }
 function jobCard(j) {
@@ -1054,6 +1087,36 @@ function jobCard(j) {
     ${openLog[j.id] ? `<div class="logs">${esc((j.logs || []).join("\n"))}</div>` : ""}</div>`;
 }
 const isLatest = o => !OUTS.some(x => x.project === o.project && x.ep > o.ep);
+const jobEp = j => j.review?.ep || j.episode || "";
+function doneLine(j) {
+  return `<div class="donel" onclick="openDone(dq('${q(j.project)}'))"><span class="ok">${ic("check")}</span><span>${esc(j.project)}${jobEp(j) ? " · EP " + jobEp(j) : ""}</span><span class="small">ดูคลิป</span></div>`;
+}
+function openDone(project) {   // เปิดคลิปล่าสุดของเรื่องนั้น
+  const o = OUTS.filter(x => x.project === project).sort((a, b) => b.ep - a.ep)[0];
+  if (o) { closeDrawer(); playClip(o.project, o.ep); } else openClips();
+}
+let seenSt = null;   // แจ้งเมื่องานเพิ่งเสร็จ (ไม่แจ้งงานเก่าตอนเปิดเว็บ)
+function notifyDone(jobs) {
+  const now = Object.fromEntries(jobs.map(j => [j.id, j.status]));
+  if (seenSt) jobs.forEach(j => { if (j.status === "done" && seenSt[j.id] && seenSt[j.id] !== "done") toast(`เสร็จแล้ว: ${j.project}${jobEp(j) ? " · EP " + jobEp(j) : ""} · ดูในคลังคลิป`); });
+  seenSt = now;
+}
+function openClips() { renderClips(); openM("mClips"); }
+function renderClips() {
+  const qq = ($("#clQ").value || "").trim().toLowerCase(), by = {};
+  OUTS.filter(o => !qq || o.project.toLowerCase().includes(qq)).forEach(o => (by[o.project] = by[o.project] || []).push(o));
+  const names = Object.keys(by).sort((a, b) => Math.max(...by[b].map(o => o.mtime || o.ep)) - Math.max(...by[a].map(o => o.mtime || o.ep)));
+  $("#clBody").innerHTML = names.length ? names.map(n => { const eps = by[n].sort((a, b) => a.ep - b.ep), last = eps[eps.length - 1];
+    return `<div class="story"><div class="sh"><b>${esc(n)}</b><span class="small">${eps.length} EP · รวม ${fmtDur(eps.reduce((t, o) => t + (o.duration || 0), 0))}</span>
+      <button class="sb acc" onclick="closeM('mClips'); nextEp(dq('${q(n)}'))">${ic("plus")}ทำ EP ${last.ep + 1} ต่อ</button></div>
+      <div class="lib">${eps.map(libCard).join("")}</div></div>`; }).join("")
+    : `<div class="small" style="padding:30px 0;text-align:center">${qq ? "ไม่พบเรื่องที่ค้นหา" : "ยังไม่มีคลิปที่เสร็จ"}</div>`;
+}
+function libCard(o) {
+  const th = o.thumb && !DEMO ? `background-image:url('/media/${enc(o.project)}/${o.thumb}')` : `background-image:linear-gradient(160deg,${TONES[hashN(o.project) % TONES.length]})`;
+  return `<div class="clip"><div class="th" style="${th}" onclick="playClip(dq('${q(o.project)}'),${o.ep})">${ic("play")}</div>
+    <div class="i"><div class="t">EP ${o.ep}${epTitle(o.title) ? " · " + esc(epTitle(o.title)) : ""}</div><div class="small">${fmtDur(o.duration)}</div></div></div>`;
+}
 function clipCard(o) {
   const th = o.thumb && !DEMO ? `background-image:url('/media/${enc(o.project)}/${o.thumb}')` : `background-image:linear-gradient(160deg,${TONES[hashN(o.project) % TONES.length]})`;
   return `<div class="clip"><div class="th" style="${th}" onclick="playClip(dq('${q(o.project)}'),${o.ep})">${ic("play")}</div>
@@ -1224,7 +1287,7 @@ const MOCK = {
   outs: [{project:"มิลิน ช่างปะเมฆเวหา", ep:4, title:"ฝนสีทอง", path:"ep04/final.mp4", srt:"ep04/subs.srt", srt_en:"ep04/subs_en.srt", duration:31},{project:"มิลิน ช่างปะเมฆเวหา", ep:3, title:"เมฆรั่ว", path:"ep03/final.mp4", duration:29},{project:"หลอนกลางดึก", ep:1, title:"เสียงเคาะ", path:"ep01/final.mp4", duration:58}],
   lib: [{id:"t1", title:"บท EP 1–2 มิลิน", text:"# EP 1: เมฆรั่ว\nเช้าวันนั้น ฟ้าเหนือหมู่บ้านมีรูโหว่ | a small hole in the sky\n…"},{id:"t2", title:"ไอเดีย: แมวนักสืบ", text:"แมวดำนักสืบไขคดีขนมหายในร้านเบเกอรี่"}],
 };
-const DEF_SET = {watermark:true, watermark_text:"สตูดิโอเถื่อน", script_engine:"free", visual_source:"ai", quality:"hd", target_seconds:30};
+const DEF_SET = {watermark:true, watermark_text:"Studio Thuean", script_engine:"free", visual_source:"ai", quality:"hd", target_seconds:30};
 function mock(m, path, body) {
   const p = decodeURIComponent(path.split("?")[0]);
   if (p === "/api/skills" && m === "GET") return MOCK.skills;
