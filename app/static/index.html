@@ -94,7 +94,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .card.sel .use{background:var(--acc);color:#fff;border-color:var(--acc)}
 .empty{color:var(--muted);text-align:center;padding:50px 10px;grid-column:1/-1}
 .composer{position:fixed;left:0;right:0;bottom:16px;z-index:40;pointer-events:none;padding:0 16px}
-.cbox{pointer-events:auto;max-width:960px;margin:0 auto;background:rgba(255,253,249,.95);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:26px;box-shadow:0 2px 6px rgba(60,40,20,.06),0 18px 50px rgba(60,40,20,.16);padding:8px 12px 10px 16px;position:relative}
+.cbox{pointer-events:auto;max-width:940px;margin:0 auto;background:rgba(255,253,249,.97);backdrop-filter:blur(16px);border:1px solid rgba(120,95,70,.16);border-radius:22px;box-shadow:0 1px 2px rgba(60,40,20,.06),0 12px 40px rgba(60,40,20,.14);padding:10px 14px 12px 18px;position:relative}
 .composer.min .cbody{display:none}
 /* ---- 25 · ภาพเคลื่อนไหวขณะโหลด: ม้วนฟิล์มหมุน + โครงการ์ดระยิบ ---- */
 .reel{display:inline-block;animation:spin 1.6s linear infinite}
@@ -169,37 +169,51 @@ body.eng .noeng{display:none!important}
 .tarow textarea{flex:1;border:none;outline:none;resize:none;background:none;font-size:15.5px;line-height:1.55;padding:6px 2px;min-height:34px;max-height:180px}
 .ib{border:none;background:none;border-radius:50%;width:34px;height:34px;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
 .ib:hover{background:var(--soft);color:var(--ink)}
-.steps{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:8px;padding:8px 0 2px;border-top:1px solid var(--line);margin-top:4px;counter-reset:st}
-.grp{display:flex;flex-direction:column;gap:5px;padding:6px 8px 8px;border-radius:16px;background:rgba(240,232,220,.35)}
-.glab{font-size:11.5px;color:var(--muted);padding-left:4px;letter-spacing:.2px}
-.glab::before{counter-increment:st;content:counter(st);display:inline-grid;place-items:center;width:16px;height:16px;margin-right:6px;border-radius:50%;background:var(--ink);color:var(--paper);font-size:10px;font-weight:600}
-.gctl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.grp .chip,.grp .seg,.grp .dur{height:36px;box-sizing:border-box}
+.steps{display:grid;grid-template-columns:auto auto auto minmax(0,1fr) auto;gap:0;padding:10px 0 2px;border-top:1px solid var(--line);margin-top:6px;counter-reset:st}
+.grp{display:flex;flex-direction:column;gap:6px;padding:0 12px;min-width:0}
+.grp .seg button{padding:5px 10px}
+.subc{width:116px}
+.grp:first-child{padding-left:2px}.grp:last-child{padding-right:2px}
+.grp+.grp{border-left:1px solid var(--line)}
+body.eng .steps{grid-template-columns:auto minmax(0,1fr) auto}
+body.eng .steps .grp:nth-child(3){border-left:none;padding-left:2px}
+.glab{font-size:11px;color:var(--muted);letter-spacing:.3px;white-space:nowrap}
+.glab::before{counter-increment:st;content:counter(st);display:inline-grid;place-items:center;width:15px;height:15px;margin-right:6px;border-radius:50%;border:1px solid #cdbfae;color:var(--ink);font-size:9.5px;font-weight:600;vertical-align:1px}
+.gctl{display:flex;align-items:center;gap:4px}
+.grp .chip,.grp .seg,.grp .dur{height:34px;box-sizing:border-box}
 .grp .seg{align-items:center}
-.grp .chip select{max-width:230px}
-.grp .chip{flex:1;min-width:0;justify-content:space-between}
-.grp .chip select{flex:1;min-width:0;text-align:left}
-.ib.sm{width:32px;height:32px;background:var(--soft)}
+.grp .chip{min-width:0}
+.gv .chip{flex:1;justify-content:space-between}
+.grp .chip select{flex:1;min-width:0;max-width:none;text-align:left}
+.ib.sm{width:32px;height:34px;border-radius:12px;background:var(--soft)}
 .ib.sm:hover{background:var(--bg2);color:var(--ink)}
 .tsep{width:1px;height:20px;background:var(--line);margin:0 4px 7px}
-.actions{display:flex;align-items:center;gap:6px;padding-top:8px}
+.actions{display:flex;align-items:center;gap:4px;padding-top:12px;margin-top:10px;border-top:1px solid var(--line)}
+.chip.ghost{background:none;color:var(--muted)}
+.chip.ghost:hover,.chip.ghost.on{background:var(--soft);color:var(--ink)}
+.actions .swl{color:var(--muted);font-size:13px;margin-left:4px}
+.actions .swl.on{color:var(--ink)}
+.actions .sw{width:36px;height:20px}.actions .sw i{width:14px;height:14px}.actions .swl.on .sw i{transform:translateX(16px)}
+.gobox{margin-left:auto;display:flex;align-items:center;gap:12px}
+.cost{font-size:12.5px;color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.cost::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.cost.paid{color:#8a5a12}.cost.paid::before{background:var(--warn)}
 .seg{display:inline-flex;background:var(--soft);border-radius:99px;padding:3px;gap:2px}
-.seg button{border:none;background:none;border-radius:99px;padding:6px 12px;cursor:pointer;color:var(--muted);white-space:nowrap;font-size:13.5px}
+.seg button{border:none;background:none;border-radius:99px;padding:5px 12px;cursor:pointer;color:var(--muted);white-space:nowrap;font-size:13px}
 .seg button.on{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(60,40,20,.15);font-weight:500}
-.chip{border:none;background:var(--soft);border-radius:99px;padding:7px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:13.5px;color:var(--ink)}
+.chip{border:none;background:var(--soft);border-radius:99px;padding:7px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:13px;color:var(--ink)}
 .chip:hover{background:var(--bg2)}
 .chip.on{background:var(--ink);color:var(--paper)}
-.chip select{border:none;background:none;outline:none;cursor:pointer;padding:0;font-size:13.5px;max-width:150px;color:inherit}
-.dur{display:inline-flex;align-items:center;gap:8px;background:var(--soft);border-radius:99px;padding:5px 12px;font-size:13.5px}
-.dur input[type=range]{width:110px;accent-color:var(--ink)}
+.chip select{border:none;background:none;outline:none;cursor:pointer;padding:0;font-size:13px;max-width:150px;color:inherit}
+.dur{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border-radius:99px;padding:0 5px;font-size:13px}
 .dur b{font-weight:500;min-width:52px;text-align:right}
 .stp{border:none;background:var(--paper);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;cursor:pointer;padding:0;box-shadow:0 1px 2px rgba(60,40,20,.15)}
 .stp:hover{background:var(--bg2)}
 .stp svg{width:13px;height:13px}
-#durNum{width:46px;border:none;background:transparent;text-align:right;font-weight:500;outline:none;-moz-appearance:textfield}
+#durNum{width:30px;font-size:13.5px;border:none;background:transparent;text-align:right;font-weight:500;outline:none;-moz-appearance:textfield}
 #durNum::-webkit-inner-spin-button{display:none}
-.go{margin-left:auto;background:var(--ink);color:var(--paper);border:none;border-radius:99px;padding:10px 16px 10px 20px;font-family:Kanit;font-weight:500;font-size:16px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
-.go:hover{background:#3b332b}
+.go{background:linear-gradient(180deg,#352d26,#211b16);color:#fffaf3;border:none;border-radius:14px;height:42px;padding:0 16px 0 20px;font-family:Kanit;font-weight:500;font-size:15px;letter-spacing:.2px;box-shadow:0 1px 0 rgba(255,255,255,.12) inset,0 6px 16px rgba(40,25,10,.22);cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+.go:hover{background:linear-gradient(180deg,#40362e,#2a231d)}
 .go:disabled{opacity:.45;cursor:not-allowed}
 .pop{position:absolute;bottom:calc(100% + 10px);right:0;background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:0 14px 40px rgba(60,40,20,.18);padding:16px;width:350px;display:none;z-index:5}
 .pop.on{display:block}
@@ -271,13 +285,13 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
   .cover .ttl{font-size:15px}
   .composer{bottom:8px;padding:0 8px}
   .lbl,.credit,.brand small{display:none}
-  .dur input[type=range]{width:80px}
   .go{flex:1;justify-content:center}
-  .steps{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr 1fr;row-gap:10px}
+  .grp{padding:0 8px}.grp+.grp{border-left:none}.gv{grid-column:1/-1;order:9}.subc{width:auto}
+  .actions{flex-wrap:wrap}.gobox{width:100%;justify-content:space-between}
   .tarow{flex-wrap:wrap}
   .tarow textarea{flex:1 1 100%}
   .tarow .ib:first-of-type{margin-left:auto}
-  .grp{padding:5px 7px 7px}
   .two{grid-template-columns:1fr}
   .pop{width:auto;left:0;right:0}
 }
@@ -363,22 +377,24 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
     <div class="tweakrow" id="twRow"></div>
     <div class="steps">
       <div class="grp noeng"><span class="glab">บท</span>
-        <div class="seg" id="segMode"><button data-v="manual" class="on">วางบท (ฟรี)</button><button data-v="ai">AI เขียนบท</button></div></div>
-      <div class="grp"><span class="glab">ความยาว · ความคมชัด</span><div class="gctl">
-        <div class="dur noeng" title="ความยาวต่อ EP (กดค้างเพื่อเพิ่ม/ลดต่อเนื่อง)"><button class="stp" data-d="-1" aria-label="ลด 1 วินาที"><svg class="i"><use href="#i-minus"/></svg></button><input type="range" id="oDur" min="5" max="180" step="1"><button class="stp" data-d="1" aria-label="เพิ่ม 1 วินาที"><svg class="i"><use href="#i-plus"/></svg></button><input type="number" id="durNum" min="5" max="600" step="1" aria-label="วินาที"><span class="small">วิ</span></div>
-        <div class="seg" id="segQ"><button data-v="sd">มาตรฐาน</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div></div></div>
-      <div class="grp"><span class="glab">เสียง</span><div class="gctl">
+        <div class="seg" id="segMode"><button data-v="manual" class="on">วางบท</button><button data-v="ai">AI เขียน</button></div></div>
+      <div class="grp noeng"><span class="glab">ความยาว / EP</span>
+        <div class="dur" title="ความยาวต่อ EP (กดค้างเพื่อเพิ่ม/ลดต่อเนื่อง)"><button class="stp" data-d="-1" aria-label="ลด 1 วินาที"><svg class="i"><use href="#i-minus"/></svg></button><input type="number" id="durNum" min="5" max="600" step="1" aria-label="วินาที"><span class="small">วิ</span><button class="stp" data-d="1" aria-label="เพิ่ม 1 วินาที"><svg class="i"><use href="#i-plus"/></svg></button></div></div>
+      <div class="grp"><span class="glab">ความคมชัด</span>
+        <div class="seg" id="segQ"><button data-v="sd">SD</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div></div>
+      <div class="grp gv"><span class="glab">เสียง</span><div class="gctl">
         <label class="chip" title="เสียงพากย์"><svg class="i"><use href="#i-mic"/></svg><select id="oVoice"></select></label>
         <button class="ib sm" title="เสียงตัวละคร: ดู/เปลี่ยนเสียงรายตัว" onclick="openVoices('main')"><svg class="i"><use href="#i-users"/></svg></button>
         <button class="ib sm" title="ดาวน์โหลดบทพากย์แยกตัวละคร (.txt) สำหรับอัดเสียงเอง" onclick="voiceSheet('main')"><svg class="i"><use href="#i-down"/></svg></button></div></div>
-      <div class="grp"><span class="glab">ซับ · ลายน้ำ</span><div class="gctl">
-        <label class="chip" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ซับไทย</option><option value="en">ซับอังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label>
-        <span class="swl" id="oWm" title="ลายน้ำชื่อช่อง"><span class="sw"><i></i></span>ลายน้ำ</span></div></div>
+      <div class="grp"><span class="glab">ซับ</span>
+        <label class="chip subc" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ไทย</option><option value="en">อังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label></div>
     </div>
     <div class="actions">
-      <button class="chip noeng" id="twBtn" title="สั่งปรับแต่งเพิ่มเติมครั้งนี้ (ไม่เปลี่ยนเทมเพลต)"><svg class="i"><use href="#i-wand"/></svg>ปรับแต่ง</button>
-      <button class="chip" id="moreBtn" title="ตั้งค่าเพิ่มเติม"><svg class="i"><use href="#i-sliders"/></svg>ตั้งค่าเพิ่ม</button>
-      <button class="go" id="goBtn" onclick="create()"><span id="goTxt">สร้าง</span><svg class="i"><use href="#i-send"/></svg></button>
+      <button class="chip ghost noeng" id="twBtn" title="สั่งปรับแต่งเพิ่มเติมครั้งนี้ (ไม่เปลี่ยนเทมเพลต)"><svg class="i"><use href="#i-wand"/></svg>ปรับแต่ง</button>
+      <button class="chip ghost" id="moreBtn" title="ตั้งค่าเพิ่มเติม"><svg class="i"><use href="#i-sliders"/></svg>ตั้งค่าเพิ่ม</button>
+      <span class="swl" id="oWm" title="ลายน้ำชื่อช่อง"><span class="sw"><i></i></span>ลายน้ำ</span>
+      <div class="gobox"><span class="cost" id="goCost"></span>
+        <button class="go" id="goBtn" onclick="create()"><span id="goTxt">สร้าง</span><svg class="i"><use href="#i-send"/></svg></button></div>
     </div>
   </div>
   <div class="pop" id="pop">
@@ -558,7 +574,7 @@ function elGroup() { return EL.enabled && EL.voices.length ? [["ElevenLabs · �
 let VOICES = [["", "เสียงตามเทมเพลต"]].concat(...VOICE_GROUPS.map(([g, vs]) => vs.map(([v, t]) => [v, `${t} (${g.split(" · ")[1]})`])));
 // ช่องเสียงหลัก: ElevenLabs รวมเป็นตัวเลือกเดียว (เสียงรายตัวละครดู/เปลี่ยนในปุ่ม 👥)
 const voiceOpts = (sel, first) => `<option value="" ${!sel ? "selected" : ""}>${first || VOICES[0][1]}</option>` +
-  (EL.enabled ? `<option value="eleven:auto" ${sel === "eleven:auto" || isEl(sel) ? "selected" : ""}>ElevenLabs · เลือกเสียงให้อัตโนมัติ · เสียเครดิต</option>` : "") +
+  (EL.enabled ? `<option value="eleven:auto" ${sel === "eleven:auto" || isEl(sel) ? "selected" : ""}>ElevenLabs · อัตโนมัติ</option>` : "") +
   VOICE_GROUPS.map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t} · ${g.split(" · ")[1]}</option>`).join("")}</optgroup>`).join("");
 const voiceName = v => (VOICES.find(x => x[0] === v) || elGroup().flatMap(g => g[1]).find(x => x[0] === v) || [, v])[1];
 async function loadEleven() {
@@ -738,22 +754,27 @@ function segSet(id, v) { document.querySelectorAll(id + " button").forEach(b => 
 function autoGrow() { const t = $("#idea"); t.style.height = "auto"; t.style.height = Math.min(180, t.scrollHeight) + "px"; }
 function tplVoice() { return tplSel?.options?.voice || ""; }
 function effVoice() { return O.voice || tplVoice(); }
-const usesEl = () => Object.values(VC.main.map).some(isEl) || (AUTO.provider === "eleven" && AUTO.credits > 0 && !VF.main.length);
+const elVoice = () => { const v = effVoice(); return v === "eleven:auto" || isEl(v); };
+const usesEl = () => !VF.main.length && (Object.values(VC.main.map).some(isEl) || elVoice() || (AUTO.provider === "eleven" && AUTO.credits > 0));
 function isFree() { return (O.mode === "manual" || O.engine === "free") && !usesEl(); }
 function goLabel() {
   const n = O.mode === "manual" ? countEps($("#idea").value) : 1;
-  const el = AUTO.provider === "eleven" && AUTO.credits && !VF.main.length ? ` · ≈${AUTO.credits.toLocaleString()} เครดิตเสียง` : "";
-  $("#goTxt").textContent = `สร้าง${n > 1 ? ` ${n} EP` : ""}${isFree() ? " · ฟรี" : el}`;
+  $("#goTxt").textContent = `สร้าง${n > 1 ? ` ${n} EP` : ""}`;
+  const c = [];
+  if (usesEl()) c.push(AUTO.provider === "eleven" && AUTO.credits ? `ElevenLabs ≈${AUTO.credits.toLocaleString()} เครดิต` : "ใช้เครดิต ElevenLabs");
+  if (O.mode === "ai" && O.engine === "claude" && !tplSel?.engine) c.push("Claude API ≈$0.001/EP");
+  $("#goCost").textContent = c.length ? c.join(" · ") : "ฟรี";
+  $("#goCost").classList.toggle("paid", !!c.length);
 }
 function renderComposer() {
   const eng = !!tplSel?.engine;
   document.body.classList.toggle("eng", eng);
   if (eng) { O.mode = "manual"; if (O.vis !== "ai") O.vis = "ai"; }
   segSet("#segMode", O.mode); segSet("#segQ", O.q); segSet("#segEngine", O.engine); segSet("#segVis", O.vis); segSet("#segPreset", O.preset); segSet("#segFps", O.fps); segSet("#segSub", O.sub);
-  $("#oDur").value = Math.min(180, O.dur); $("#durNum").value = O.dur;
+  $("#durNum").value = O.dur;
   $("#oRate").value = O.rate; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%";
   $("#oFont").value = O.font; $("#oSub").value = O.lang;
-  $("#oVoice").innerHTML = voiceOpts(O.voice, tplVoice() === "eleven:auto" ? "ตามเทมเพลต · ElevenLabs" : tplSel?.engine ? "เสียงตามสกิล · Edge ฟรี" : tplSel && tplVoice() ? `ตามเทมเพลต · ${voiceName(tplVoice()).split(" ·")[0]}` : "Edge ฟรี · เลือกให้อัตโนมัติ");
+  $("#oVoice").innerHTML = voiceOpts(O.voice, tplVoice() === "eleven:auto" ? "ตามเทมเพลต · ElevenLabs" : tplSel?.engine ? "เสียงตามสกิล · Edge ฟรี" : tplSel && tplVoice() ? `ตามเทมเพลต · ${voiceName(tplVoice()).split(" ·")[0]}` : "Edge ฟรี · อัตโนมัติ");
   $("#oWm").classList.toggle("on", O.wm);
   $("#pickTpl").innerHTML = tplSel ? `<span class="pick">เทมเพลต <b>${esc(tplSel.name)}</b><button onclick="useTemplate(dq('${q(tplSel.id)}'))" title="เลิกใช้">${ic("x")}</button></span>`
     : `<span class="hint">เลือกเทมเพลตด้านบน หรือสร้างแบบอิสระ</span>`;
@@ -771,11 +792,10 @@ function renderComposer() {
   autoGrow();
 }
 ["#segMode:mode","#segQ:q","#segEngine:engine","#segVis:vis","#segPreset:preset","#segFps:fps","#segSub:sub"].forEach(x => { const [id, k] = x.split(":"); segBind(id, k); });
-$("#oDur").oninput = e => { O.dur = +e.target.value; $("#durNum").value = O.dur; };
 $("#durNum").onchange = e => { O.dur = Math.max(5, Math.min(600, Math.round(+e.target.value || 30))); renderComposer(); };
 document.querySelectorAll(".stp").forEach(b => {
   let t1, t2;
-  const step = () => { O.dur = Math.max(5, Math.min(600, O.dur + +b.dataset.d)); $("#oDur").value = Math.min(180, O.dur); $("#durNum").value = O.dur; };
+  const step = () => { O.dur = Math.max(5, Math.min(600, O.dur + +b.dataset.d)); $("#durNum").value = O.dur; };
   const stop = () => { clearTimeout(t1); clearInterval(t2); if (t1) { t1 = 0; renderComposer(); } };
   b.onpointerdown = e => { e.preventDefault(); step(); t1 = setTimeout(() => { t2 = setInterval(step, 70); }, 380); };
   b.onpointerup = b.onpointerleave = b.onpointercancel = stop;
