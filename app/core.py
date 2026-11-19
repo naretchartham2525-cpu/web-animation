@@ -34,7 +34,7 @@ DEFAULT_SETTINGS = {
     # --- ภาพ ---
     "visual_source": "ai",                        # ai (Pollinations ฟรี) | drive | none
     "image_model": "",                            # ว่าง = ค่าเริ่มต้นของ Pollinations
-    "image_style": "anime style, vibrant colors, soft lighting, detailed background",
+    "image_style": "",
     # --- เสียงพากย์ ---
     "voice_on": True,
     "tts_engine": "edge",                         # edge (ฟรี) | openrouter (Gemini, เสียเงิน)

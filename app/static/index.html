@@ -357,10 +357,10 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
   </div>
   <div class="note" id="tSubNote" style="display:none;margin:-6px 0 12px">เทมเพลตมีเอนจิน: ซับมาจากเอนจินของสกิล (ภาษาไทย) ซับอังกฤษยังไม่รองรับ</div>
   <div id="tStyleBox">
-    <span class="swl" id="tStyleOn" onclick="this.classList.toggle('on'); tStyleUI()" style="margin:0 0 10px -5px"><span class="sw"><i></i></span>เพิ่มสไตล์ภาพของระบบ (ปิด = ใช้ตามสกิล/บทอย่างเดียว)</span>
+    <span class="swl" id="tStyleOn" onclick="this.classList.toggle('on'); tStyleUI()" style="margin:0 0 10px -5px"><span class="sw"><i></i></span>เพิ่มองค์ประกอบภาพของระบบ (ปิด = ใช้ตามสกิล/บทอย่างเดียว)</span>
     <div id="tStyleWrap" style="display:none">
       <div class="tweakrow on" id="tStylePre" style="margin-bottom:10px;border-top:0"></div>
-      <label class="f"><span>คำสไตล์ (ภาษาอังกฤษ · แก้เองได้)</span><input class="in" id="tStyle" placeholder="เลือกจากปุ่มด้านบน หรือพิมพ์เอง"></label>
+      <label class="f"><span>คำเสริมภาพ (ภาษาอังกฤษ · เลือกได้หลายอัน · ไม่เปลี่ยนลายเส้นตัวละครของสกิล)</span><input class="in" id="tStyle" placeholder="เลือกจากปุ่มด้านบน หรือพิมพ์เอง"></label>
     </div>
   </div>
   <label class="f"><span>สกิล / คำสั่งเขียนบท (วางสกิลของคุณตรงนี้)</span><textarea class="in" id="tContent" style="min-height:200px" placeholder="# สไตล์&#10;- โทน...&#10;## ตัวละคร&#10;- ...&#10;## กฎบทพากย์&#10;- ประโยคสั้น ไม่มีวงเล็บ"></textarea></label>
@@ -537,26 +537,29 @@ function useTemplate(id) {
   if (tplSel) { const o = t.options || {}; if (o.duration && !t.engine) O.dur = +o.duration; if (o.quality) O.q = o.quality; if (o.sub_lang && !t.engine) O.lang = o.sub_lang; O.voice = ""; toast("ใช้เทมเพลต: " + t.name); }
   showComposer(); renderGrid(); renderComposer(); $("#idea").focus();
 }
-// สไตล์ภาพสำเร็จรูป (ต่อท้ายคำสั่งภาพทุกฉาก)
+// องค์ประกอบเสริมให้ภาพน่าสนใจ (ไม่เปลี่ยนลายเส้น/ตัวละครของสกิล) · เลือกได้หลายอัน
 const STYLE_PRESETS = [
-  ["อนิเมะสดใส", "anime key visual, vibrant colors, soft cinematic lighting, detailed background"],
-  ["การ์ตูน 3D", "3D animated movie style, soft global illumination, expressive characters, smooth shading"],
-  ["สีน้ำนิทาน", "hand-painted watercolor storybook illustration, warm pastel palette, soft edges"],
-  ["หนังภาพยนตร์", "cinematic film still, shallow depth of field, dramatic rim light, 35mm film grain"],
-  ["การ์ตูนแบน", "flat vector illustration, bold clean outlines, limited color palette, minimal shading"],
-  ["คอมิกส์", "comic book art, bold ink lines, halftone shading, dynamic composition"],
-  ["มืด/หลอน", "dark moody atmosphere, low-key lighting, fog, desaturated colors, eerie"],
-  ["อบอุ่นละมุน", "cozy warm golden hour light, soft bokeh, gentle colors"],
+  ["แสงสวย", "cinematic lighting, soft rim light"],
+  ["สีสดคมชัด", "vibrant color grading, crisp contrast"],
+  ["มุมกล้องน่าสนใจ", "dynamic camera angle, strong composition"],
+  ["ฉากละเอียด", "richly detailed background, sense of depth"],
+  ["โฟกัสตัวละคร", "shallow depth of field, soft blurred background"],
+  ["บรรยากาศ", "atmospheric haze, volumetric light rays"],
+  ["อารมณ์ดราม่า", "dramatic shadows, moody contrast"],
+  ["แสงเย็นทอง", "warm golden hour light"],
 ];
-const STYLE_QUALITY = "high detail, clean composition, sharp focus, vertical framing";
+const splitStyle = t => t.split(",").map(x => x.trim()).filter(Boolean);
 function tStyleUI() {
   const on = $("#tStyleOn").classList.contains("on");
   $("#tStyleWrap").style.display = on ? "" : "none";
-  const cur = $("#tStyle").value;
-  $("#tStylePre").innerHTML = STYLE_PRESETS.map(([n, v]) => `<button class="tw ${cur.startsWith(v) ? "on" : ""}" data-v="${esc(v)}">${n}</button>`).join("");
+  const cur = splitStyle($("#tStyle").value);
+  $("#tStylePre").innerHTML = STYLE_PRESETS.map(([n, v]) => `<button class="tw ${splitStyle(v).every(x => cur.includes(x)) ? "on" : ""}" data-v="${esc(v)}">${n}</button>`).join("");
 }
 $("#tStylePre").onclick = e => { const b = e.target.closest(".tw"); if (!b) return;
-  $("#tStyle").value = b.classList.contains("on") ? "" : b.dataset.v + ", " + STYLE_QUALITY; tStyleUI(); };
+  const add = splitStyle(b.dataset.v); let cur = splitStyle($("#tStyle").value);
+  cur = b.classList.contains("on") ? cur.filter(x => !add.includes(x)) : cur.concat(add.filter(x => !cur.includes(x)));
+  $("#tStyle").value = cur.join(", "); tStyleUI(); };
+$("#tStyle").oninput = () => tStyleUI();
 function tplForm(t) {
   const o = (t && t.options) || {};
   $("#tName").value = t ? t.name : ""; $("#tContent").value = t ? t.content || "" : "";
