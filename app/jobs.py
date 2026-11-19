@@ -128,7 +128,7 @@ class JobManager:
             self.jobs[job["id"]] = job
             self.order.append(job["id"])
             self.queue.append(job["id"])
-        self._log(job, f"📥 เข้าคิว: ทำ {count} ตอน")
+        self._log(job, f"เข้าคิว: ทำ {count} ตอน")
         self.wake.set()
         return self._public(job)
 
@@ -207,7 +207,7 @@ class JobManager:
                     ep = core.next_episode(job["project"])
                     job["episode"] = ep
                     job["progress"] = 0
-                    self._log(job, f"🚀 เริ่ม EP {ep}")
+                    self._log(job, f"เริ่ม EP {ep}")
                     pipeline.run_episode(ctx, job["project"], ep)
                     job["done"] += 1
                     job["progress"] = 100
@@ -217,7 +217,7 @@ class JobManager:
                 self._log(job, "⏹️ หยุดงานแล้ว")
             except Exception as e:
                 job.update(status="error", stage="ผิดพลาด", error=str(e))
-                self._log(job, f"❌ {e}")
+                self._log(job, f"{e}")
                 traceback.print_exc()
             finally:
                 job["finished"] = time.time()

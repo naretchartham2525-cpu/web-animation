@@ -204,6 +204,13 @@ def media(name, rel):
     f = (d / rel).resolve()
     if d not in f.parents or not f.is_file():
         abort(404)
+    if request.args.get("mute") and f.suffix == ".mp4":
+        m = f.with_name(f.stem + "_nosound.mp4")
+        if not m.exists() or m.stat().st_mtime < f.stat().st_mtime:
+            import subprocess
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(f), "-an", "-c:v", "copy",
+                            "-movflags", "+faststart", str(m)], check=True)
+        f = m
     return send_file(f, conditional=True, download_name=f"{name}_{f.parent.name}_{f.name}"
                      if request.args.get("dl") else None, as_attachment=bool(request.args.get("dl")))
 
@@ -214,13 +221,25 @@ def outputs():
 
 
 # ---------------- สร้างคลิปจากแถบพิมพ์ (หน้าเดียวจบ) ----------------
-def _write_manual_eps(name, eps, start):
+def _clean_opts(o):
+    return {k: v for k, v in (o or {}).items() if v not in (None, "")}
+
+
+def _prep_ep(name, ep, opts=None, script=None):
+    d = core.ep_dir(name, ep)
+    if d.exists():
+        d.rename(d.parent / f"_old_ep{ep:02d}_{int(time.time())}")
+    st = {"stage": "script" if script else "new", "approved": bool(script), "updated": time.time()}
+    if opts:
+        st["opts"] = opts
+    core.write_json(d / "state.json", st)
+    if script:
+        core.write_json(d / "script.json", script)
+
+
+def _write_manual_eps(name, eps, start, opts=None):
     for i, sc in enumerate(eps):
-        d = core.ep_dir(name, start + i)
-        if d.exists():
-            d.rename(d.parent / f"_old_ep{start + i:02d}_{int(time.time())}")
-        core.write_json(d / "script.json", sc)
-        core.write_json(d / "state.json", {"stage": "script", "approved": True, "updated": time.time()})
+        _prep_ep(name, start + i, opts, sc)
 
 
 def _scenes_for(opts, skill_id):
@@ -235,7 +254,7 @@ def quick_create():
     idea = str(b.get("idea") or "").strip()
     if not idea:
         raise ValueError("พิมพ์ไอเดียหรือบทก่อน")
-    opts = {k: v for k, v in (b.get("options") or {}).items() if v not in (None, "")}
+    opts = _clean_opts(b.get("options"))
     tpl = b.get("template") or ""
     eps = []
     if mode == "manual":
@@ -265,12 +284,15 @@ def project_next(name):
         raise ValueError("เรื่องนี้มีงานค้างอยู่แล้ว รอให้เสร็จก่อน")
     b = request.get_json(silent=True) or {}
     start = p["done_count"] + 1
+    ep_opts = _clean_opts(b.get("options"))   # เช่น เลือกเสียงเฉพาะ EP นี้
     if b.get("mode") == "manual":
         from .pipeline import parse_manual_episodes
         eps = parse_manual_episodes(b.get("text"), _scenes_for(p.get("options") or {}, p.get("skill"))["scenes_per_episode"])
-        _write_manual_eps(name, eps, start)
+        _write_manual_eps(name, eps, start, ep_opts)
         core.update_project(name, {"episodes_total": start + len(eps) - 1})
         return ok({**jobs.submit(name, len(eps)), "episodes": len(eps)})
+    if ep_opts:
+        _prep_ep(name, start, ep_opts)
     core.update_project(name, {"episodes_total": start})
     return ok(jobs.submit(name, 1))
 

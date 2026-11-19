@@ -34,9 +34,23 @@ def _truthy(v):
     return v if isinstance(v, bool) else str(v).lower() in ("1", "true", "on", "yes")
 
 
-def effective_settings(proj, skill):
+def _apply_voice(s, v):
+    """เสียง: 'edge:th-TH-NiwatNeural' | 'gemini:Kore' | ชื่อเสียงเฉยๆ"""
+    v = str(v).strip()
+    if v.startswith("edge:"):
+        s["tts_engine"], s["_voice"] = "edge", v[5:]
+    elif v.startswith("gemini:"):
+        s["tts_engine"], s["_voice"] = "openrouter", v[7:]
+    elif v:
+        s["_voice"] = v
+        if v.startswith(("th-", "en-")):
+            s["tts_engine"] = "edge"
+
+
+def effective_settings(proj, skill, ep_opts=None):
+    """ลำดับ: ตั้งค่าหลัก ← เทมเพลต (เสียง/สไตล์) ← ตัวเลือกตอนสร้าง ← ตัวเลือกเฉพาะ EP"""
     s = core.load_settings()
-    layers = [(skill or {}).get("options") or {}, proj.get("options") or {}]
+    layers = [(skill or {}).get("options") or {}, proj.get("options") or {}, ep_opts or {}]
     for layer in layers:
         for k, v in layer.items():
             if v in (None, ""):
@@ -46,7 +60,7 @@ def effective_settings(proj, skill):
             elif k == "scenes":
                 s["scenes_per_episode"] = int(float(v))
             elif k == "voice":
-                s["_voice"] = v
+                _apply_voice(s, v)
             elif k in ("voice_on", "watermark"):
                 s[k] = _truthy(v)
             else:
@@ -58,8 +72,10 @@ def effective_settings(proj, skill):
         s["tts_engine"] = proj["tts_engine"]
     if proj.get("voice"):
         s["_voice"] = proj["voice"]
+    s["aspect"] = "9:16"   # ทำสำหรับ TikTok / Reels เท่านั้น
     if not int(s.get("scenes_per_episode") or 0):
-        s["scenes_per_episode"] = max(2, min(15, round(int(s["target_seconds"]) / 6)))
+        # 1 EP ไม่ต้องหลายฉาก แค่ครอบคลุมเรื่อง (~8 วิ/ฉาก)
+        s["scenes_per_episode"] = max(2, min(12, round(int(s["target_seconds"]) / 8)))
     return s
 
 
@@ -77,7 +93,8 @@ def _script_messages(proj, skill_text, ep, s, prev_summary, inputs):
     system = (
         "คุณคือนักเขียนบทหนังสั้นแอนิเมชันมืออาชีพ ทำตามเทมเพลต/สไตล์ด้านล่างอย่างเคร่งครัด\n\n"
         f"=== เทมเพลต ===\n{skill_text or '(ไม่มีเทมเพลต ใช้วิจารณญาณของคุณ)'}\n=== จบเทมเพลต ===\n\n"
-        f"กฎ: บทพากย์เป็นภาษา{s['language']} image_prompt เป็นภาษาอังกฤษ "
+        + (f"=== ความเป็นช่อง (ใส่ทุกตอน) ===\n{s['channel_note']}\n\n" if s.get("channel_note") else "")
+        + f"กฎ: บทพากย์เป็นภาษา{s['language']} image_prompt เป็นภาษาอังกฤษ "
         f"ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น ตามรูปแบบ:\n{SCRIPT_SCHEMA}"
     )
     parts = []
@@ -92,7 +109,7 @@ def _script_messages(proj, skill_text, ep, s, prev_summary, inputs):
     else:
         parts.append(f"EP {ep}: เขียนตอนใหม่ต่อจาก EP ก่อน ใช้ตัวละคร หน้าตา โลก โทน และสไตล์เดิมทั้งหมด "
                      "เดินเรื่องต่อ ห้ามเล่าซ้ำตอนเก่า จบให้คนอยากดู EP ถัดไป")
-    parts.append(f"{s['scenes_per_episode']} ฉาก ความยาวรวมประมาณ {s['target_seconds']} วินาที "
+    parts.append(f"ประมาณ {s['scenes_per_episode']} ฉาก (ไม่ต้องเยอะ แค่ครอบคลุมเรื่อง) ความยาวรวมประมาณ {s['target_seconds']} วินาที "
                  f"(พูดไทยประมาณ 13 ตัวอักษรต่อวินาที)")
     bible = proj.get("bible") or ""
     if bible.strip():
@@ -221,6 +238,8 @@ def chat_prompt(skill, idea, start_ep, count, s, context="", bible=""):
     lines = [f"ช่วยเขียนบทพากย์หนังสั้นแอนิเมชัน {eps}" + (" ต่อจากเรื่องเดิม" if start_ep > 1 else "")]
     if skill:
         lines.append(f"\n=== เทมเพลต / สไตล์ (ทำตามนี้เคร่งครัด) ===\n{skill['content'].strip()}\n=== จบเทมเพลต ===")
+    if s.get("channel_note"):
+        lines.append(f"\nความเป็นช่อง (ใส่ทุกตอน):\n{s['channel_note']}")
     if bible.strip():
         lines.append(f"\nตัวละครและโลกของเรื่อง:\n{bible.strip()}")
     if context:
@@ -230,7 +249,7 @@ def chat_prompt(skill, idea, start_ep, count, s, context="", bible=""):
     lines.append(f"""
 รูปแบบคำตอบ (สำคัญมาก ระบบจะอ่านอัตโนมัติ):
 - แต่ละตอนขึ้นบรรทัดแรกด้วย "# EP <เลขตอน>: <ชื่อตอน>"
-- ใต้หัวข้อ 1 บรรทัด = 1 ฉาก ตอนละประมาณ {s['scenes_per_episode']} ฉาก (ยาวรวมราว {s['target_seconds']} วินาที)
+- ใต้หัวข้อ 1 บรรทัด = 1 ฉาก ตอนละประมาณ {s['scenes_per_episode']} ฉาก ไม่ต้องเยอะ แค่ครอบคลุมเรื่อง (ยาวรวมราว {s['target_seconds']} วินาที)
 - แต่ละบรรทัด: บทพากย์ภาษา{s['language']} | คำบรรยายภาพเป็นภาษาอังกฤษ (ใส่ชื่อ/หน้าตาตัวละครแบบเดิมทุกฉาก)
 - บทพากย์อ่านออกเสียงลื่น ห้ามมีวงเล็บ คำกำกับท่าทาง หรือชื่อคนพูดนำหน้า
 - {"แต่ละตอนต้องต่อเนื่องกัน ใช้ตัวละครและสไตล์เดิม จบตอนให้อยากดูต่อ" if count > 1 or start_ep > 1 else "จบตอนให้อยากดูต่อ"}
@@ -244,13 +263,13 @@ def write_script(ctx, proj, ep, s, skill):
     msgs = _script_messages(proj, skill["content"] if skill else "", ep, s,
                             (prev or {}).get("summary", ""), inputs or [])
     model = script_model(s)
-    ctx.log(f"✍️ เขียนบทด้วย {model}" + (" (ฟรี)" if s.get("script_engine") == "free" else ""))
+    ctx.log(f"เขียนบทด้วย {model}" + (" (ฟรี)" if s.get("script_engine") == "free" else ""))
     text, cost = llm.chat(model, msgs, json_mode=True, max_tokens=int(s["max_tokens"]))
     ctx.cost(cost)
     data = _validate_script(llm.parse_json(text))
     if s.get("polish_enabled") and s.get("script_engine") == "paid":
         ctx.check()
-        ctx.log(f"✨ ขัดเกลาบทด้วย {s['polish_model']}")
+        ctx.log(f"ขัดเกลาบทด้วย {s['polish_model']}")
         msgs2 = [msgs[0], {"role": "user", "content":
                  "ปรับปรุงบทร่างนี้ให้สนุก กระชับ เป็นธรรมชาติ และตรงเทมเพลตมากขึ้น คงรูปแบบ JSON เดิม:\n"
                  + json.dumps(data, ensure_ascii=False)}]
@@ -259,7 +278,7 @@ def write_script(ctx, proj, ep, s, skill):
             ctx.cost(cost2)
             data = _validate_script(llm.parse_json(text2))
         except llm.LLMError as e:
-            ctx.log(f"⚠️ ขัดเกลาไม่สำเร็จ ใช้บทร่างแทน: {e}")
+            ctx.log(f"ขัดเกลาไม่สำเร็จ ใช้บทร่างแทน: {e}")
     return data
 
 
@@ -291,13 +310,13 @@ def sync_bible(ctx, proj, ep, s):
         if not sc:
             continue
         try:
-            ctx.log(f"📚 สรุปตัวละคร/เรื่องจาก EP {k} เพื่อให้ EP {ep} ต่อเนื่อง")
+            ctx.log(f"สรุปตัวละคร/เรื่องจาก EP {k} เพื่อให้ EP {ep} ต่อเนื่อง")
             update_bible(ctx, {**proj, "name": proj["name"]}, sc, s)
             pj = core.read_json(d / "project.json", {}) or {}
             pj["bible_ep"] = k
             core.write_json(d / "project.json", pj)
         except Exception as e:
-            ctx.log(f"⚠️ สรุป bible ไม่สำเร็จ (ใช้สรุปตอนก่อนแทน): {e}")
+            ctx.log(f"สรุป bible ไม่สำเร็จ (ใช้สรุปตอนก่อนแทน): {e}")
             break
 
 
@@ -333,7 +352,8 @@ def _drive_media(proj_name, scenes, ep):
 def _ai_images(ctx, proj_name, script, edir, s, w, h, skill):
     idir = edir / "images"
     idir.mkdir(exist_ok=True)
-    style = (skill or {}).get("options", {}).get("image_style") or s.get("image_style") or ""
+    style = ", ".join(x for x in ((skill or {}).get("options", {}).get("image_style") or s.get("image_style") or "",
+                                   s.get("channel_style") or "") if x)
     # ขนาดที่ขอจากบริการฟรี (ไม่ต้องใหญ่ เดี๋ยว ffmpeg ขยายให้) → เร็วขึ้น
     scale = min(1.0, 1024 / max(w, h))
     iw, ih = int(w * scale) // 8 * 8, int(h * scale) // 8 * 8
@@ -344,13 +364,13 @@ def _ai_images(ctx, proj_name, script, edir, s, w, h, skill):
         f = idir / f"s{i:02d}.jpg"
         if not f.exists() or f.stat().st_size < 2000:
             prompt = ", ".join(x for x in (sc.get("image_prompt") or sc["narration"], style) if x)
-            ctx.log(f"🎨 สร้างภาพฉาก {i}/{n} (ฟรี, ~15 วิ/ภาพ)")
+            ctx.log(f"สร้างภาพฉาก {i}/{n} (ฟรี, ~15 วิ/ภาพ)")
             try:
                 tmp = f.with_suffix(".part.jpg")
                 llm.free_image(prompt, tmp, iw, ih, seed=seed + i, model=s.get("image_model") or "")
                 tmp.replace(f)
             except llm.LLMError as e:
-                ctx.log(f"⚠️ {e} → ใช้พื้นสีแทน")
+                ctx.log(f"{e} → ใช้พื้นสีแทน")
                 picks.append(("none", None))
                 continue
         picks.append(("image", f))
@@ -365,12 +385,12 @@ def run_episode(ctx, proj_name, ep):
         raise ValueError(f"ไม่พบโปรเจกต์ {proj_name}")
     skill = core.get_skill(proj.get("skill")) if proj.get("skill") else None
     if proj.get("skill") and not skill:
-        ctx.log(f"⚠️ ไม่พบเทมเพลต '{proj['skill']}' → ทำแบบไม่มีเทมเพลต")
-    s = effective_settings(proj, skill)
+        ctx.log(f"ไม่พบเทมเพลต '{proj['skill']}' → ทำแบบไม่มีเทมเพลต")
     edir = core.ep_dir(proj_name, ep)
     edir.mkdir(parents=True, exist_ok=True)
     state_f = edir / "state.json"
     state = core.read_json(state_f, {}) or {}
+    s = effective_settings(proj, skill, state.get("opts"))
 
     def set_stage(stage, **kw):
         state.update(stage=stage, updated=time.time(), **kw)
@@ -390,12 +410,12 @@ def run_episode(ctx, proj_name, ep):
         set_stage("script")
         if proj.get("script_mode") == "manual" and ep == 1:
             script = manual_script(proj.get("manual_text"), s["scenes_per_episode"])
-            ctx.log("📝 ใช้บทที่เขียนเอง (ฟรี)")
+            ctx.log("ใช้บทที่เขียนเอง (ฟรี)")
         else:
             script = write_script(ctx, proj, ep, s, skill)
         core.write_json(script_f, script)
         state["approved"] = False
-        ctx.log(f"📝 บท: {script.get('title')} ({len(script['scenes'])} ฉาก)")
+        ctx.log(f"บท: {script.get('title')} ({len(script['scenes'])} ฉาก)")
     ctx.check()
 
     # 2) ตรวจบท
@@ -412,7 +432,7 @@ def run_episode(ctx, proj_name, ep):
     if s.get("visual_source") == "drive":
         picks = _drive_media(proj_name, scenes, ep)
         if not picks:
-            ctx.log("⚠️ ไม่มีไฟล์ในโฟลเดอร์ input/ ของเรื่องนี้ใน Drive → ใช้พื้นสีเรียบ")
+            ctx.log("ไม่มีไฟล์ในโฟลเดอร์ input/ ของเรื่องนี้ใน Drive → ใช้พื้นสีเรียบ")
     elif s.get("visual_source", "ai") == "ai":
         set_stage("images")
         picks = _ai_images(ctx, proj_name, script, edir, s, w, h, skill)
@@ -435,7 +455,7 @@ def run_episode(ctx, proj_name, ep):
         if not a.exists() or a.stat().st_size < 300:
             tmp = a.with_suffix(".part.mp3")
             if s.get("voice_on", True):
-                ctx.log(f"🎙️ พากย์ฉาก {i}/{len(scenes)}")
+                ctx.log(f"พากย์ฉาก {i}/{len(scenes)}")
                 make_tts(ctx, sc["narration"], tmp, s)
             else:
                 ctx.run(video.silent_audio_cmd(tmp, video.estimate_speech_seconds(sc["narration"])), "เสียงเงียบ")
@@ -461,7 +481,7 @@ def run_episode(ctx, proj_name, ep):
                 offset = (used * seg_dur) % max(0.01, clip_len - seg_dur)
             usage[src] = used + 1
         out = work / f"seg{i:02d}.mp4"
-        ctx.log(f"🎬 ประกอบฉาก {i}/{len(picks)} ({src.name if src else 'พื้นสี'})")
+        ctx.log(f"ประกอบฉาก {i}/{len(picks)} ({src.name if src else 'พื้นสี'})")
         ctx.run(video.segment_cmd(kind, src, adir / f"s{i:02d}.mp3", out, seg_dur, w, h, s,
                                   offset=offset, zoom_in=(i % 2 == 1)), f"ฉาก {i}")
         segs.append(out)
@@ -496,12 +516,12 @@ def run_episode(ctx, proj_name, ep):
         fc = (f"[0:v]{vf}[v];[1:a]volume={float(s['bgm_volume'])}[b];"
               f"[0:a][b]amix=inputs=2:duration=first:dropout_transition=0,volume=2[a]")
         cmd += ["-filter_complex", fc, "-map", "[v]", "-map", "[a]"]
-        ctx.log(f"🎵 ใส่เพลง {bgm.name}")
+        ctx.log(f"ใส่เพลง {bgm.name}")
     else:
         cmd += ["-vf", vf, "-map", "0:v", "-map", "0:a"]
     cmd += ["-c:v", "libx264", "-preset", s["preset"], "-crf", str(s["crf"]),
             "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "final.mp4"]
-    ctx.log(f"🔤 export {video.QUALITY_TH.get(s.get('quality'), '')} {w}x{h}" + (" + ลายน้ำ" if wm else ""))
+    ctx.log(f"export {video.QUALITY_TH.get(s.get('quality'), '')} {w}x{h}" + (" + ลายน้ำ" if wm else ""))
     ctx.run(cmd, "export", cwd=work)
 
     tmp_final = edir / "final.part.mp4"
@@ -515,4 +535,4 @@ def run_episode(ctx, proj_name, ep):
 
     shutil.rmtree(work, ignore_errors=True)
     set_stage("done", duration=round(total, 1))
-    ctx.log(f"✅ EP {ep} เสร็จ ({total:.1f} วินาที)")
+    ctx.log(f"EP {ep} เสร็จ ({total:.1f} วินาที)")

@@ -3,300 +3,400 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AutoClip สตูดิโอหนังสั้น AI</title>
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<title>สตูดิโอเถื่อน</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#fff;--ink:#111;--muted:#6b6b6b;--line:#e6e6e6;--soft:#f5f5f4;--chip:#fafafa;--acc:#111;--ok:#159a5c;--warn:#c78a00;--err:#d93636;--run:#2f6fe0;--r:14px}
+:root{
+  --bg:#f3ede4;--bg2:#ece3d6;--paper:#fffdf9;--ink:#2a241e;--muted:#7d7266;--line:#e3d9cb;--soft:#f6f0e7;
+  --acc:#b5532f;--acc-soft:#f4e2d8;--ok:#3f8a5b;--warn:#b98419;--err:#c2412d;--run:#3c6fb0;
+  --r:20px;--shadow:0 1px 2px rgba(60,40,20,.05),0 8px 24px rgba(60,40,20,.07);
+}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:15px}
+html,body{margin:0;color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:15px}
+body{background:
+  radial-gradient(900px 500px at 8% -10%,#f8dcc8 0,transparent 60%),
+  radial-gradient(800px 600px at 105% 10%,#e3e6d6 0,transparent 55%),
+  radial-gradient(700px 500px at 50% 110%,#efd9c6 0,transparent 60%),var(--bg);
+  background-attachment:fixed;min-height:100vh}
 button,input,select,textarea{font:inherit;color:inherit}
-h1,h2,h3,.disp{font-family:Kanit,"IBM Plex Sans Thai",sans-serif;font-weight:600;letter-spacing:.2px}
-a{color:inherit}
-.wrap{max-width:1240px;margin:0 auto;padding:0 24px}
-/* top bar */
-.top{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);z-index:30;border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;align-items:center;gap:10px;height:60px}
-.logo{display:flex;align-items:center;gap:8px;font-family:Kanit;font-size:20px;font-weight:600;margin-right:auto}
-.logo i{width:30px;height:30px;border-radius:9px;background:var(--ink);color:#fff;display:grid;place-items:center;font-style:normal;font-size:13px}
-.pill{border:1px solid var(--line);background:#fff;border-radius:99px;padding:7px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.pill:hover{border-color:#bbb}
-.pill.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
-.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--run);animation:pulse 1.2s infinite}
-@keyframes pulse{50%{opacity:.3}}
-.cnt{background:var(--ink);color:#fff;border-radius:99px;font-size:12px;padding:0 7px;min-width:20px;text-align:center}
-.credit{font-size:13px;color:var(--muted);border:none;cursor:default}
-/* header */
-.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:30px 0 18px}
-.head h1{font-size:40px;margin:0 0 6px;line-height:1.1}
+h1,h2,h3,.disp{font-family:Kanit,"IBM Plex Sans Thai",sans-serif;font-weight:600}
+svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+.top{position:sticky;top:0;z-index:30;padding:12px 0}
+.top .wrap{display:flex;align-items:center;gap:8px}
+.bar-top{display:flex;align-items:center;gap:6px;width:100%;background:rgba(255,253,249,.72);backdrop-filter:blur(12px);border:1px solid rgba(227,217,203,.8);border-radius:99px;padding:6px 6px 6px 10px;box-shadow:var(--shadow)}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;font-family:Kanit;font-weight:700;font-size:20px;letter-spacing:.2px}
+.brand .mk{width:32px;height:32px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center}
+.brand .mk svg{fill:currentColor;stroke:none;width:15px;height:15px;margin-left:2px}
+.brand small{font-family:"IBM Plex Sans Thai";font-weight:400;font-size:12px;color:var(--muted);margin-left:2px}
+.nb{border:none;background:transparent;border-radius:99px;padding:8px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;color:var(--ink)}
+.nb:hover{background:var(--soft)}
+.nb .cnt{background:var(--ink);color:var(--paper);border-radius:99px;font-size:11.5px;padding:1px 7px;min-width:20px;text-align:center}
+.nb .live{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.credit{font-size:12.5px;color:var(--muted);padding:0 8px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:26px 0 18px}
+.head h1{font-size:38px;margin:0 0 4px;line-height:1.15}
 .head p{margin:0;color:var(--muted)}
-.btn-big{background:var(--ink);color:#fff;border:none;border-radius:12px;padding:14px 22px;font-family:Kanit;font-size:17px;cursor:pointer;white-space:nowrap}
-.btn-big:hover{opacity:.88}
-.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-bottom:18px}
-.search{flex:0 1 360px;display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:0 14px;height:46px}
-.search input{border:none;outline:none;flex:1;background:none}
-.tag{border:1px solid var(--line);background:#fff;border-radius:99px;padding:9px 16px;cursor:pointer;font-family:Kanit;font-weight:500}
-.tag.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-/* cards */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:16px;padding-bottom:300px}
-.card{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:#fff;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s}
-.card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
-.card.sel{outline:3px solid var(--ink);outline-offset:-1px}
-.cover{position:relative;aspect-ratio:3/4;background-size:cover;background-position:center;cursor:pointer}
-.cover .ttl{position:absolute;left:12px;right:12px;top:10px;color:#fff;font-family:Kanit;font-size:18px;line-height:1.25;text-shadow:0 1px 8px rgba(0,0,0,.6)}
-.cover .emo{position:absolute;inset:0;display:grid;place-items:center;font-size:64px;opacity:.9}
-.badges{position:absolute;left:10px;bottom:10px;right:10px;display:flex;flex-wrap:wrap;gap:5px}
-.bdg{background:rgba(0,0,0,.78);color:#fff;font-size:12px;padding:3px 8px;border-radius:7px;font-family:Kanit;font-weight:500}
-.cfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px}
+.btn{border:none;border-radius:99px;padding:11px 18px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-family:Kanit;font-weight:500;font-size:15.5px;white-space:nowrap}
+.btn.dark{background:var(--ink);color:var(--paper)}
+.btn.dark:hover{background:#3b332b}
+.search{display:flex;align-items:center;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:99px;padding:0 16px;height:46px;max-width:420px;margin-bottom:20px;color:var(--muted)}
+.search input{border:none;outline:none;flex:1;background:none;color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:18px;padding-bottom:260px}
+.card{background:var(--paper);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;transition:transform .18s,box-shadow .18s;border:1px solid rgba(227,217,203,.6)}
+.card:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(60,40,20,.06),0 14px 34px rgba(60,40,20,.12)}
+.card.sel{box-shadow:0 0 0 2.5px var(--acc),var(--shadow)}
+.cover{position:relative;aspect-ratio:4/5;background-size:cover;background-position:center;cursor:pointer;margin:8px 8px 0;border-radius:15px;overflow:hidden}
+.cover .ttl{position:absolute;left:12px;right:12px;bottom:12px;color:#fff;font-family:Kanit;font-weight:600;font-size:18px;line-height:1.25;text-shadow:0 1px 10px rgba(0,0,0,.45)}
+.cover .glyph{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.8)}
+.cover .glyph svg{width:44px;height:44px;stroke-width:1.3}
+.cover .meta{position:absolute;top:10px;left:10px;display:flex;gap:5px;flex-wrap:wrap}
+.tagx{background:rgba(255,253,249,.9);color:var(--ink);font-size:11.5px;padding:3px 9px;border-radius:99px;display:inline-flex;align-items:center;gap:4px}
+.tagx svg{width:12px;height:12px}
+.cfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 12px}
 .cfoot .d{font-size:12.5px;color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.use{background:var(--ink);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-family:Kanit;cursor:pointer;white-space:nowrap}
+.use{background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:7px 14px;font-family:Kanit;font-weight:500;cursor:pointer;white-space:nowrap;display:inline-flex;gap:5px;align-items:center}
+.use:hover{background:var(--acc-soft);border-color:#e6c7b6}
+.use svg{width:15px;height:15px}
+.card.sel .use{background:var(--acc);color:#fff;border-color:var(--acc)}
 .empty{color:var(--muted);text-align:center;padding:50px 10px;grid-column:1/-1}
-/* composer */
-.composer{position:fixed;left:0;right:0;bottom:14px;z-index:40;pointer-events:none}
-.composer .box{pointer-events:auto;max-width:1120px;margin:0 auto;background:#fff;border:1.5px solid var(--ink);border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:12px 14px 12px;position:relative}
-.hidebtn{position:absolute;top:-17px;left:18px;background:#fff;border:1.5px solid var(--ink);border-radius:10px;padding:2px 10px;font-size:13px;font-family:Kanit;cursor:pointer}
-.composer.min .body{display:none}
-.composer.min .box{padding:16px 14px 6px}
-.selrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
-.selchip{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border-radius:99px;padding:4px 6px 4px 12px;font-size:13.5px}
-.selchip b{font-family:Kanit;font-weight:500}
-.selchip button{border:none;background:#ddd;border-radius:50%;width:20px;height:20px;cursor:pointer;line-height:1}
-.ta{position:relative}
-.ta textarea{width:100%;border:none;outline:none;resize:vertical;min-height:72px;max-height:40vh;padding:6px 110px 6px 4px;font-size:15.5px;line-height:1.6;background:none}
-.tools{position:absolute;right:0;top:2px;display:flex;gap:4px}
-.ib{border:1px solid var(--line);background:#fff;border-radius:9px;width:32px;height:32px;cursor:pointer;display:grid;place-items:center}
-.ib:hover{border-color:#999}
-.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px;background:#fff}
-.seg button{border:none;background:none;border-radius:9px;padding:7px 12px;cursor:pointer;color:var(--muted);white-space:nowrap}
-.seg button.on{background:var(--ink);color:#fff}
-.chip{border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.chip:hover{border-color:#999}
-.chip.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
-.chip select{border:none;background:none;outline:none;cursor:pointer;padding:0}
-.go{margin-left:auto;background:var(--ink);color:#fff;border:none;border-radius:13px;padding:12px 24px;font-family:Kanit;font-size:17px;cursor:pointer;white-space:nowrap}
-.go:disabled{background:#ccc;cursor:not-allowed}
-.pop{position:absolute;bottom:64px;right:14px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.15);padding:14px;width:330px;display:none;z-index:5}
+.composer{position:fixed;left:0;right:0;bottom:16px;z-index:40;pointer-events:none;padding:0 16px}
+.cbox{pointer-events:auto;max-width:960px;margin:0 auto;background:rgba(255,253,249,.95);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:26px;box-shadow:0 2px 6px rgba(60,40,20,.06),0 18px 50px rgba(60,40,20,.16);padding:8px 12px 10px 16px;position:relative}
+.composer.min .cbody{display:none}
+/* ---- 25 · ภาพเคลื่อนไหวขณะโหลด: ม้วนฟิล์มหมุน + โครงการ์ดระยิบ ---- */
+.reel{display:inline-block;animation:spin 1.6s linear infinite}
+.reel svg{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+#splash{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:var(--bg);transition:opacity .45s,visibility .45s}
+#splash.off{opacity:0;visibility:hidden}
+#splash .in2{display:flex;flex-direction:column;align-items:center;gap:14px;color:var(--ink)}
+#splash .reel svg{width:56px;height:56px;stroke-width:1.3}
+#splash .strip{width:150px;height:6px;border-radius:99px;background:var(--bg2);overflow:hidden;position:relative}
+#splash .strip i{position:absolute;inset:0;width:40%;border-radius:99px;background:var(--acc);animation:slide 1.1s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+#splash b{font-family:Kanit;font-size:22px}
+.skel .cover{background:linear-gradient(100deg,var(--bg2) 30%,#f7f1e8 50%,var(--bg2) 70%);background-size:300% 100%;animation:shimmer 1.4s infinite}
+.skel .cfoot span{display:block;height:12px;width:60%;border-radius:99px;background:var(--bg2)}
+@keyframes shimmer{to{background-position:-100% 0}}
+.job .reel svg{width:15px;height:15px;color:var(--run)}
+.go .reel svg{width:18px;height:18px}
+/* ---- 26 · เอฟเฟกต์ตอนวางเมาส์ ---- */
+.cover .bgi{position:absolute;inset:0;background:inherit;background-size:cover;background-position:center;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.card:hover .cover .bgi{transform:scale(1.07)}
+.cover .ring{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.cover .ring svg{width:64px;height:64px;fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round;opacity:.85}
+.cover .ring circle{stroke-dasharray:170;stroke-dashoffset:170;transition:stroke-dashoffset .6s ease}
+.cover .ring path{fill:rgba(255,255,255,.9);stroke:none;transform-origin:32px 32px;transition:transform .35s ease}
+.card:hover .cover .ring circle{stroke-dashoffset:0}
+.card:hover .cover .ring path{transform:scale(1.15)}
+.use .arr{display:inline-block;width:0;overflow:hidden;transition:width .25s ease,margin .25s;opacity:.9}
+.card:hover .use .arr{width:14px;margin-left:2px}
+.clip .th svg{transition:transform .3s}
+.clip:hover .th svg{transform:scale(1.18)}
+.clip .th{transition:filter .3s}
+.clip:hover .th{filter:brightness(1.08)}
+.nb svg,.ib svg{transition:transform .25s}
+.nb:hover svg,.ib:hover svg{transform:translateY(-1px) scale(1.08)}
+/* ---- 27 · สวิตช์แบบนูน (นอยมอร์ฟิก) ---- */
+.swl{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;font-size:13.5px;padding:4px 10px 4px 5px;border-radius:99px}
+.sw{position:relative;width:44px;height:24px;border-radius:99px;background:var(--soft);box-shadow:inset 2px 2px 5px rgba(150,120,90,.28),inset -2px -2px 5px rgba(255,255,255,.95);transition:background .3s}
+.sw i{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--paper);box-shadow:2px 2px 5px rgba(120,90,60,.3),-1px -1px 3px rgba(255,255,255,.9);transition:transform .3s cubic-bezier(.3,1.4,.5,1)}
+.swl.on .sw{background:var(--acc);box-shadow:inset 2px 2px 5px rgba(90,30,10,.35),inset -1px -1px 3px rgba(255,180,150,.4)}
+.swl.on .sw i{transform:translateX(20px)}
+.ctop{display:flex;align-items:center;gap:8px;min-height:30px}
+.pick{display:inline-flex;align-items:center;gap:6px;background:var(--acc-soft);color:#7d3418;border-radius:99px;padding:4px 6px 4px 11px;font-size:13px}
+.pick b{font-family:Kanit;font-weight:500}
+.pick button{border:none;background:rgba(125,52,24,.12);border-radius:50%;width:20px;height:20px;cursor:pointer;display:grid;place-items:center;color:inherit;padding:0}
+.pick button svg{width:12px;height:12px}
+.hint{font-size:12.5px;color:var(--muted)}
+.mini{margin-left:auto;border:none;background:none;cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;gap:4px;font-size:12.5px;border-radius:99px;padding:4px 8px}
+.mini:hover{background:var(--soft);color:var(--ink)}
+.mini svg{width:15px;height:15px;transition:transform .2s}
+.tarow{display:flex;align-items:flex-end;gap:2px}
+.tarow textarea{flex:1;border:none;outline:none;resize:none;background:none;font-size:15.5px;line-height:1.55;padding:6px 2px;min-height:34px;max-height:180px}
+.ib{border:none;background:none;border-radius:50%;width:34px;height:34px;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
+.ib:hover{background:var(--soft);color:var(--ink)}
+.opts{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-top:6px}
+.seg{display:inline-flex;background:var(--soft);border-radius:99px;padding:3px;gap:2px}
+.seg button{border:none;background:none;border-radius:99px;padding:6px 12px;cursor:pointer;color:var(--muted);white-space:nowrap;font-size:13.5px}
+.seg button.on{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(60,40,20,.15);font-weight:500}
+.chip{border:none;background:var(--soft);border-radius:99px;padding:7px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:13.5px;color:var(--ink)}
+.chip:hover{background:var(--bg2)}
+.chip.on{background:var(--ink);color:var(--paper)}
+.chip select{border:none;background:none;outline:none;cursor:pointer;padding:0;font-size:13.5px;max-width:150px;color:inherit}
+.dur{display:inline-flex;align-items:center;gap:8px;background:var(--soft);border-radius:99px;padding:5px 12px;font-size:13.5px}
+.dur input[type=range]{width:110px;accent-color:var(--ink)}
+.dur b{font-weight:500;min-width:52px;text-align:right}
+.go{margin-left:auto;background:var(--ink);color:var(--paper);border:none;border-radius:99px;padding:10px 16px 10px 20px;font-family:Kanit;font-weight:500;font-size:16px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+.go:hover{background:#3b332b}
+.go:disabled{opacity:.45;cursor:not-allowed}
+.pop{position:absolute;bottom:calc(100% + 10px);right:0;background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:0 14px 40px rgba(60,40,20,.18);padding:16px;width:350px;display:none;z-index:5}
 .pop.on{display:block}
-.pop label{display:block;font-size:13px;color:var(--muted);margin:8px 0 5px}
-.pop .seg{width:100%}
-.pop .seg button{flex:1;padding:7px 6px;font-size:13.5px}
-.note{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
-/* drawer */
-.drawer{position:fixed;top:0;right:0;bottom:0;width:440px;max-width:100%;background:#fff;border-left:1px solid var(--line);z-index:60;transform:translateX(105%);transition:transform .25s;display:flex;flex-direction:column;box-shadow:-10px 0 30px rgba(0,0,0,.08)}
+.pop h4{margin:0 0 10px;font-family:Kanit;font-weight:600;font-size:16px}
+.prow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;font-size:13.5px}
+.prow>span:first-child{color:var(--muted)}
+.prow .seg button{padding:5px 10px;font-size:12.5px}
+.prow input[type=range]{width:110px;accent-color:var(--ink);vertical-align:middle}
+.prow select{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:5px 8px;font-size:13px;max-width:170px}
+.note{font-size:12px;color:var(--muted);line-height:1.55}
+.drawer{position:fixed;top:12px;right:12px;bottom:12px;width:430px;max-width:calc(100% - 24px);background:var(--paper);border:1px solid var(--line);border-radius:24px;z-index:60;transform:translateX(calc(100% + 30px));transition:transform .25s ease;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(60,40,20,.2)}
 .drawer.on{transform:none}
-.dh{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line)}
-.dh h3{margin:0;font-size:20px}
-.db{overflow:auto;padding:14px 18px 40px;flex:1}
-.x{border:none;background:var(--soft);border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px}
-.job{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.dh{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 10px}
+.dh h3{margin:0;font-size:21px}
+.db{overflow:auto;padding:6px 18px 30px;flex:1}
+.x{border:none;background:var(--soft);border-radius:50%;width:34px;height:34px;cursor:pointer;display:grid;place-items:center}
+.job{background:var(--soft);border-radius:16px;padding:12px 14px;margin-bottom:10px}
 .job .h{display:flex;justify-content:space-between;gap:8px;align-items:center}
 .job .n{font-family:Kanit;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.st{font-size:12px;border-radius:99px;padding:2px 9px;border:1px solid currentColor;white-space:nowrap}
+.st{font-size:11.5px;border-radius:99px;padding:2px 9px;white-space:nowrap;background:var(--paper)}
 .st.run{color:var(--run)}.st.ok{color:var(--ok)}.st.warn{color:var(--warn)}.st.err{color:var(--err)}.st.mute{color:var(--muted)}
-.prog{height:6px;background:var(--soft);border-radius:99px;overflow:hidden;margin:8px 0 6px}
-.prog i{display:block;height:100%;background:var(--ink);transition:width .4s}
+.prog{height:5px;background:var(--bg2);border-radius:99px;overflow:hidden;margin:9px 0 6px}
+.prog i{display:block;height:100%;background:var(--acc);transition:width .4s}
 .small{font-size:12.5px;color:var(--muted)}
-.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-.sb{border:1px solid var(--line);background:#fff;border-radius:9px;padding:5px 10px;font-size:13px;cursor:pointer;white-space:nowrap;text-decoration:none;color:inherit}
-.sb:hover{border-color:#999}
-.sb.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.sb{border:1px solid var(--line);background:var(--paper);border-radius:99px;padding:6px 12px;font-size:13px;cursor:pointer;white-space:nowrap;text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.sb:hover{border-color:#cbbca8}
+.sb svg{width:15px;height:15px}
+.sb.dark{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.sb.acc{background:var(--acc);color:#fff;border-color:var(--acc)}
 .sb.red{color:var(--err)}
-.logs{background:#111;color:#ddd;border-radius:9px;padding:10px;font-family:ui-monospace,monospace;font-size:12px;max-height:220px;overflow:auto;white-space:pre-wrap;margin-top:8px}
+.logs{background:#2a241e;color:#eadfd0;border-radius:12px;padding:10px;font-family:ui-monospace,monospace;font-size:12px;max-height:220px;overflow:auto;white-space:pre-wrap;margin-top:8px}
 .err{color:var(--err);font-size:12.5px;margin-top:6px;word-break:break-word}
 .clips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.clip{border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.clip .th{aspect-ratio:9/12;background:#222 center/cover;cursor:pointer;display:grid;place-items:center;color:#fff;font-size:30px}
-.clip .i{padding:8px}
+.clip{background:var(--soft);border-radius:16px;overflow:hidden}
+.clip .th{aspect-ratio:9/12;background:#3a3129 center/cover;cursor:pointer;display:grid;place-items:center;color:#fff;margin:6px 6px 0;border-radius:12px}
+.clip .th svg{width:34px;height:34px;fill:rgba(255,255,255,.9);stroke:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
+.clip .i{padding:8px 10px 10px}
 .clip .t{font-family:Kanit;font-weight:500;font-size:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.sec{font-family:Kanit;font-size:16px;margin:18px 0 10px}
-/* modal */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-start;justify-content:center;z-index:80;padding:40px 14px;overflow:auto}
+.sec{font-family:Kanit;font-weight:600;font-size:16px;margin:18px 0 10px}
+.modal{position:fixed;inset:0;background:rgba(42,36,30,.42);backdrop-filter:blur(3px);display:none;align-items:flex-start;justify-content:center;z-index:80;padding:40px 14px;overflow:auto}
 .modal.on{display:flex}
-.mbox{background:#fff;border-radius:18px;width:100%;max-width:720px;padding:22px}
-.mbox h2{margin:0 0 14px;font-size:24px}
+.mbox{background:var(--paper);border-radius:26px;width:100%;max-width:700px;padding:24px;box-shadow:0 30px 80px rgba(42,36,30,.3)}
+.mbox h2{margin:0 0 12px;font-size:23px}
 .f{display:block;margin-bottom:12px}
 .f>span{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
-.in{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none;background:#fff}
-.in:focus{border-color:var(--ink)}
+.in{width:100%;border:1px solid var(--line);border-radius:14px;padding:10px 13px;outline:none;background:#fff}
+.in:focus{border-color:#b9a891}
 textarea.in{min-height:90px;resize:vertical;line-height:1.55}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
-.mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap}
-.libi{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:10px;flex-wrap:wrap}
+.panel{background:var(--soft);border-radius:18px;padding:14px}
+.libi{background:var(--soft);border-radius:16px;padding:12px 14px;margin-bottom:8px}
 .libi .t{font-family:Kanit;font-weight:500}
-.libi .p{color:var(--muted);font-size:13px;margin:4px 0 8px;max-height:42px;overflow:hidden}
-.scene{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.chk{display:flex;gap:8px;align-items:center;margin-bottom:12px}
-.toast{position:fixed;left:50%;transform:translateX(-50%);top:70px;background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;z-index:99;display:none;max-width:90vw}
+.libi .p{color:var(--muted);font-size:13px;margin:4px 0 6px;max-height:40px;overflow:hidden;white-space:pre-line}
+.scene{background:var(--soft);border-radius:14px;padding:10px;margin-bottom:8px}
+.chk{display:flex;gap:9px;align-items:center;margin-bottom:12px}
+.chk input{accent-color:var(--ink);width:17px;height:17px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);top:78px;background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:99px;z-index:99;display:none;max-width:90vw;box-shadow:var(--shadow)}
 .toast.err{background:var(--err)}
-.demo{background:#fff7e0;border:1px solid #f0d58a;color:#7a5a00;padding:8px 14px;border-radius:10px;margin-top:14px;font-size:14px}
-video{width:100%;border-radius:12px;background:#000;max-height:75vh}
+.demo{background:rgba(255,253,249,.7);border:1px dashed #d9c3a7;color:#8a6a43;padding:8px 14px;border-radius:14px;margin-top:6px;font-size:13.5px;display:flex;gap:8px;align-items:center}
+video{width:100%;border-radius:16px;background:#000;max-height:72vh}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media (max-width:760px){
-  .wrap{padding:0 14px}
-  .head{flex-direction:column;align-items:flex-start;padding:20px 0 12px}
-  .head h1{font-size:30px}
+  .wrap{padding:0 12px}
+  .head{flex-direction:column;align-items:flex-start;padding:16px 0 12px}
+  .head h1{font-size:28px}
   .grid{grid-template-columns:1fr 1fr;gap:10px}
   .cover .ttl{font-size:15px}
-  .composer{bottom:0}
-  .composer .box{border-radius:16px 16px 0 0;border-width:1.5px 0 0}
-  .bar{gap:6px}
-  .chip,.seg button{padding:7px 9px;font-size:13.5px}
-  .go{width:100%;margin:4px 0 0}
-  .top .lbl,.credit{display:none}
-  .ta textarea{min-height:52px}
-  .filters{padding-bottom:12px}
+  .composer{bottom:8px;padding:0 8px}
+  .lbl,.credit,.brand small{display:none}
+  .dur input[type=range]{width:80px}
+  .go{width:100%;justify-content:center;margin:4px 0 0}
   .two{grid-template-columns:1fr}
-  .pop{left:10px;right:10px;width:auto}
+  .pop{width:auto;left:0;right:0}
 }
 </style>
 </head>
 <body>
-<div class="top"><div class="wrap">
-  <div class="logo"><i>▶</i>AutoClip</div>
-  <span class="pill credit" id="credit"></span>
-  <button class="pill" onclick="openLib()">📚 <span class="lbl">คลังข้อความ</span></button>
-  <button class="pill" onclick="openDrawer()" id="jobsBtn">🎬 <span class="lbl">งานของฉัน</span> <span class="cnt" id="jobCnt">0</span></button>
-  <button class="pill" onclick="openSettings()" title="ตั้งค่า">⚙️</button>
-</div></div>
+<!-- ไอคอนเส้นเรียบ (วาดเอง ไม่ใช้อีโมจิ) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4.5h10.5a2 2 0 0 1 2 2V20H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h10.5"/><path d="M9 8.5h5"/></symbol>
+    <symbol id="i-film" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.5v5l4-2.5z"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.8"/><path d="M12 3.2l1.5 2.1 2.5-.6.6 2.5 2.4 1-.9 2.4 1.5 2.1-2.1 1.5.4 2.6-2.6.2-1.1 2.3-2.2-1.3-2.2 1.3-1.1-2.3-2.6-.2.4-2.6L3.8 13l1.5-2.1-.9-2.4 2.4-1 .6-2.5 2.5.6z"/></symbol>
+    <symbol id="i-reel" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="7.2" r="1.9"/><circle cx="16.2" cy="14.4" r="1.9"/><circle cx="7.8" cy="14.4" r="1.9"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 4l1.8 4.7 4.7 1.8-4.7 1.8L12 17l-1.8-4.7-4.7-1.8 4.7-1.8z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 8.5V6.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M7 4.5h10a1.5 1.5 0 0 1 1.5 1.5v14l-6.5-4-6.5 4V6A1.5 1.5 0 0 1 7 4.5z"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4.5v11M7.5 11.5L12 16l4.5-4.5M5 19.5h14"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/></symbol>
+    <symbol id="i-redo" viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.1-5"/><path d="M19 4.5V9h-4.5"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 7h10M9 12h10M9 17h10M5 7h.01M5 12h.01M5 17h.01"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M15.5 5.5l3 3L9 18l-4 1 1-4z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-vol" viewBox="0 0 24 24"><path d="M5 9.5h3l4-3.5v12l-4-3.5H5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 24 24"><path d="M5 9.5h3l4-3.5v12l-4-3.5H5z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M6 11.5a6 6 0 0 0 12 0M12 17.5v3"/></symbol>
+    <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 4s5.5 6 5.5 10a5.5 5.5 0 0 1-11 0C6.5 10 12 4 12 4z"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M5 7h9M18 7h1M5 17h3M12 17h7"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 24 24"><path d="M13.5 5H19v5.5M19 5l-8 8"/><path d="M17 13.5V18a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 5 18V9a1.5 1.5 0 0 1 1.5-1.5H11"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8h.01"/></symbol>
+  </defs>
+</svg>
+
+<div id="splash"><div class="in2"><span class="reel"><svg class="i"><use href="#i-reel"/></svg></span><b>สตูดิโอเถื่อน</b><div class="strip"><i></i></div></div></div>
+<div class="top"><div class="wrap"><div class="bar-top">
+  <div class="brand"><span class="mk"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span>สตูดิโอเถื่อน <small>หนังสั้น AI</small></div>
+  <span class="credit" id="credit"></span>
+  <button class="nb" onclick="openLib()" title="คลังข้อความ"><svg class="i"><use href="#i-book"/></svg><span class="lbl">คลังข้อความ</span></button>
+  <button class="nb" onclick="openDrawer()" id="jobsBtn" title="งานของฉัน"><svg class="i"><use href="#i-film"/></svg><span class="lbl">งานของฉัน</span><span class="cnt" id="jobCnt">0</span></button>
+  <button class="nb" onclick="openSettings()" title="ตั้งค่าช่อง"><svg class="i"><use href="#i-gear"/></svg></button>
+</div></div></div>
 
 <div class="wrap">
   <div id="demoBar"></div>
   <div class="head">
-    <div><h1>เทมเพลต</h1><p>เลือกสูตรคลิปที่ชอบ แล้วพิมพ์ไอเดียหรือบทในแถบด้านล่าง กดสร้างได้เลย</p></div>
-    <button class="btn-big" onclick="editTemplate()">+ สร้างเทมเพลต</button>
+    <div><h1>เทมเพลต</h1><p>เลือกสไตล์ แล้ววางบทหรือพิมพ์ไอเดียในแถบด้านล่าง</p></div>
+    <button class="btn dark" onclick="editTemplate()"><svg class="i"><use href="#i-plus"/></svg>สร้างเทมเพลต</button>
   </div>
-  <div class="filters">
-    <div class="search">🔎<input id="q" placeholder="ค้นหาชื่อ คำอธิบาย หรือแท็ก"></div>
-    <div id="tags" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-  </div>
+  <div class="search"><svg class="i"><use href="#i-search"/></svg><input id="q" placeholder="ค้นหาเทมเพลต"></div>
   <div class="grid" id="grid"></div>
 </div>
 
 <!-- แถบพิมพ์ -->
-<div class="composer" id="composer"><div class="box">
-  <button class="hidebtn" onclick="toggleComposer()" id="hideBtn">▾ ซ่อนแถบพิมพ์</button>
-  <div class="body">
-    <div class="selrow" id="selrow"></div>
-    <div class="ta">
-      <textarea id="idea" rows="3"></textarea>
-      <div class="tools">
-        <button class="ib" title="คัดลอกคำสั่งไปให้ Claude ในแชทเขียนบท (ฟรี)" onclick="openPromptNew()" id="promptBtn">📋</button>
-        <button class="ib" title="ให้ AI ช่วยคิดไอเดีย" onclick="aiIdea()" id="ideaBtn">✨</button>
-        <button class="ib" title="หยิบจากคลังข้อความ" onclick="openLib(true)">📚</button>
-        <button class="ib" title="เก็บข้อความนี้ลงคลัง" onclick="saveToLib()">💾</button>
-      </div>
+<div class="composer" id="composer"><div class="cbox">
+  <div class="ctop"><span id="pickTpl"></span>
+    <button class="mini" onclick="toggleComposer()" id="hideBtn"><svg class="i"><use href="#i-chevron"/></svg><span>ย่อ</span></button></div>
+  <div class="cbody">
+    <div class="tarow">
+      <textarea id="idea" rows="1"></textarea>
+      <button class="ib" title="คัดลอกคำสั่งให้ Claude ในแชทเขียนบท (ฟรี)" onclick="openPromptNew()" id="promptBtn"><svg class="i"><use href="#i-copy"/></svg></button>
+      <button class="ib" title="ให้ AI ช่วยคิดไอเดีย" onclick="aiIdea()" id="ideaBtn"><svg class="i"><use href="#i-spark"/></svg></button>
+      <button class="ib" title="หยิบจากคลังข้อความ" onclick="openLib(true)"><svg class="i"><use href="#i-book"/></svg></button>
+      <button class="ib" title="เก็บข้อความนี้ลงคลัง" onclick="saveToLib()"><svg class="i"><use href="#i-save"/></svg></button>
     </div>
-    <div class="bar">
+    <div class="opts">
       <div class="seg" id="segMode"><button data-v="manual" class="on">วางบท (ฟรี)</button><button data-v="ai">AI เขียนบท</button></div>
-      <label class="chip">⏱ <select id="oDur"><option value="10">10 วิ</option><option value="20">20 วิ</option><option value="30">30 วิ</option><option value="45">45 วิ</option><option value="60">60 วิ</option><option value="90">90 วิ</option></select></label>
+      <label class="dur" title="ความยาวต่อ EP (ลากเลือกได้อิสระ)"><svg class="i"><use href="#i-clock"/></svg><input type="range" id="oDur" min="5" max="180" step="1"><b id="durLbl"></b></label>
       <div class="seg" id="segQ"><button data-v="sd">มาตรฐาน</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div>
-      <button class="chip" id="oAspect" title="สัดส่วนจอ"></button>
-      <button class="chip" id="oVoice" title="เปิด/ปิดเสียงพากย์"></button>
-      <button class="chip" id="oWm" title="ลายน้ำ"></button>
-      <button class="chip" id="moreBtn" title="ตั้งค่าเพิ่มเติม">⚙ เพิ่มเติม</button>
-      <button class="go" id="goBtn" onclick="create()">สร้าง (ฟรี)</button>
+      <label class="chip" title="เสียงพากย์"><svg class="i"><use href="#i-mic"/></svg><select id="oVoice"></select></label>
+      <span class="swl" id="oWm" title="ลายน้ำชื่อช่อง"><span class="sw"><i></i></span>ลายน้ำ</span>
+      <button class="chip" id="moreBtn" title="ปรับเพิ่มเติม"><svg class="i"><use href="#i-sliders"/></svg></button>
+      <button class="go" id="goBtn" onclick="create()"><span id="goTxt">สร้าง</span><svg class="i"><use href="#i-send"/></svg></button>
     </div>
   </div>
   <div class="pop" id="pop">
-    <label>เขียนบทด้วย</label>
-    <div class="seg" id="segEngine"><button data-v="free" class="on">AI ฟรี</button><button data-v="claude">Claude API</button><button data-v="paid">โมเดลอื่น</button></div>
-    <label>ภาพประกอบ</label>
-    <div class="seg" id="segVis"><button data-v="ai" class="on">AI สร้าง (ฟรี)</button><button data-v="drive">จาก Drive</button><button data-v="none">ไม่มีภาพ</button></div>
-    <label>เสียงพากย์</label>
-    <div class="seg" id="segTts"><button data-v="edge" class="on">Edge (ฟรี)</button><button data-v="openrouter">Gemini (เสียเงิน)</button></div>
+    <h4>ปรับเพิ่มเติม</h4>
+    <div class="prow"><span>AI เขียนบทด้วย</span><div class="seg" id="segEngine"><button data-v="free" class="on">AI ฟรี</button><button data-v="claude">Claude API</button></div></div>
+    <div class="prow"><span>ภาพประกอบ</span><div class="seg" id="segVis"><button data-v="ai" class="on">AI ฟรี</button><button data-v="drive">Drive</button><button data-v="none">ไม่มี</button></div></div>
+    <div class="prow"><span>ความเร็วเสียงพากย์</span><span><input type="range" id="oRate" min="-30" max="40" step="5"> <b id="rateLbl"></b></span></div>
+    <div class="prow"><span>ความเร็ว encode</span><div class="seg" id="segPreset"><button data-v="veryfast" class="on">เร็ว</button><button data-v="fast">กลาง</button><button data-v="medium">ละเอียด</button></div></div>
+    <div class="prow"><span>FPS</span><div class="seg" id="segFps"><button data-v="24">24</button><button data-v="30" class="on">30</button><button data-v="60">60</button></div></div>
+    <div class="prow"><span>ขนาดซับ</span><div class="seg" id="segSub"><button data-v="s">เล็ก</button><button data-v="0" class="on">ปกติ</button><button data-v="l">ใหญ่</button></div></div>
+    <div class="prow"><span>ฟอนต์ซับ</span><select id="oFont"><option>Loma</option><option>Garuda</option><option>Kinnari</option><option>Norasi</option><option>Sawasdee</option><option>Umpush</option></select></div>
     <div class="note" id="popNote"></div>
   </div>
 </div></div>
 
-<!-- ลิ้นชักงาน -->
+<!-- งานของฉัน -->
 <div class="drawer" id="drawer">
-  <div class="dh"><h3>งานของฉัน</h3><div style="display:flex;gap:6px"><button class="sb red" onclick="stopAll()">⏹ หยุดทั้งหมด</button><button class="x" onclick="closeDrawer()">✕</button></div></div>
+  <div class="dh"><h3>งานของฉัน</h3><div style="display:flex;gap:6px"><button class="sb red" onclick="stopAll()"><svg class="i"><use href="#i-stop"/></svg>หยุดทั้งหมด</button><button class="x" onclick="closeDrawer()"><svg class="i"><use href="#i-x"/></svg></button></div></div>
   <div class="db" id="drawerBody"></div>
 </div>
 
-<!-- popup ต่างๆ -->
+<!-- เทมเพลต -->
 <div class="modal" id="mTpl"><div class="mbox">
   <h2 id="tplTitle">สร้างเทมเพลต</h2>
   <div class="two">
     <label class="f"><span>ชื่อเทมเพลต</span><input class="in" id="tName" placeholder="เช่น อนิเมะผจญภัย"></label>
-    <label class="f"><span>แท็ก (คั่นด้วย ,)</span><input class="in" id="tTags" placeholder="anime, cozy"></label>
+    <label class="f"><span>คำอธิบายสั้น</span><input class="in" id="tDesc"></label>
   </div>
-  <label class="f"><span>คำอธิบายสั้น</span><input class="in" id="tDesc"></label>
   <div class="two">
-    <label class="f"><span>ความยาวเริ่มต้น (วิ)</span><input class="in" id="tDur" type="number" placeholder="ตามแถบพิมพ์"></label>
-    <label class="f"><span>สัดส่วนจอ</span><select class="in" id="tAspect"><option value="">ตามแถบพิมพ์</option><option>9:16</option><option>16:9</option><option>1:1</option></select></label>
+    <label class="f"><span>เสียงพากย์ของเทมเพลต (ใช้ทุก EP)</span><select class="in" id="tVoice"></select></label>
+    <label class="f"><span>ความยาวเริ่มต้น (วินาที)</span><input class="in" id="tDur" type="number" min="5" max="600" placeholder="ตามแถบพิมพ์"></label>
   </div>
-  <label class="f"><span>สไตล์ภาพ (ภาษาอังกฤษ ใช้กับภาพ AI ฟรี)</span><input class="in" id="tStyle" placeholder="anime style, pastel colors, soft lighting"></label>
-  <label class="f"><span>สกิล / คำสั่งเขียนบท (วางสกิลของคุณตรงนี้)</span><textarea class="in" id="tContent" style="min-height:200px" placeholder="# สไตล์&#10;- โทน...&#10;## โครงเรื่อง&#10;1. ...&#10;## กฎบทพากย์&#10;- ประโยคสั้น ไม่มีวงเล็บ"></textarea></label>
-  <div class="note">บันทึกเป็นไฟล์ Drive: AutoClip/skills/&lt;ชื่อ&gt;/SKILL.md · ใส่ภาพปกได้โดยวางไฟล์ชื่อ cover.jpg ในโฟลเดอร์เดียวกัน</div>
-  <div class="mfoot"><button class="sb" onclick="closeM('mTpl')">ยกเลิก</button><button class="sb dark" onclick="saveTemplate()">💾 บันทึกเทมเพลต</button></div>
+  <label class="f"><span>สไตล์ภาพ (ภาษาอังกฤษ)</span><input class="in" id="tStyle" placeholder="anime style, pastel colors, soft lighting"></label>
+  <label class="f"><span>สกิล / คำสั่งเขียนบท (วางสกิลของคุณตรงนี้)</span><textarea class="in" id="tContent" style="min-height:200px" placeholder="# สไตล์&#10;- โทน...&#10;## ตัวละคร&#10;- ...&#10;## กฎบทพากย์&#10;- ประโยคสั้น ไม่มีวงเล็บ"></textarea></label>
+  <div class="note">บันทึกเป็นไฟล์ใน Drive: AutoClip/skills/&lt;ชื่อ&gt;/SKILL.md · ใส่ภาพปกได้โดยวาง cover.jpg ในโฟลเดอร์เดียวกัน</div>
+  <div class="mfoot"><button class="sb" onclick="closeM('mTpl')">ยกเลิก</button><button class="sb dark" onclick="saveTemplate()"><svg class="i"><use href="#i-check"/></svg>บันทึก</button></div>
 </div></div>
 
+<!-- คลังข้อความ -->
 <div class="modal" id="mLib"><div class="mbox">
-  <h2>📚 คลังข้อความ</h2>
-  <div class="note" style="margin:-6px 0 12px">เก็บไอเดีย/บทที่ใช้บ่อย กด "ใช้" เพื่อใส่ลงแถบพิมพ์ · บทที่เขียนจากที่อื่น (เช่น Claude) วางเก็บไว้ที่นี่ได้</div>
-  <div class="two"><label class="f"><span>หัวข้อ</span><input class="in" id="lTitle" placeholder="(ไม่ใส่ก็ได้)"></label><div></div></div>
+  <h2>คลังข้อความ</h2>
+  <div class="note" style="margin:-4px 0 12px">เก็บบทหรือไอเดียที่ใช้บ่อย กด "ใช้" เพื่อใส่ลงแถบพิมพ์</div>
+  <label class="f"><span>หัวข้อ (ไม่ใส่ก็ได้)</span><input class="in" id="lTitle"></label>
   <label class="f"><span>ข้อความ</span><textarea class="in" id="lText"></textarea></label>
-  <div class="mfoot" style="margin:-4px 0 14px"><button class="sb dark" onclick="addLib()">＋ เพิ่มลงคลัง</button></div>
+  <div class="mfoot" style="margin:-4px 0 14px"><button class="sb dark" onclick="addLib()"><svg class="i"><use href="#i-plus"/></svg>เพิ่มลงคลัง</button></div>
   <div id="libList"></div>
   <div class="mfoot"><button class="sb" onclick="closeM('mLib')">ปิด</button></div>
 </div></div>
 
-<div class="modal" id="mSet"><div class="mbox">
-  <h2>⚙️ ตั้งค่า</h2>
-  <div class="tabs" id="setTabs"></div>
-  <div id="setBody"></div>
-  <div class="mfoot"><button class="sb" onclick="closeM('mSet')">ปิด</button><button class="sb dark" onclick="saveSettings()">💾 บันทึก</button></div>
+<!-- ตั้งค่าช่อง -->
+<div class="modal" id="mSet"><div class="mbox" style="max-width:560px">
+  <h2>ตั้งค่าช่อง</h2>
+  <div class="note" style="margin:-4px 0 14px">ใส่ความเป็นช่องของเราในทุกคลิป ไม่ว่าจะใช้เทมเพลตไหน</div>
+  <span class="swl" id="sWm" onclick="this.classList.toggle('on')" style="margin:0 0 14px -5px"><span class="sw"><i></i></span>ใส่ลายน้ำเป็นค่าเริ่มต้น</span>
+  <label class="f"><span>ข้อความลายน้ำ (มุมขวาบน)</span><input class="in" id="sWmText" placeholder="สตูดิโอเถื่อน หรือ @ชื่อช่อง"></label>
+  <label class="f"><span>สไตล์ภาพประจำช่อง (อังกฤษ ต่อท้ายสไตล์ของทุกเทมเพลต)</span><input class="in" id="sStyle" placeholder="เช่น warm film grain, cinematic"></label>
+  <label class="f"><span>คำสั่งประจำช่อง (ใส่ในทุกบท)</span><textarea class="in" id="sNote" placeholder="เช่น ปิดท้ายทุกตอนด้วย 'ติดตามตอนต่อไปที่สตูดิโอเถื่อน'"></textarea></label>
+  <div class="note"><svg class="i" style="width:14px;height:14px"><use href="#i-lock"/></svg> API key ไม่ถูกเก็บในเว็บนี้ ใส่ใน Colab Secrets</div>
+  <div class="mfoot"><button class="sb" onclick="closeM('mSet')">ปิด</button><button class="sb dark" onclick="saveSettings()"><svg class="i"><use href="#i-check"/></svg>บันทึก</button></div>
 </div></div>
 
-<div class="modal" id="mReview"><div class="mbox" style="max-width:820px">
-  <h2 id="rvTitle">ตรวจบท</h2>
-  <label class="f"><span>ชื่อตอน</span><input class="in" id="rvName"></label>
-  <div id="rvScenes"></div>
-  <div class="mfoot"><button class="sb" onclick="closeM('mReview')">ปิด</button><button class="sb" id="rvSave">💾 บันทึก</button><button class="sb dark" id="rvApprove">✅ อนุมัติ ทำต่อ</button></div>
-</div></div>
-
-<div class="modal" id="mVid"><div class="mbox" style="max-width:520px">
-  <h2 id="vTitle" style="font-size:20px"></h2>
-  <div id="vBody"></div>
-  <div class="mfoot" id="vActs"></div>
-</div></div>
-
+<!-- ทำ EP ต่อ -->
 <div class="modal" id="mNext"><div class="mbox">
   <h2 id="nxTitle">ทำ EP ต่อ</h2>
-  <div class="note" style="margin:-6px 0 14px">ใช้เทมเพลต สไตล์ ตัวละคร และการตั้งค่าเดิม · วางบทจาก Claude ในแชท = <b>ฟรี 100%</b></div>
-  <div class="scene" style="background:var(--soft);border:none">
-    <b class="disp">① ขอบทจาก Claude</b>
-    <div class="acts" style="align-items:center">
-      <select class="in" id="nxCount" style="width:auto"></select>
-      <button class="sb dark" onclick="copyNextPrompt()">📋 คัดลอกคำสั่ง</button>
-      <a class="sb" href="https://claude.ai/new" target="_blank" rel="noopener">เปิดแชท Claude ↗</a>
+  <div class="note" style="margin:-4px 0 14px">ใช้เทมเพลต สไตล์ ตัวละคร และเสียงเดิม · วางบทจาก Claude ในแชท = ฟรี 100%</div>
+  <div class="panel">
+    <b class="disp">1 · ขอบทจาก Claude</b>
+    <div class="acts">
+      <select class="in" id="nxCount" style="width:auto;border-radius:99px;padding:6px 12px"></select>
+      <button class="sb dark" onclick="copyNextPrompt()"><svg class="i"><use href="#i-copy"/></svg>คัดลอกคำสั่ง</button>
+      <a class="sb" href="https://claude.ai/new" target="_blank" rel="noopener"><svg class="i"><use href="#i-ext"/></svg>เปิดแชท Claude</a>
     </div>
-    <div class="note">คำสั่งมีเทมเพลต + เรื่องย่อทุกตอน + บทตอนล่าสุดให้แล้ว แค่วางในแชท Claude แล้วส่ง</div>
+    <div class="note" style="margin-top:6px">คำสั่งมีเทมเพลต + เรื่องย่อทุกตอน + บทตอนล่าสุดให้แล้ว</div>
     <textarea class="in" id="nxPrompt" style="display:none;min-height:120px;margin-top:8px;font-size:13px" readonly></textarea>
   </div>
-  <label class="f" style="margin-top:12px"><span><b class="disp" style="color:var(--ink)">② วางบทที่ได้</b> (วางหลาย EP ทีเดียวได้)</span>
-    <textarea class="in" id="nxText" style="min-height:180px" placeholder="# EP 2: ชื่อตอน&#10;บทพากย์ฉาก 1 | english image prompt&#10;บทพากย์ฉาก 2 | ...&#10;# EP 3: ..."></textarea></label>
-  <div class="small" id="nxInfo"></div>
+  <label class="f" style="margin-top:14px"><span><b class="disp" style="color:var(--ink)">2 · วางบทที่ได้</b> (หลาย EP ทีเดียวได้)</span>
+    <textarea class="in" id="nxText" style="min-height:170px" placeholder="# EP 2: ชื่อตอน&#10;บทพากย์ฉาก 1 | english image prompt&#10;บทพากย์ฉาก 2 | ...&#10;# EP 3: ..."></textarea></label>
+  <div class="two">
+    <label class="f"><span>เสียงพากย์ของ EP เหล่านี้</span><select class="in" id="nxVoice"></select></label>
+    <div class="small" id="nxInfo" style="align-self:center"></div>
+  </div>
   <div class="mfoot">
-    <button class="sb" onclick="nextEpAI()" title="ใช้ AI ตามที่ตั้งไว้ (อาจเสียเครดิต)">ให้ AI เขียนแทน</button>
+    <button class="sb" onclick="nextEpAI()" title="ใช้ AI ตามที่ตั้งไว้">ให้ AI เขียนแทน</button>
     <button class="sb" onclick="closeM('mNext')">ยกเลิก</button>
     <button class="sb dark" id="nxGo" onclick="nextEpManual()">สร้าง (ฟรี)</button>
   </div>
 </div></div>
 
+<!-- คำสั่งสำหรับ Claude -->
 <div class="modal" id="mPrompt"><div class="mbox">
-  <h2>📋 คำสั่งสำหรับ Claude</h2>
-  <div class="note" style="margin:-6px 0 10px">คัดลอกแล้ววางในแชท Claude → ได้บทแล้วก๊อปมาวางในแถบพิมพ์ (โหมด เขียนบทเอง) → สร้าง (ฟรี)</div>
+  <h2>คำสั่งสำหรับ Claude</h2>
+  <div class="note" style="margin:-4px 0 12px">คัดลอกไปวางในแชท Claude → ได้บทแล้วก๊อปกลับมาวางในแถบพิมพ์ → สร้าง (ฟรี)</div>
   <label class="f"><span>ไอเดียเรื่อง (ไม่ใส่ก็ได้ ให้ Claude คิดตามเทมเพลต)</span><input class="in" id="prIdea" placeholder="เช่น เด็กหญิงซ่อมเมฆ" onchange="openPromptNew(true)"></label>
-  <div class="acts" style="align-items:center;margin-bottom:8px"><span class="small">จำนวน EP</span><select class="in" id="prCount" style="width:auto" onchange="openPromptNew(true)"></select>
-    <span class="small">เทมเพลต: <b id="prTpl"></b></span></div>
-  <textarea class="in" id="prText" style="min-height:260px;font-size:13px" readonly></textarea>
-  <div class="mfoot"><a class="sb" href="https://claude.ai/new" target="_blank" rel="noopener">เปิดแชท Claude ↗</a><button class="sb" onclick="closeM('mPrompt')">ปิด</button><button class="sb dark" onclick="copyText($('#prText').value)">📋 คัดลอก</button></div>
+  <div class="acts" style="margin-bottom:10px"><span class="small">จำนวน EP</span><select class="in" id="prCount" style="width:auto;border-radius:99px;padding:6px 12px" onchange="openPromptNew(true)"></select><span class="small">เทมเพลต: <b id="prTpl"></b></span></div>
+  <textarea class="in" id="prText" style="min-height:240px;font-size:13px" readonly></textarea>
+  <div class="mfoot"><a class="sb" href="https://claude.ai/new" target="_blank" rel="noopener"><svg class="i"><use href="#i-ext"/></svg>เปิดแชท Claude</a><button class="sb" onclick="closeM('mPrompt')">ปิด</button><button class="sb dark" onclick="copyText($('#prText').value)"><svg class="i"><use href="#i-copy"/></svg>คัดลอก</button></div>
+</div></div>
+
+<!-- บท -->
+<div class="modal" id="mReview"><div class="mbox" style="max-width:800px">
+  <h2 id="rvTitle">บท</h2>
+  <label class="f"><span>ชื่อตอน</span><input class="in" id="rvName"></label>
+  <div id="rvScenes"></div>
+  <div class="mfoot"><button class="sb" onclick="closeM('mReview')">ปิด</button><button class="sb" id="rvSave">บันทึก</button><button class="sb dark" id="rvApprove">อนุมัติ ทำต่อ</button></div>
+</div></div>
+
+<!-- ดูคลิป -->
+<div class="modal" id="mVid"><div class="mbox" style="max-width:480px">
+  <h2 id="vTitle" style="font-size:19px"></h2>
+  <div id="vBody"></div>
+  <div class="mfoot" id="vActs" style="justify-content:center"></div>
 </div></div>
 
 <div class="modal" id="mLogin"><div class="mbox" style="max-width:380px">
-  <h2>🔒 เข้าสู่ระบบ</h2>
+  <h2>เข้าสู่ระบบ</h2>
   <label class="f"><span>รหัสผ่าน (AUTOCLIP_PASSWORD ใน Colab Secrets)</span><input class="in" type="password" id="lgPw"></label>
   <div class="mfoot"><button class="sb dark" id="lgBtn">เข้าสู่ระบบ</button></div>
 </div></div>
@@ -310,12 +410,14 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const enc = encodeURIComponent;
 const q = s => encodeURIComponent(s).replace(/'/g, "%27");
 const dq = decodeURIComponent;
+const ic = n => `<svg class="i"><use href="#i-${n}"/></svg>`;
 let DEMO = new URLSearchParams(location.search).has("demo") || location.protocol === "file:";
 const ask = m => DEMO ? true : confirm(m);
 function toast(m, err) { const t = $("#toast"); t.textContent = m; t.className = "toast" + (err ? " err" : ""); t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", 3800); }
 function openM(id) { $("#" + id).classList.add("on"); }
-function closeM(id) { $("#" + id).classList.remove("on"); }
+function closeM(id) { $("#" + id).classList.remove("on"); $("#" + id).querySelectorAll("video").forEach(v => v.pause()); }
 const fmtDur = s => s ? Math.floor(s / 60) + ":" + String(Math.round(s % 60)).padStart(2, "0") : "-";
+const fmtSec = s => s >= 60 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} นาที` : `${s} วิ`;
 const usd = x => "$" + (Number(x) || 0).toFixed(4);
 
 async function api(method, path, body) {
@@ -333,143 +435,122 @@ async function api(method, path, body) {
 }
 async function call(fn) { try { return await fn(); } catch (e) { toast(e.message, true); } }
 
+// ================= เสียง =================
+const VOICES = [["", "เสียงตามเทมเพลต"],
+  ["edge:th-TH-PremwadeeNeural", "เปรมวดี · หญิง (ฟรี)"], ["edge:th-TH-AcharaNeural", "อัจฉรา · หญิง (ฟรี)"], ["edge:th-TH-NiwatNeural", "นิวัฒน์ · ชาย (ฟรี)"],
+  ["gemini:Kore", "Gemini Kore · หญิง (เสียเงิน)"], ["gemini:Aoede", "Gemini Aoede · หญิง (เสียเงิน)"], ["gemini:Leda", "Gemini Leda · หญิง (เสียเงิน)"],
+  ["gemini:Puck", "Gemini Puck · ชาย (เสียเงิน)"], ["gemini:Charon", "Gemini Charon · ชาย (เสียเงิน)"], ["gemini:Orus", "Gemini Orus · ชาย (เสียเงิน)"]];
+const voiceOpts = (sel, first) => VOICES.map(([v, t], i) => `<option value="${v}" ${v === sel ? "selected" : ""}>${i === 0 && first ? first : t}</option>`).join("");
+const voiceName = v => (VOICES.find(x => x[0] === v) || [, v])[1];
+
 // ================= state =================
-let T = [], SET = {}, tagSel = "ทั้งหมด", tplSel = null, JOBS = [], OUTS = [], openLog = {}, libPick = false, editingId = null;
-const O = {mode:"manual", dur:"30", q:"hd", aspect:"9:16", voice:true, wm:false, engine:"free", vis:"ai", tts:"edge"};
-const ASPECTS = ["9:16","16:9","1:1"];
-const QTH = {sd:"มาตรฐาน", hd:"HD", fhd:"FHD"};
-const GRADS = ["#ff9a76,#6a4c93","#4facfe,#1b2a6b","#f7971e,#a83279","#43cea2,#185a9d","#ee9ca7,#5b3b6b","#c2e59c,#2f6b4f","#fbc2eb,#4b3d8f","#fddb92,#8a4f2a"];
-const EMO = ["🎬","🐱","🌙","🏯","🚀","🌸","👻","🐉","🌊","🍜"];
+let T = [], SET = {}, tplSel = null, JOBS = [], OUTS = [], openLog = {}, libPick = false, editingId = null;
+const O = {mode:"manual", dur:30, q:"hd", voice:"", wm:true, engine:"free", vis:"ai", rate:0, preset:"veryfast", fps:"30", sub:"0", font:"Loma"};
+const TONES = ["#c98a6b,#6e3d2d","#8fa58a,#3e5446","#d4b483,#7a5530","#a68fb3,#4b3a5c","#e0a07c,#8c4a3c","#7f9cb0,#354b5c","#c7a9a0,#6b4a45","#b8b07a,#5e5a33"];
 const hashN = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 
 // ================= เทมเพลต =================
-function renderTags() {
-  const tags = ["ทั้งหมด", ...new Set(T.flatMap(t => t.tags || []))];
-  $("#tags").innerHTML = tags.map(t => `<button class="tag ${t === tagSel ? "on" : ""}" data-t="${esc(t)}">${t === "ทั้งหมด" ? t : "#" + esc(t)}</button>`).join("");
-  $("#tags").onclick = e => { const b = e.target.closest(".tag"); if (b) { tagSel = b.dataset.t; renderTags(); renderGrid(); } };
-}
 function coverStyle(t) {
-  if (t.cover) return `background-image:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,0) 35%,rgba(0,0,0,0) 65%,rgba(0,0,0,.35)),url('${DEMO ? "" : "/skill-cover/" + enc(t.id)}')`;
-  const g = GRADS[hashN(t.id) % GRADS.length];
-  return `background-image:linear-gradient(160deg,${g})`;
-}
-function tplBadges(t) {
-  const o = t.options || {}, b = [];
-  b.push((o.duration || O.dur) + " วิ");
-  b.push(QTH[o.quality] || QTH[O.q]);
-  b.push(o.aspect || O.aspect);
-  if (String(o.voice_on ?? "true") !== "false") b.push("มีเสียง");
-  return b.map(x => `<span class="bdg">${esc(x)}</span>`).join("");
+  if (t.cover && !DEMO) return `background-image:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.55)),url('/skill-cover/${enc(t.id)}')`;
+  return `background-image:linear-gradient(160deg,${TONES[hashN(t.id) % TONES.length]})`;
 }
 function renderGrid() {
   const kw = $("#q").value.trim().toLowerCase();
-  const list = T.filter(t => (tagSel === "ทั้งหมด" || (t.tags || []).includes(tagSel)) &&
-    (!kw || (t.name + " " + t.description + " " + (t.tags || []).join(" ")).toLowerCase().includes(kw)));
-  $("#grid").innerHTML = list.map(t => `<div class="card ${tplSel?.id === t.id ? "sel" : ""}">
-      <div class="cover" style="${coverStyle(t)}" onclick="viewTemplate(dq('${q(t.id)}'))">
-        ${t.cover && !DEMO ? "" : `<div class="emo">${EMO[hashN(t.id + t.name) % EMO.length]}</div>`}
-        <div class="ttl">${esc(t.name)}</div><div class="badges">${tplBadges(t)}</div></div>
+  const list = T.filter(t => !kw || (t.name + " " + t.description).toLowerCase().includes(kw));
+  $("#grid").innerHTML = list.map(t => {
+    const o = t.options || {}, sel = tplSel?.id === t.id;
+    return `<div class="card ${sel ? "sel" : ""}">
+      <div class="cover" onclick="viewTemplate(dq('${q(t.id)}'))">
+        <div class="bgi" style="${coverStyle(t)}"></div>
+        <div class="ring"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" transform="rotate(-90 32 32)"/><path d="M27 22v20l16-10z"/></svg></div>
+        <div class="meta">${o.duration ? `<span class="tagx">${ic("clock")}${esc(fmtSec(+o.duration))}</span>` : ""}${o.voice ? `<span class="tagx">${ic("mic")}${esc(voiceName(o.voice).split(" ·")[0])}</span>` : ""}</div>
+        <div class="ttl">${esc(t.name)}</div></div>
       <div class="cfoot"><div class="d" title="${esc(t.description)}">${esc(t.description || "")}</div>
-        <button class="use" onclick="useTemplate(dq('${q(t.id)}'))">${tplSel?.id === t.id ? "✓ เลือกอยู่" : "ใช้เทมเพลตนี้"}</button></div>
-    </div>`).join("") || `<div class="empty">${T.length ? "ไม่พบเทมเพลตที่ค้นหา" : "ยังไม่มีเทมเพลต กด \"+ สร้างเทมเพลต\" แล้ววางสกิลของคุณ"}</div>`;
+        <button class="use" onclick="useTemplate(dq('${q(t.id)}'))">${sel ? ic("check") + "เลือกอยู่" : `ใช้<span class="arr">→</span>`}</button></div>
+    </div>`;
+  }).join("") || `<div class="empty">${T.length ? "ไม่พบเทมเพลตที่ค้นหา" : "ยังไม่มีเทมเพลต กด “สร้างเทมเพลต” แล้ววางสกิลของคุณ"}</div>`;
 }
 $("#q").oninput = renderGrid;
-
 function useTemplate(id) {
   const t = T.find(x => x.id === id); if (!t) return;
   tplSel = tplSel?.id === id ? null : t;
-  if (tplSel) {
-    const o = t.options || {};
-    if (o.duration) O.dur = String(o.duration);
-    if (o.quality) O.q = o.quality;
-    if (o.aspect) O.aspect = o.aspect;
-    if (o.voice_on !== undefined) O.voice = String(o.voice_on) !== "false";
-    if (o.tts_engine) O.tts = o.tts_engine;
-    if (o.visual_source) O.vis = o.visual_source;
-    toast("เลือกเทมเพลต: " + t.name);
-  }
+  if (tplSel) { const o = t.options || {}; if (o.duration) O.dur = +o.duration; if (o.quality) O.q = o.quality; O.voice = ""; toast("ใช้เทมเพลต: " + t.name); }
   showComposer(); renderGrid(); renderComposer(); $("#idea").focus();
 }
 async function viewTemplate(id) {
   const t = await call(() => api("GET", "/api/skills/" + enc(id))); if (!t) return;
-  editingId = id;
-  $("#tplTitle").textContent = "แก้เทมเพลต: " + t.name;
-  $("#tName").value = t.name; $("#tTags").value = (t.tags || []).join(", "); $("#tDesc").value = t.description || "";
-  $("#tDur").value = t.options?.duration || ""; $("#tAspect").value = t.options?.aspect || ""; $("#tStyle").value = t.options?.image_style || "";
-  $("#tContent").value = t.content || "";
+  editingId = id; $("#tplTitle").textContent = "แก้เทมเพลต";
+  $("#tName").value = t.name; $("#tDesc").value = t.description || ""; $("#tDur").value = t.options?.duration || "";
+  $("#tVoice").innerHTML = voiceOpts(t.options?.voice || "", "เสียงหลักของระบบ"); $("#tStyle").value = t.options?.image_style || ""; $("#tContent").value = t.content || "";
   openM("mTpl");
 }
 function editTemplate() {
   editingId = null; $("#tplTitle").textContent = "สร้างเทมเพลต";
-  ["tName","tTags","tDesc","tDur","tStyle","tContent"].forEach(i => $("#" + i).value = ""); $("#tAspect").value = "";
+  ["tName","tDesc","tDur","tStyle","tContent"].forEach(i => $("#" + i).value = ""); $("#tVoice").innerHTML = voiceOpts("", "เสียงหลักของระบบ");
   openM("mTpl");
 }
 async function saveTemplate() {
-  const body = {id: editingId || undefined, is_new: !editingId, name: $("#tName").value.trim(), tags: $("#tTags").value,
-    description: $("#tDesc").value.trim(), content: $("#tContent").value,
-    options: {duration: $("#tDur").value, aspect: $("#tAspect").value, image_style: $("#tStyle").value.trim()}};
-  const r = await call(() => api("POST", "/api/skills", body));
-  if (r) { closeM("mTpl"); toast("บันทึกเทมเพลตแล้ว"); T = await api("GET", "/api/skills"); renderTags(); renderGrid(); }
+  const body = {id: editingId || undefined, is_new: !editingId, name: $("#tName").value.trim(), description: $("#tDesc").value.trim(), content: $("#tContent").value,
+    options: {duration: $("#tDur").value, voice: $("#tVoice").value, image_style: $("#tStyle").value.trim()}};
+  if (await call(() => api("POST", "/api/skills", body))) { closeM("mTpl"); toast("บันทึกเทมเพลตแล้ว"); T = await api("GET", "/api/skills"); if (tplSel) tplSel = T.find(x => x.id === tplSel.id) || null; renderGrid(); renderComposer(); }
 }
 
 // ================= แถบพิมพ์ =================
-function segBind(id, key, after) {
-  const el = $(id);
-  el.onclick = e => { const b = e.target.closest("button"); if (!b) return; O[key] = b.dataset.v; renderComposer(); after && after(); };
-}
-function segSet(id, v) { document.querySelectorAll(id + " button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); }
-function isFree() {
-  const script = O.mode === "manual" || O.engine === "free";
-  const voice = !O.voice || O.tts === "edge";
-  return script && voice;
-}
+function segBind(id, key) { $(id).onclick = e => { const b = e.target.closest("button"); if (!b) return; O[key] = b.dataset.v; renderComposer(); }; }
+function segSet(id, v) { document.querySelectorAll(id + " button").forEach(b => b.classList.toggle("on", b.dataset.v === String(v))); }
+function autoGrow() { const t = $("#idea"); t.style.height = "auto"; t.style.height = Math.min(180, t.scrollHeight) + "px"; }
+function tplVoice() { return tplSel?.options?.voice || ""; }
+function effVoice() { return O.voice || tplVoice(); }
+function isFree() { return (O.mode === "manual" || O.engine === "free") && !effVoice().startsWith("gemini:"); }
+function goLabel() { const n = O.mode === "manual" ? countEps($("#idea").value) : 1; $("#goTxt").textContent = `สร้าง${n > 1 ? ` ${n} EP` : ""}${isFree() ? " · ฟรี" : ""}`; }
 function renderComposer() {
-  segSet("#segMode", O.mode); segSet("#segQ", O.q); segSet("#segEngine", O.engine); segSet("#segVis", O.vis); segSet("#segTts", O.tts);
-  $("#oDur").value = O.dur;
-  $("#oAspect").innerHTML = `${O.aspect === "16:9" ? "▭" : O.aspect === "1:1" ? "□" : "▯"} ${O.aspect}`;
-  $("#oVoice").innerHTML = O.voice ? "🔊 มีเสียง" : "🔇 ไม่มีเสียง"; $("#oVoice").classList.toggle("on", O.voice);
-  $("#oWm").innerHTML = (O.wm ? "☑" : "☐") + " ลายน้ำ"; $("#oWm").classList.toggle("on", O.wm);
-  $("#idea").placeholder = O.mode === "ai"
-    ? "บอกไอเดีย แล้ว AI จะคิดบทให้ เช่น แมวส้มนั่งพิมพ์คอมในห้องทำงานตอนกลางคืน แสงจอสะท้อนหน้า"
-    : "วางบท (ฟรี 100%) · 1 บรรทัด = 1 ฉาก · # ชื่อตอน = เริ่ม EP ใหม่ (วางหลาย EP ได้) · กด 📋 เพื่อคัดลอกคำสั่งไปให้ Claude เขียน";
-  $("#selrow").innerHTML = tplSel ? `<span class="selchip">🧩 เทมเพลต: <b>${esc(tplSel.name)}</b><button onclick="useTemplate(dq('${q(tplSel.id)}'))" title="เลิกใช้">✕</button></span>` : `<span class="small">ยังไม่ได้เลือกเทมเพลต (เลือกจากการ์ดด้านบน หรือสร้างแบบอิสระก็ได้)</span>`;
-  const free = isFree();
-  const cheap = O.mode === "ai" && O.engine === "claude" && (!O.voice || O.tts === "edge");
-  const nEp = O.mode === "manual" ? countEps($("#idea").value) : 1;
-  const epTxt = nEp > 1 ? ` ${nEp} EP` : "";
-  $("#goBtn").textContent = free ? `สร้าง${epTxt} (ฟรี)` : cheap ? "สร้าง (~$0.001)" : "สร้าง (เสียเครดิต)";
+  segSet("#segMode", O.mode); segSet("#segQ", O.q); segSet("#segEngine", O.engine); segSet("#segVis", O.vis); segSet("#segPreset", O.preset); segSet("#segFps", O.fps); segSet("#segSub", O.sub);
+  $("#oDur").value = O.dur; $("#durLbl").textContent = fmtSec(+O.dur);
+  $("#oRate").value = O.rate; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%";
+  $("#oFont").value = O.font;
+  $("#oVoice").innerHTML = voiceOpts(O.voice, tplSel ? `ตามเทมเพลต${tplVoice() ? " · " + voiceName(tplVoice()).split(" ·")[0] : ""}` : "เสียงหลัก (ฟรี)");
+  $("#oWm").classList.toggle("on", O.wm);
+  $("#pickTpl").innerHTML = tplSel ? `<span class="pick">เทมเพลต <b>${esc(tplSel.name)}</b><button onclick="useTemplate(dq('${q(tplSel.id)}'))" title="เลิกใช้">${ic("x")}</button></span>`
+    : `<span class="hint">เลือกเทมเพลตด้านบน หรือสร้างแบบอิสระ</span>`;
+  $("#idea").placeholder = O.mode === "manual" ? "วางบทจาก Claude · 1 บรรทัด = 1 ฉาก · “# ชื่อตอน” = เริ่ม EP ใหม่" : "พิมพ์ไอเดีย แล้วให้ AI คิดบท";
   $("#promptBtn").style.display = O.mode === "manual" ? "" : "none";
-  $("#segMode button[data-v=ai]").textContent = O.engine === "claude" ? "Claude API เขียน" : O.engine === "free" ? "AI ฟรีเขียน" : "AI เขียนบท";
-  $("#moreBtn").classList.toggle("on", $("#pop").classList.contains("on"));
+  goLabel();
   const notes = [];
-  if (O.mode === "manual") notes.push("วางบท: ไม่เรียก AI เขียนบท (ฟรี) · ตัวเลือก 'เขียนบทด้วย' ใช้เมื่อเลือก AI เขียนบท");
-  else if (O.engine === "claude") notes.push("Claude API (Haiku 5.5): เสียเครดิต OpenRouter ~$0.001 ต่อ EP");
-  else if (O.engine === "free") notes.push("AI ฟรี: ใช้โมเดลฟรีของ OpenRouter จำกัด ~50 ครั้ง/วัน (1 EP ≈ 1-2 ครั้ง)");
-  if (O.vis === "ai") notes.push("ภาพ AI ฟรี (Pollinations): ~15 วิ/ภาพ, ห้ามใช้เชิงพาณิชย์ในแผนฟรี");
-  if (O.vis === "drive") notes.push("จาก Drive: ใส่ภาพ/คลิปใน projects/<ชื่อเรื่อง>/input");
+  if (O.mode === "ai") notes.push(O.engine === "free" ? "AI ฟรี: จำกัดประมาณ 50 ครั้ง/วัน" : "Claude API: เสียเครดิตประมาณ $0.001 ต่อ EP");
+  if (O.vis === "ai") notes.push("ภาพ AI ฟรี ใช้เวลาราว 15 วิ/ภาพ · แผนฟรีห้ามใช้เชิงพาณิชย์");
+  if (O.vis === "drive") notes.push("ใช้ภาพ/คลิปจาก Drive: projects/<ชื่อเรื่อง>/input");
+  if (effVoice().startsWith("gemini:")) notes.push("เสียง Gemini เสียเครดิต");
   $("#popNote").innerHTML = notes.map(esc).join("<br>");
+  autoGrow();
 }
-segBind("#segMode", "mode"); segBind("#segQ", "q"); segBind("#segEngine", "engine"); segBind("#segVis", "vis"); segBind("#segTts", "tts");
-$("#oDur").onchange = e => { O.dur = e.target.value; };
-$("#oAspect").onclick = () => { O.aspect = ASPECTS[(ASPECTS.indexOf(O.aspect) + 1) % ASPECTS.length]; renderComposer(); };
-$("#oVoice").onclick = () => { O.voice = !O.voice; renderComposer(); };
-$("#oWm").onclick = () => { O.wm = !O.wm; if (O.wm && !SET.watermark_text) toast("ตั้งข้อความลายน้ำได้ที่ ⚙️ ตั้งค่า (ตอนนี้ใช้ 'AutoClip')"); renderComposer(); };
-$("#moreBtn").onclick = e => { e.stopPropagation(); $("#pop").classList.toggle("on"); renderComposer(); };
+["#segMode:mode","#segQ:q","#segEngine:engine","#segVis:vis","#segPreset:preset","#segFps:fps","#segSub:sub"].forEach(x => { const [id, k] = x.split(":"); segBind(id, k); });
+$("#oDur").oninput = e => { O.dur = +e.target.value; $("#durLbl").textContent = fmtSec(O.dur); };
+$("#oRate").oninput = e => { O.rate = +e.target.value; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%"; };
+$("#oFont").onchange = e => O.font = e.target.value;
+$("#oVoice").onchange = e => { O.voice = e.target.value; renderComposer(); };
+$("#oWm").onclick = () => { O.wm = !O.wm; renderComposer(); };
+$("#moreBtn").onclick = e => { e.stopPropagation(); $("#pop").classList.toggle("on"); $("#moreBtn").classList.toggle("on", $("#pop").classList.contains("on")); };
 document.addEventListener("click", e => { if (!e.target.closest("#pop") && !e.target.closest("#moreBtn")) { $("#pop").classList.remove("on"); $("#moreBtn").classList.remove("on"); } });
-function toggleComposer() { const c = $("#composer"); c.classList.toggle("min"); $("#hideBtn").textContent = c.classList.contains("min") ? "▴ แสดงแถบพิมพ์" : "▾ ซ่อนแถบพิมพ์"; }
+function toggleComposer() { const c = $("#composer"); c.classList.toggle("min"); const m = c.classList.contains("min"); $("#hideBtn span").textContent = m ? "เปิดแถบพิมพ์" : "ย่อ"; $("#hideBtn svg").style.transform = m ? "rotate(180deg)" : ""; }
 function showComposer() { if ($("#composer").classList.contains("min")) toggleComposer(); }
 $("#idea").onkeydown = e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) create(); };
-$("#idea").oninput = () => { if (O.mode === "manual") renderComposer(); };
-// นับจำนวน EP ในบทที่วาง (ตรงกับตัวแยกฝั่งเซิร์ฟเวอร์)
+$("#idea").oninput = () => { autoGrow(); goLabel(); };
 function countEps(text) {
-  let n = 0, cur = false, has = false;
+  let n = 0, has = false;
   for (const raw of (text || "").split("\n")) {
-    if (/^\s*(-{3,}|={3,})\s*$/.test(raw)) { if (has) n++; cur = false; has = false; continue; }
-    if (/^\s*#{1,3}\s*\S/.test(raw)) { if (has) n++; cur = true; has = false; continue; }
+    if (/^\s*(-{3,}|={3,})\s*$/.test(raw)) { if (has) n++; has = false; continue; }
+    if (/^\s*#{1,3}\s*\S/.test(raw)) { if (has) n++; has = false; continue; }
     if (raw.trim()) has = true;
   }
-  if (has) n++;
-  return n;
+  return n + (has ? 1 : 0);
+}
+function buildOpts() {
+  const o = {duration:O.dur, quality:O.q, watermark:O.wm, script_engine:O.engine, visual_source:O.vis, preset:O.preset, fps:O.fps, subtitle_font:O.font};
+  if (O.voice) o.voice = O.voice;
+  if (O.rate) o.edge_rate = (O.rate > 0 ? "+" : "") + O.rate + "%";
+  if (O.sub === "s") o.subtitle_size = O.q === "sd" ? 26 : O.q === "hd" ? 36 : 54;
+  if (O.sub === "l") o.subtitle_size = O.q === "sd" ? 46 : O.q === "hd" ? 62 : 92;
+  return o;
 }
 async function copyText(t) {
   try { await navigator.clipboard.writeText(t); toast("คัดลอกแล้ว ไปวางในแชท Claude ได้เลย"); return true; }
@@ -477,32 +558,26 @@ async function copyText(t) {
 }
 async function openPromptNew(keep) {
   if (!keep) {
-    $("#prCount").innerHTML = [1,2,3,4,5,6,8,10].map(n => `<option value="${n}">${n} EP</option>`).join("");
+    $("#prCount").innerHTML = [1,2,3,4,5].map(n => `<option value="${n}">${n} EP</option>`).join("");
     const t = $("#idea").value.trim();
-    $("#prIdea").value = t && !t.includes("#") && t.length < 300 && countEps(t) <= 1 && !t.includes("\n") ? t : "";
+    $("#prIdea").value = t && !t.includes("#") && !t.includes("\n") && t.length < 300 ? t : "";
   }
   $("#prTpl").textContent = tplSel ? tplSel.name : "ไม่ได้เลือก";
-  const r = await call(() => api("POST", "/api/prompt", {template: tplSel?.id || "", idea: $("#prIdea").value.trim(),
-    count: +$("#prCount").value, options: {duration: O.dur}}));
-  if (!r) return;
-  $("#prText").value = r.prompt; openM("mPrompt");
+  const r = await call(() => api("POST", "/api/prompt", {template: tplSel?.id || "", idea: $("#prIdea").value.trim(), count: +$("#prCount").value, options: {duration: O.dur}}));
+  if (r) { $("#prText").value = r.prompt; openM("mPrompt"); }
 }
-
 async function create() {
   const idea = $("#idea").value.trim();
-  if (!idea) return toast(O.mode === "ai" ? "พิมพ์ไอเดียก่อน" : "วางบทก่อน", true);
-  const body = {idea, mode:O.mode, template: tplSel?.id || "",
-    options: {duration:O.dur, quality:O.q, aspect:O.aspect, voice_on:O.voice, watermark:O.wm,
-              script_engine:O.engine, visual_source:O.vis, tts_engine:O.tts}};
-  $("#goBtn").disabled = true;
-  const r = await call(() => api("POST", "/api/create", body));
-  $("#goBtn").disabled = false;
+  if (!idea) return toast(O.mode === "ai" ? "พิมพ์ไอเดียก่อน" : "วางบทก่อน (กดปุ่มคัดลอกคำสั่งไปถาม Claude ได้)", true);
+  $("#goBtn").disabled = true; const old = $("#goBtn").innerHTML; $("#goBtn").innerHTML = `<span class="reel">${ic("reel")}</span>กำลังส่ง`;
+  const r = await call(() => api("POST", "/api/create", {idea, mode:O.mode, template: tplSel?.id || "", options: buildOpts()}));
+  $("#goBtn").disabled = false; $("#goBtn").innerHTML = old;
   if (r) { toast(`เริ่มสร้าง: ${r.project.name}${r.episodes > 1 ? ` (${r.episodes} EP)` : ""}`); $("#idea").value = ""; renderComposer(); openDrawer(); }
 }
 async function aiIdea() {
-  const b = $("#ideaBtn"); b.disabled = true; b.textContent = "⏳";
+  const b = $("#ideaBtn"); b.disabled = true; b.style.opacity = .4;
   const d = await call(() => api("POST", "/api/ai/idea", {skill: tplSel?.id || "", hint: $("#idea").value}));
-  b.disabled = false; b.textContent = "✨";
+  b.disabled = false; b.style.opacity = 1;
   if (d) { O.mode = "ai"; $("#idea").value = d.topic || ""; renderComposer(); }
 }
 
@@ -516,59 +591,72 @@ async function refreshJobs() {
   JOBS = jobs; OUTS = outs || [];
   const active = jobs.filter(j => ["running","queued","review"].includes(j.status));
   $("#jobCnt").textContent = active.length;
-  $("#jobsBtn").querySelector(".dot")?.remove();
-  if (active.length) $("#jobsBtn").insertAdjacentHTML("afterbegin", '<span class="dot"></span>');
+  $("#jobsBtn .live")?.remove();
+  if (active.length) $("#jobsBtn").insertAdjacentHTML("afterbegin", '<span class="live"></span>');
   if (!$("#drawer").classList.contains("on")) return;
-  const recent = jobs.slice(0, 12);
-  $("#drawerBody").innerHTML = `<div class="sec" style="margin-top:0">งาน</div>` +
-    (recent.length ? recent.map(jobCard).join("") : `<div class="small">ยังไม่มีงาน พิมพ์ไอเดียแล้วกดสร้าง</div>`) +
+  $("#drawerBody").innerHTML = `<div class="sec" style="margin-top:0">กำลังทำ / ล่าสุด</div>` +
+    (jobs.length ? jobs.slice(0, 10).map(jobCard).join("") : `<div class="small">ยังไม่มีงาน วางบทแล้วกดสร้าง</div>`) +
     `<div class="sec">คลิปที่เสร็จแล้ว (${OUTS.length})</div>` +
     (OUTS.length ? `<div class="clips">${OUTS.map(clipCard).join("")}</div>` : `<div class="small">ยังไม่มีคลิป</div>`);
   document.querySelectorAll(".logs").forEach(l => l.scrollTop = l.scrollHeight);
 }
 function jobCard(j) {
   const [t, c] = STT[j.status] || [j.status, "mute"], a = [];
-  if (["running","queued","review"].includes(j.status)) a.push(`<button class="sb red" onclick="stopJob('${j.id}')">⏹ หยุด</button>`);
-  if (j.status === "review") a.push(`<button class="sb dark" onclick="openReview(dq('${q(j.review?.project || j.project)}'),${j.review?.ep || j.episode},'${j.id}')">📝 ตรวจบท</button>`);
-  if (["stopped","error","interrupted"].includes(j.status)) a.push(`<button class="sb" onclick="resumeJob('${j.id}')">↻ ทำงานที่ค้างต่อ</button>`);
-  a.push(`<button class="sb" onclick="openLog['${j.id}']=!openLog['${j.id}'];refreshJobs()">📜 log</button>`);
-  return `<div class="job"><div class="h"><span class="n">${esc(j.project)}</span><span class="st ${c}">${t}</span></div>
+  if (["running","queued","review"].includes(j.status)) a.push(`<button class="sb red" onclick="stopJob('${j.id}')">${ic("stop")}หยุด</button>`);
+  if (j.status === "review") a.push(`<button class="sb dark" onclick="openReview(dq('${q(j.review?.project || j.project)}'),${j.review?.ep || j.episode},'${j.id}')">${ic("pen")}ตรวจบท</button>`);
+  if (["stopped","error","interrupted"].includes(j.status)) a.push(`<button class="sb" onclick="resumeJob('${j.id}')">${ic("redo")}ทำงานที่ค้างต่อ</button>`);
+  a.push(`<button class="sb" onclick="openLog['${j.id}']=!openLog['${j.id}'];refreshJobs()">${ic("list")}log</button>`);
+  const spin = j.status === "running" ? `<span class="reel">${ic("reel")}</span> ` : "";
+  return `<div class="job"><div class="h"><span class="n">${spin}${esc(j.project)}</span><span class="st ${c}">${t}</span></div>
     <div class="prog"><i style="width:${j.progress || 0}%"></i></div>
-    <div class="small">${esc(j.stage || "")}${j.episode ? " · EP " + j.episode : ""}${j.cost_usd ? " · " + usd(j.cost_usd) : " · ฟรี"}</div>
+    <div class="small">${esc(j.stage || "")}${j.cost_usd ? " · " + usd(j.cost_usd) : " · ฟรี"}</div>
     ${j.error ? `<div class="err">${esc(j.error)}</div>` : ""}
     <div class="acts">${a.join("")}</div>
     ${openLog[j.id] ? `<div class="logs">${esc((j.logs || []).join("\n"))}</div>` : ""}</div>`;
 }
-function clipCard(o) {
-  const th = o.thumb && !DEMO ? `background-image:url('/media/${enc(o.project)}/${o.thumb}')` : `background-image:linear-gradient(160deg,${GRADS[hashN(o.project) % GRADS.length]})`;
-  return `<div class="clip"><div class="th" style="${th}" onclick="playClip(dq('${q(o.project)}'),${o.ep})">▶</div>
-    <div class="i"><div class="t">${esc(o.project)}</div><div class="small">EP ${o.ep} · ${fmtDur(o.duration)}</div>
-    ${isLatest(o) ? `<button class="sb dark" style="width:100%;margin-top:6px" onclick="nextEp(dq('${q(o.project)}'))">➕ ทำ EP ${o.ep + 1} ต่อ</button>` : ""}</div></div>`;
-}
 const isLatest = o => !OUTS.some(x => x.project === o.project && x.ep > o.ep);
+function clipCard(o) {
+  const th = o.thumb && !DEMO ? `background-image:url('/media/${enc(o.project)}/${o.thumb}')` : `background-image:linear-gradient(160deg,${TONES[hashN(o.project) % TONES.length]})`;
+  return `<div class="clip"><div class="th" style="${th}" onclick="playClip(dq('${q(o.project)}'),${o.ep})">${ic("play")}</div>
+    <div class="i"><div class="t">${esc(o.project)}</div><div class="small">EP ${o.ep} · ${fmtDur(o.duration)}</div>
+    ${isLatest(o) ? `<button class="sb acc" style="width:100%;justify-content:center;margin-top:7px" onclick="nextEp(dq('${q(o.project)}'))">${ic("plus")}ทำ EP ${o.ep + 1} ต่อ</button>` : ""}</div></div>`;
+}
+let vMuted = false, vCur = null;
 function playClip(project, ep) {
   const o = OUTS.find(x => x.project === project && x.ep === ep); if (!o) return;
+  vCur = o; vMuted = false;
   const src = `/media/${enc(project)}/${o.path}`;
   $("#vTitle").textContent = `${project} · EP ${ep}${o.title ? " · " + o.title : ""}`;
-  $("#vBody").innerHTML = DEMO ? `<div style="aspect-ratio:9/16;max-height:60vh;margin:auto;border-radius:12px;background:linear-gradient(160deg,${GRADS[hashN(project) % GRADS.length]});display:grid;place-items:center;color:#fff">▶ ตัวอย่างวิดีโอ</div>` : `<video src="${src}" controls autoplay playsinline></video>`;
-  $("#vActs").innerHTML = `<a class="sb" href="${src}?dl=1">⬇ MP4</a>${o.srt ? `<a class="sb" href="/media/${enc(project)}/${o.srt}?dl=1">⬇ ซับ SRT</a>` : ""}
-    <button class="sb" onclick="openReview(dq('${q(project)}'),${ep})">📝 ดูบท</button>
-    ${isLatest(o) ? `<button class="sb dark" onclick="nextEp(dq('${q(project)}'))">➕ ทำ EP ${ep + 1} ต่อ</button>` : ""}
-    <button class="sb" onclick="closeM('mVid');document.querySelectorAll('#vBody video').forEach(v=>v.pause())">ปิด</button>`;
-  openM("mVid");
+  $("#vBody").innerHTML = DEMO ? `<div style="aspect-ratio:9/16;max-height:62vh;margin:auto;border-radius:16px;background:linear-gradient(160deg,${TONES[hashN(project) % TONES.length]});display:grid;place-items:center;color:#fff">${ic("play")}</div>` : `<video id="vid" src="${src}" controls autoplay playsinline></video>`;
+  vidActs(); openM("mVid");
 }
+function toggleMute() { vMuted = !vMuted; const v = $("#vid"); if (v) v.muted = vMuted; vidActs(); }
+function vidActs() {
+  const o = vCur, src = `/media/${enc(o.project)}/${o.path}`;
+  $("#vActs").innerHTML = `
+    <button class="sb" onclick="toggleMute()">${vMuted ? ic("mute") + "เสียงปิด" : ic("vol") + "เสียงเปิด"}</button>
+    <a class="sb dark" href="${src}?dl=1${vMuted ? "&mute=1" : ""}">${ic("down")}ดาวน์โหลด${vMuted ? " (ไม่มีเสียง)" : ""}</a>
+    ${o.srt ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt}?dl=1">${ic("down")}ซับ</a>` : ""}
+    <button class="sb" onclick="openReview(dq('${q(o.project)}'),${o.ep})">${ic("pen")}บท</button>
+    ${isLatest(o) ? `<button class="sb acc" onclick="nextEp(dq('${q(o.project)}'))">${ic("plus")}ทำ EP ${o.ep + 1} ต่อ</button>` : ""}`;
+}
+async function stopJob(id) { if (!ask("หยุดงานนี้? (ของที่ทำแล้วไม่หาย กดทำต่อได้)")) return; await call(() => api("POST", `/api/jobs/${id}/stop`)); refreshJobs(); }
+async function resumeJob(id) { if (await call(() => api("POST", `/api/jobs/${id}/resume`))) { toast("เข้าคิวแล้ว"); refreshJobs(); } }
+async function stopAll() { if (!ask("หยุดงานทั้งหมด?")) return; await call(() => api("POST", "/api/jobs/stop_all")); refreshJobs(); }
+
+// ================= ทำ EP ต่อ =================
 let nx = null;
 function nextEp(project) {
   const done = OUTS.filter(o => o.project === project).reduce((m, o) => Math.max(m, o.ep), 0);
-  nx = {project, start: done + 1};
-  closeM("mVid");
-  $("#nxTitle").textContent = `ทำ EP ต่อ: ${project}`;
-  $("#nxCount").innerHTML = [1,2,3,4,5,6,8,10].map(n => `<option value="${n}">${n === 1 ? "EP " + nx.start : `EP ${nx.start}–${nx.start + n - 1} (${n} ตอน)`}</option>`).join("");
-  $("#nxText").value = ""; $("#nxPrompt").style.display = "none"; updNx();
-  openM("mNext");
+  nx = {project, start: done + 1}; closeM("mVid");
+  $("#nxTitle").textContent = `ทำ EP ต่อ · ${project}`;
+  $("#nxCount").innerHTML = [1,2,3,4,5].map(n => `<option value="${n}">${n === 1 ? "EP " + nx.start : `EP ${nx.start}–${nx.start + n - 1}`}</option>`).join("");
+  $("#nxVoice").innerHTML = voiceOpts("", "เสียงเดิมของเรื่อง");
+  $("#nxText").value = ""; $("#nxPrompt").style.display = "none"; updNx(); openM("mNext");
 }
-function updNx() { const n = countEps($("#nxText").value); $("#nxInfo").textContent = n ? `พบ ${n} EP: จะสร้าง EP ${nx.start}${n > 1 ? "–" + (nx.start + n - 1) : ""}` : ""; $("#nxGo").textContent = n > 1 ? `สร้าง ${n} EP (ฟรี)` : "สร้าง (ฟรี)"; }
+function updNx() { const n = countEps($("#nxText").value); $("#nxInfo").textContent = n ? `พบ ${n} EP → EP ${nx.start}${n > 1 ? "–" + (nx.start + n - 1) : ""}` : ""; $("#nxGo").textContent = n > 1 ? `สร้าง ${n} EP (ฟรี)` : "สร้าง (ฟรี)"; }
 $("#nxText").oninput = updNx;
+const nxOpts = () => $("#nxVoice").value ? {voice: $("#nxVoice").value} : {};
 async function copyNextPrompt() {
   const r = await call(() => api("POST", "/api/prompt", {project: nx.project, count: +$("#nxCount").value})); if (!r) return;
   $("#nxPrompt").value = r.prompt;
@@ -576,28 +664,23 @@ async function copyNextPrompt() {
 }
 async function nextEpManual() {
   const text = $("#nxText").value.trim(); if (!text) return toast("วางบทก่อน", true);
-  const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/next`, {mode:"manual", text}));
-  if (r) { closeM("mNext"); toast(`เข้าคิว ${r.episodes || 1} EP (ฟรี)`); openDrawer(); }
+  const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/next`, {mode:"manual", text, options: nxOpts()}));
+  if (r) { closeM("mNext"); toast(`เข้าคิว ${r.episodes || 1} EP`); openDrawer(); }
 }
 async function nextEpAI() {
-  if (!ask("ให้ AI เขียนบท EP ต่อ? (ใช้ตัวเลือก 'เขียนบทด้วย' ที่ตั้งไว้ อาจเสียเครดิต)")) return;
-  const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/next`, {mode:"ai"}));
+  if (!ask("ให้ AI เขียนบท EP ต่อ? (ใช้ AI ตามที่เลือกไว้ อาจเสียเครดิต)")) return;
+  const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/next`, {mode:"ai", options: nxOpts()}));
   if (r) { closeM("mNext"); toast("เริ่มทำ EP ต่อด้วย AI"); openDrawer(); }
 }
-async function stopJob(id) { if (!ask("หยุดงานนี้? (ของที่ทำแล้วไม่หาย กดทำต่อได้)")) return; await call(() => api("POST", `/api/jobs/${id}/stop`)); refreshJobs(); }
-async function resumeJob(id) { if (await call(() => api("POST", `/api/jobs/${id}/resume`))) { toast("เข้าคิวแล้ว"); refreshJobs(); } }
-async function stopAll() { if (!ask("หยุดงานทั้งหมด?")) return; await call(() => api("POST", "/api/jobs/stop_all")); refreshJobs(); }
 
-// ================= ตรวจบท =================
+// ================= บท =================
 let rv = null;
 async function openReview(project, ep, jobId) {
   const s = await call(() => api("GET", `/api/projects/${enc(project)}/episodes/${ep}/script`)); if (!s) return;
-  rv = {project, ep, jobId, s};
-  $("#rvTitle").textContent = `บท: ${project} EP ${ep}`;
-  $("#rvName").value = s.title || "";
-  $("#rvScenes").innerHTML = s.scenes.map((sc, i) => `<div class="scene"><div class="small">ฉาก ${i + 1}${sc.image_prompt ? " · ภาพ: " + esc(sc.image_prompt) : ""}</div><textarea class="in" data-i="${i}" style="min-height:56px;margin-top:6px">${esc(sc.narration)}</textarea></div>`).join("");
-  $("#rvApprove").style.display = jobId ? "" : "none";
-  openM("mReview");
+  rv = {project, ep, jobId, s}; closeM("mVid");
+  $("#rvTitle").textContent = `บท · ${project} EP ${ep}`; $("#rvName").value = s.title || "";
+  $("#rvScenes").innerHTML = s.scenes.map((sc, i) => `<div class="scene"><div class="small">ฉาก ${i + 1}${sc.image_prompt ? " · " + esc(sc.image_prompt) : ""}</div><textarea class="in" data-i="${i}" style="min-height:52px;margin-top:6px">${esc(sc.narration)}</textarea></div>`).join("");
+  $("#rvApprove").style.display = jobId ? "" : "none"; openM("mReview");
 }
 function collectReview() { const s = rv.s; s.title = $("#rvName").value; document.querySelectorAll("#rvScenes textarea").forEach(t => { s.scenes[+t.dataset.i].narration = t.value; s.scenes[+t.dataset.i].subtitle = ""; }); s.scenes = s.scenes.filter(x => x.narration.trim()); return s; }
 $("#rvSave").onclick = async () => { if (await call(() => api("PUT", `/api/projects/${enc(rv.project)}/episodes/${rv.ep}/script`, collectReview()))) toast("บันทึกบทแล้ว"); };
@@ -611,70 +694,53 @@ async function openLib(pick) {
     : `<div class="small">ยังไม่มีข้อความในคลัง</div>`;
   window._lib = items; openM("mLib");
 }
-function useLib(id) { const i = (window._lib || []).find(x => x.id === id); if (!i) return; $("#idea").value = i.text; if (/^\s*#/.test(i.text) || i.text.split("\n").filter(Boolean).length > 3) { O.mode = "manual"; renderComposer(); } closeM("mLib"); showComposer(); $("#idea").focus(); }
+function useLib(id) { const i = (window._lib || []).find(x => x.id === id); if (!i) return; $("#idea").value = i.text; if (/^\s*#/m.test(i.text) || i.text.split("\n").filter(Boolean).length > 2) O.mode = "manual"; renderComposer(); closeM("mLib"); showComposer(); $("#idea").focus(); }
 async function delLib(id) { if (!ask("ลบข้อความนี้?")) return; if (await call(() => api("DELETE", "/api/library/" + id))) openLib(libPick); }
 async function addLib() { const text = $("#lText").value.trim(); if (!text) return toast("ใส่ข้อความก่อน", true); if (await call(() => api("POST", "/api/library", {title:$("#lTitle").value, text}))) { $("#lText").value = ""; $("#lTitle").value = ""; toast("เก็บลงคลังแล้ว"); openLib(libPick); } }
-async function saveToLib() { const text = $("#idea").value.trim(); if (!text) return toast("ยังไม่มีข้อความ", true); if (await call(() => api("POST", "/api/library", {text}))) toast("เก็บลงคลังข้อความแล้ว"); }
+async function saveToLib() { const text = $("#idea").value.trim(); if (!text) return toast("ยังไม่มีข้อความ", true); if (await call(() => api("POST", "/api/library", {text}))) toast("เก็บลงคลังแล้ว"); }
 
-// ================= ตั้งค่า =================
-const FIELDS = [
-  ["ทั่วไป", [["watermark_text","ข้อความลายน้ำ","text","เช่น @ชื่อช่อง (ใช้เมื่อติ๊ก ลายน้ำ)"],["review_script","หยุดให้ตรวจบทก่อนทำเสียง/ภาพทุกตอน","bool","กันเสียเวลา/เครดิตกับบทที่ไม่ชอบ"],["subtitles","ฝังซับในคลิป","bool"],["language","ภาษาบท","text"]]],
-  ["AI เขียนบท", [["script_engine","เขียนบทด้วย (ค่าเริ่มต้น)","select",[["free","AI ฟรี"],["claude","Claude API (เสียเครดิต)"],["paid","โมเดลอื่น (เสียเครดิต)"]]],["claude_model","โมเดล Claude","text","anthropic/claude-haiku-5.5 (ถูก) หรือ anthropic/claude-sonnet-5.5 (เก่งกว่า แพงกว่า ~20 เท่า)"],["free_model","โมเดลฟรี","text","openrouter/free = ให้ระบบเลือกโมเดลฟรีที่ว่างให้"],["draft_model","โมเดลอื่น","text","เช่น google/gemini-3.8-flash"],["max_tokens","จำกัดความยาวคำตอบ (token)","number","ยิ่งน้อยยิ่งประหยัด 1500-3000 พอสำหรับคลิปสั้น"],["update_bible","จำตัวละครข้ามตอน (+1 ครั้ง/ตอน เฉพาะซีรีส์)","bool"],["polish_enabled","ขัดเกลาบทรอบ 2 (เฉพาะ โมเดลอื่น)","bool"],["scenes_per_episode","จำนวนฉาก (0 = อัตโนมัติ ~6 วิ/ฉาก)","number"]]],
-  ["ภาพ", [["image_style","สไตล์ภาพเริ่มต้น (อังกฤษ)","text"],["image_model","โมเดลภาพ Pollinations (ว่าง = ค่าเริ่มต้น)","text"],["ken_burns","ภาพนิ่งซูมเคลื่อนไหว","bool"]]],
-  ["เสียง", [["edge_voice","เสียง Edge (ฟรี)","select",[["th-TH-PremwadeeNeural","Premwadee (หญิง)"],["th-TH-NiwatNeural","Niwat (ชาย)"],["th-TH-AcharaNeural","Achara (หญิง)"]]],["edge_rate","ความเร็ว Edge","text","เช่น +10%"],["openrouter_tts_model","โมเดลเสียง Gemini","text"],["openrouter_voice","เสียง Gemini","text","Kore, Puck, Charon, Aoede, Leda…"],["bgm_volume","ความดังเพลงประกอบ (0-1)","number","ใส่เพลงใน projects/<เรื่อง>/music"]]],
-  ["วิดีโอ", [["crf","คุณภาพ CRF (18-23 ต่ำ=ชัด)","number"],["preset","ความเร็ว encode","select",[["veryfast","veryfast (แนะนำ)"],["fast","fast"],["medium","medium"]]],["fps","FPS","number"],["subtitle_font","ฟอนต์ซับ","text","Loma, Garuda หรือไฟล์ใน AutoClip/fonts"],["subtitle_size","ขนาดซับ (0 = อัตโนมัติ)","number"],["scene_gap","เว้นระหว่างฉาก (วิ)","number"]]],
-];
-let setTab = 0;
-async function openSettings() { SET = await call(() => api("GET", "/api/settings")) || SET; drawSettings(); openM("mSet"); }
-function drawSettings() {
-  $("#setTabs").innerHTML = FIELDS.map((g, i) => `<button class="sb ${i === setTab ? "dark" : ""}" onclick="collectSet();setTab=${i};drawSettings()">${g[0]}</button>`).join("");
-  const f = ([k, label, type, extra]) => {
-    const v = SET[k];
-    if (type === "bool") return `<label class="chk"><input type="checkbox" data-k="${k}" ${v ? "checked" : ""}> ${label}${extra ? ` <span class="small">· ${extra}</span>` : ""}</label>`;
-    if (type === "select") return `<label class="f"><span>${label}</span><select class="in" data-k="${k}">${extra.map(([a, b]) => `<option value="${a}" ${a == v ? "selected" : ""}>${b}</option>`).join("")}</select></label>`;
-    return `<label class="f"><span>${label}</span><input class="in" type="${type === "number" ? "number" : "text"}" step="any" data-k="${k}" value="${esc(v)}">${extra ? `<div class="note">${extra}</div>` : ""}</label>`;
-  };
-  $("#setBody").innerHTML = FIELDS[setTab][1].map(f).join("") + `<div class="note">🔑 API key ไม่ถูกเก็บในเว็บนี้ ใส่ใน Colab → Secrets: OPENROUTER_API_KEY</div>`;
+// ================= ตั้งค่าช่อง =================
+async function openSettings() {
+  SET = await call(() => api("GET", "/api/settings")) || SET;
+  $("#sWm").classList.toggle("on", !!SET.watermark); $("#sWmText").value = SET.watermark_text || ""; $("#sStyle").value = SET.channel_style || ""; $("#sNote").value = SET.channel_note || "";
+  openM("mSet");
 }
-function collectSet() { document.querySelectorAll("#setBody [data-k]").forEach(el => SET[el.dataset.k] = el.type === "checkbox" ? el.checked : el.value); }
-async function saveSettings() { collectSet(); const r = await call(() => api("POST", "/api/settings", SET)); if (r) { SET = r; closeM("mSet"); toast("บันทึกตั้งค่าแล้ว"); } }
+async function saveSettings() {
+  const r = await call(() => api("POST", "/api/settings", {watermark: $("#sWm").classList.contains("on"), watermark_text: $("#sWmText").value.trim(), channel_style: $("#sStyle").value.trim(), channel_note: $("#sNote").value.trim()}));
+  if (r) { SET = r; O.wm = !!r.watermark; renderComposer(); closeM("mSet"); toast("บันทึกแล้ว"); }
+}
 
 // ================= เครดิต =================
 async function refreshCredit() {
   const c = await api("GET", "/api/credits").catch(() => null);
-  if (!c || c.error) { $("#credit").textContent = ""; return; }
-  const parts = [];
-  const fr = c.free_model_daily_requests;
-  if (fr && fr.remaining != null) parts.push(`ฟรีวันนี้เหลือ ${fr.remaining}/${fr.limit}`);
-  if (c.limit_remaining != null) parts.push(`เครดิตเหลือ $${Number(c.limit_remaining).toFixed(3)}`);
-  $("#credit").textContent = parts.join(" · ");
+  const fr = c && c.free_model_daily_requests;
+  $("#credit").textContent = c && !c.error ? [fr && fr.remaining != null ? `AI ฟรีวันนี้เหลือ ${fr.remaining}` : "", c.limit_remaining != null ? `เครดิต $${Number(c.limit_remaining).toFixed(3)}` : ""].filter(Boolean).join(" · ") : "";
 }
 
 // ================= โหมดตัวอย่าง =================
 const MOCK = {
   skills: [
-    {id:"anime-adventure", name:"อนิเมะผจญภัย", description:"แอ็กชันสดใส ตัวเอกมีคู่หู จบด้วยปมค้าง", tags:["anime","series"], options:{duration:"30",quality:"hd",aspect:"9:16"}},
-    {id:"cozy-village", name:"หมู่บ้านอบอุ่น", description:"เรื่องอบอุ่นหัวใจ จังหวะช้า บรรยากาศชนบท", tags:["cozy","relax"], options:{duration:"45",quality:"fhd",aspect:"16:9"}},
-    {id:"horror-60", name:"หลอน 60 วิ", description:"หลอนเบาๆ หักมุมท้ายเรื่อง", tags:["horror","night"], options:{duration:"60",quality:"hd",aspect:"9:16"}},
-    {id:"cat-comedy", name:"แมวตลก", description:"มุกตลกสั้น แมวพูดได้ จังหวะเร็ว", tags:["comedy","cozy"], options:{duration:"20",quality:"sd",aspect:"9:16"}},
-    {id:"moral-tale", name:"นิทานสอนใจ", description:"นิทานเด็ก มีข้อคิดตอนจบ", tags:["kids"], options:{duration:"60",quality:"hd",aspect:"16:9"}},
-    {id:"night-city", name:"เมืองยามค่ำ", description:"บรรยากาศเหงาๆ ไฟเมือง เสียงบรรยายนุ่ม", tags:["night","relax"], options:{duration:"30",quality:"fhd",aspect:"9:16",voice_on:"false"}},
+    {id:"cloud-girl", name:"เด็กหญิงซ่อมเมฆ", description:"แฟนตาซีอบอุ่น ภาพสีพาสเทล", options:{duration:"30", voice:"edge:th-TH-AcharaNeural"}},
+    {id:"night-ghost", name:"หลอนกลางดึก", description:"หลอนเบาๆ หักมุมท้ายเรื่อง", options:{duration:"60", voice:"edge:th-TH-NiwatNeural"}},
+    {id:"cat-office", name:"แมวมนุษย์เงินเดือน", description:"ตลกสั้น แมวทำงานออฟฟิศ", options:{duration:"20", voice:"gemini:Puck"}},
+    {id:"moral-tale", name:"นิทานก่อนนอน", description:"นิทานมีข้อคิด เสียงนุ่ม", options:{duration:"90"}},
+    {id:"street-food", name:"ตำนานร้านริมทาง", description:"เรื่องเล่าอาหารไทย อบอุ่น", options:{duration:"45"}},
   ],
   jobs: [
-    {id:"a1", project:"แมวส้มนั่งพิมพ์คอมตอนกลางคืน", count:1, done:0, status:"running", stage:"ตอน 1: สร้างภาพ", progress:28, cost_usd:0, logs:["✍️ เขียนบทด้วย anthropic/claude-haiku-5.5","📝 บท: เด็กส่งงานเที่ยงคืน (5 ฉาก)","🎨 สร้างภาพฉาก 1/5 (ฟรี, ~15 วิ/ภาพ)","🎨 สร้างภาพฉาก 2/5"]},
-    {id:"b2", project:"มิลิน ช่างปะเมฆเวหา", count:8, done:3, status:"error", stage:"ผิดพลาด", progress:0, cost_usd:0.0545, error:"เครดิต OpenRouter ไม่พอ → เปลี่ยน 'เขียนบท' เป็น ฟรี หรือ เขียนเอง หรือเติมเครดิต", logs:[]},
-    {id:"c3", project:"บ้านร้างริมคลอง", count:1, done:1, status:"done", stage:"เสร็จ 1 ตอน", progress:100, cost_usd:0, logs:[]},
+    {id:"a1", project:"มิลิน ช่างปะเมฆเวหา", count:3, done:1, status:"running", stage:"EP 5: สร้างภาพ", progress:28, cost_usd:0, logs:["ใช้บทที่วาง (ฟรี)","สร้างภาพฉาก 1/4"]},
+    {id:"b2", project:"แมวมนุษย์เงินเดือน", count:1, done:0, status:"error", stage:"ผิดพลาด", progress:0, cost_usd:0, error:"เครดิต OpenRouter ไม่พอ → ใช้ วางบท (ฟรี) แทน", logs:[]},
+    {id:"c3", project:"หลอนกลางดึก", count:1, done:1, status:"done", stage:"เสร็จ EP 1", progress:100, cost_usd:0, logs:[]},
   ],
-  outs: [{project:"มิลิน ช่างปะเมฆเวหา", ep:3, title:"เมฆรั่ว", path:"ep03/final.mp4", duration:50.5},{project:"มิลิน ช่างปะเมฆเวหา", ep:2, title:"สะพานรุ้ง", path:"ep02/final.mp4", duration:48},{project:"บ้านร้างริมคลอง", ep:1, title:"เสียงเคาะ", path:"ep01/final.mp4", duration:31}],
-  lib: [{id:"t1", title:"ไอเดีย: แมวนักสืบ", text:"แมวดำนักสืบไขคดีขนมหายในร้านเบเกอรี่"},{id:"t2", title:"บทตอนพิเศษ (เขียนเอง)", text:"# ของขวัญชิ้นสุดท้าย\nคืนก่อนวันเกิด มิลินนั่งมองฟ้าเงียบๆ\nเมฆก้อนเล็กลอยลงมาเกาะที่หน้าต่าง\nมันส่งกระดาษแผ่นหนึ่งให้เธอ"}],
+  outs: [{project:"มิลิน ช่างปะเมฆเวหา", ep:4, title:"ฝนสีทอง", path:"ep04/final.mp4", duration:31},{project:"มิลิน ช่างปะเมฆเวหา", ep:3, title:"เมฆรั่ว", path:"ep03/final.mp4", duration:29},{project:"หลอนกลางดึก", ep:1, title:"เสียงเคาะ", path:"ep01/final.mp4", duration:58}],
+  lib: [{id:"t1", title:"บท EP 1–2 มิลิน", text:"# EP 1: เมฆรั่ว\nเช้าวันนั้น ฟ้าเหนือหมู่บ้านมีรูโหว่ | a small hole in the sky\n…"},{id:"t2", title:"ไอเดีย: แมวนักสืบ", text:"แมวดำนักสืบไขคดีขนมหายในร้านเบเกอรี่"}],
 };
-const DEF_SET = {watermark_text:"@ช่องของฉัน", review_script:false, subtitles:true, language:"ไทย", claude_model:"anthropic/claude-haiku-5.5", free_model:"openrouter/free", draft_model:"google/gemini-3.8-flash", max_tokens:2500, update_bible:true, polish_enabled:false, scenes_per_episode:0, image_style:"anime style, vibrant colors, soft lighting", image_model:"", ken_burns:true, edge_voice:"th-TH-PremwadeeNeural", edge_rate:"+0%", openrouter_tts_model:"google/gemini-3.8-flash-tts", openrouter_voice:"Kore", bgm_volume:0.12, crf:20, preset:"veryfast", fps:30, subtitle_font:"Loma", subtitle_size:0, scene_gap:0.35, quality:"hd", aspect:"9:16", voice_on:true, watermark:false, script_engine:"free", visual_source:"ai", tts_engine:"edge", target_seconds:30};
+const DEF_SET = {watermark:true, watermark_text:"สตูดิโอเถื่อน", channel_style:"", channel_note:"", script_engine:"free", visual_source:"ai", quality:"hd", target_seconds:30};
 function mock(m, path, body) {
   const p = decodeURIComponent(path.split("?")[0]);
   if (p === "/api/skills" && m === "GET") return MOCK.skills;
-  if (p === "/api/skills") { toast("โหมดตัวอย่าง: บน Colab จะบันทึกลง Drive"); return body; }
-  if (p.startsWith("/api/skills/")) { const s = MOCK.skills.find(x => x.id === p.split("/")[3]); return {...s, content:"# " + s.name + "\n\n## โทน\n- " + s.description + "\n\n## โครงเรื่อง\n1. เปิดด้วยภาพสวย + ประโยคดึงคน\n2. ปัญหา\n3. คลี่คลาย\n\n## กฎบทพากย์\n- ประโยคสั้น ไม่มีวงเล็บ"}; }
-  if (p === "/api/settings" && m === "GET") return SET.free_model ? SET : DEF_SET;
+  if (p === "/api/skills") { toast("ตัวอย่าง: บน Colab จะบันทึกลง Drive"); return body; }
+  if (p.startsWith("/api/skills/")) { const s = MOCK.skills.find(x => x.id === p.split("/")[3]); return {...s, content:"# " + s.name + "\n\n## โทน\n- " + s.description + "\n\n## ตัวละคร\n- …\n\n## กฎบทพากย์\n- ประโยคสั้น ไม่มีวงเล็บ"}; }
+  if (p === "/api/settings" && m === "GET") return SET.watermark_text !== undefined ? SET : DEF_SET;
   if (p === "/api/settings") return {...DEF_SET, ...body};
   if (p === "/api/jobs") return MOCK.jobs;
   if (p === "/api/outputs") return MOCK.outs;
@@ -682,29 +748,31 @@ function mock(m, path, body) {
   if (p === "/api/library") { MOCK.lib.unshift({id:"t" + Date.now(), title: body.title || body.text.slice(0, 30), text: body.text}); return {}; }
   if (p.startsWith("/api/library/")) { MOCK.lib = MOCK.lib.filter(x => x.id !== p.split("/")[3]); return true; }
   if (p === "/api/credits") return {free_model_daily_requests:{remaining:46, limit:50}, limit_remaining:0.012};
-  if (p === "/api/prompt") return {prompt:"ช่วยเขียนบทพากย์หนังสั้นแอนิเมชัน EP 4 ต่อจากเรื่องเดิม\n\n=== เทมเพลต / สไตล์ ===\n(เนื้อหาเทมเพลต)\n\nตอนที่ผ่านมา:\nEP 1: เมฆรั่ว\nEP 2: สะพานรุ้ง\nEP 3: …\n\nรูปแบบคำตอบ:\n- แต่ละตอนขึ้นต้นด้วย \"# EP <เลข>: <ชื่อตอน>\"\n- 1 บรรทัด = 1 ฉาก: บทพากย์ภาษาไทย | english image prompt"};
-  if (p === "/api/ai/idea") return {topic:"หุ่นยนต์เก่าในเมืองร้างพบเมล็ดพันธุ์สุดท้ายของโลก และต้องปกป้องมันจากพายุทราย", episodes_total:3};
-  if (p === "/api/create") { const name = body.idea.replace(/^#\s*/, "").split("\n")[0].slice(0, 40); MOCK.jobs.unshift({id:"n" + Date.now(), project:name, count:1, done:0, status:"queued", stage:"รอคิว", progress:0, cost_usd:0, logs:["📥 เข้าคิว (โหมดตัวอย่าง)"]}); return {project:{name}, job:{}}; }
-  if (/\/script$/.test(p)) return {title:"เมฆรั่ว", scenes:[{narration:"เช้าวันนั้น ฟ้าเหนือหมู่บ้านมีรูโหว่", image_prompt:"a small girl looking at a hole in the sky, anime"},{narration:"มิลินคว้ากระเป๋าเครื่องมือ แล้วกระโดดขึ้นบันไดเมฆ", image_prompt:"girl climbing cloud stairs with toolbox"}]};
-  toast("โหมดตัวอย่าง: ปุ่มนี้ทำงานจริงเมื่อรันบน Colab"); return {};
+  if (p === "/api/prompt") return {prompt:"ช่วยเขียนบทพากย์หนังสั้นแอนิเมชัน EP 5 ต่อจากเรื่องเดิม\n\n=== เทมเพลต / สไตล์ ===\n(เนื้อหาเทมเพลต)\n\nตอนที่ผ่านมา:\nEP 1: เมฆรั่ว\nEP 2: สะพานรุ้ง\n…\n\nรูปแบบคำตอบ:\n- แต่ละตอนขึ้นต้นด้วย \"# EP <เลข>: <ชื่อตอน>\"\n- 1 บรรทัด = 1 ฉาก: บทพากย์ภาษาไทย | english image prompt"};
+  if (p === "/api/ai/idea") return {topic:"หุ่นยนต์เก่าในเมืองร้างพบเมล็ดพันธุ์สุดท้ายของโลก"};
+  if (p === "/api/create") { const name = body.idea.replace(/^#\s*(EP\s*\d+\s*:\s*)?/i, "").split("\n")[0].slice(0, 40); MOCK.jobs.unshift({id:"n" + Date.now(), project:name, count:1, done:0, status:"queued", stage:"รอคิว", progress:0, cost_usd:0, logs:[]}); return {project:{name}, episodes: countEps(body.idea) || 1}; }
+  if (/\/script$/.test(p)) return {title:"เมฆรั่ว", scenes:[{narration:"เช้าวันนั้น ฟ้าเหนือหมู่บ้านมีรูโหว่", image_prompt:"a small hole in the sky"},{narration:"มิลินคว้ากระเป๋าเครื่องมือ แล้วปีนบันไดเมฆ", image_prompt:"girl climbing cloud stairs"}]};
+  toast("ตัวอย่าง: ปุ่มนี้ทำงานจริงเมื่อรันบน Colab"); return {};
 }
 
 // ================= เริ่มต้น =================
 $("#lgBtn").onclick = async () => { try { await api("POST", "/api/login", {password:$("#lgPw").value}); closeM("mLogin"); boot(); } catch (e) { toast(e.message, true); } };
 $("#lgPw").onkeydown = e => { if (e.key === "Enter") $("#lgBtn").click(); };
-document.querySelectorAll(".modal").forEach(m => m.addEventListener("mousedown", e => { if (e.target === m && m.id !== "mLogin") { m.classList.remove("on"); m.querySelectorAll("video").forEach(v => v.pause()); } }));
-document.addEventListener("keydown", e => { if (e.key === "Escape") { document.querySelectorAll(".modal.on").forEach(m => m.id !== "mLogin" && m.classList.remove("on")); closeDrawer(); } });
+document.querySelectorAll(".modal").forEach(m => m.addEventListener("mousedown", e => { if (e.target === m && m.id !== "mLogin") closeM(m.id); }));
+document.addEventListener("keydown", e => { if (e.key === "Escape") { document.querySelectorAll(".modal.on").forEach(m => m.id !== "mLogin" && closeM(m.id)); closeDrawer(); } });
 let timer;
+$("#grid").innerHTML = Array(4).fill('<div class="card skel"><div class="cover"></div><div class="cfoot"><span></span></div></div>').join("");
+const t0 = Date.now();
+function hideSplash() { setTimeout(() => $("#splash").classList.add("off"), Math.max(0, 700 - (Date.now() - t0))); }
 async function boot() {
-  $("#demoBar").innerHTML = DEMO ? `<div class="demo">👀 โหมดตัวอย่าง: ข้อมูลสมมติ เมื่อรันบน Colab จะใช้ข้อมูลจริงจาก Drive</div>` : "";
+  $("#demoBar").innerHTML = DEMO ? `<div class="demo">${ic("info")}ตัวอย่างหน้าเว็บ: ข้อมูลสมมติ เมื่อรันบน Colab จะใช้ข้อมูลจริงจาก Drive</div>` : "";
   try {
     const [t, s] = await Promise.all([api("GET", "/api/skills"), api("GET", "/api/settings")]);
     T = t || []; SET = s || {};
-    O.q = SET.quality || O.q; O.aspect = SET.aspect || O.aspect; O.voice = SET.voice_on !== false; O.wm = !!SET.watermark;
-    O.engine = SET.script_engine || O.engine; O.vis = SET.visual_source || O.vis; O.tts = SET.tts_engine || O.tts; O.dur = String(SET.target_seconds || O.dur);
-    if (![...$("#oDur").options].some(o => o.value === O.dur)) $("#oDur").insertAdjacentHTML("beforeend", `<option value="${O.dur}">${O.dur} วิ</option>`);
+    O.q = SET.quality || O.q; O.wm = SET.watermark !== false; O.engine = SET.script_engine === "claude" ? "claude" : "free"; O.vis = SET.visual_source || O.vis;
+    O.dur = +(SET.target_seconds || O.dur);
   } catch (e) { /* รอ login */ }
-  renderTags(); renderGrid(); renderComposer(); refreshJobs(); refreshCredit();
+  renderGrid(); renderComposer(); refreshJobs(); refreshCredit(); hideSplash();
   clearInterval(timer); timer = setInterval(refreshJobs, 2500);
 }
 boot();

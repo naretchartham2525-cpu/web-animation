@@ -45,8 +45,10 @@ DEFAULT_SETTINGS = {
     # --- วิดีโอ ---
     "aspect": "9:16",
     "quality": "hd",                              # sd (มาตรฐาน 540p) | hd (720p) | fhd (1080p)
-    "watermark": False,
-    "watermark_text": "",
+    "watermark": True,
+    "watermark_text": "สตูดิโอเถื่อน",
+    "channel_style": "",                          # สไตล์ภาพประจำช่อง (ต่อท้ายทุกเทมเพลต)
+    "channel_note": "",                           # คำสั่งประจำช่อง (ใส่ในทุกบท)
     "fps": 30,
     "crf": 20,
     "preset": "veryfast",
@@ -153,7 +155,7 @@ def _first_line(body):
     return ""
 
 
-SKILL_OPTION_KEYS = ("duration", "quality", "aspect", "voice_on", "tts_engine", "voice",
+SKILL_OPTION_KEYS = ("duration", "quality", "aspect", "voice_on", "tts_engine", "voice", "edge_rate",
                      "image_style", "scenes", "visual_source", "watermark")
 
 
