@@ -21,7 +21,38 @@
   "render": "scripts/render_ep.py",
   "prompt_files": [
     "reference/format.md",
-    "reference/craft.md"
+    "reference/craft.md",
+    "reference/styles.md"
   ],
-  "default_seconds": 90
+  "default_seconds": 90,
+  "prompt_commands": [
+    {
+      "title": "ค่าที่ใช้ได้สำหรับ rig และ face/fx (assets.py look)",
+      "cmd": [
+        "scripts/assets.py",
+        "look"
+      ]
+    },
+    {
+      "title": "outfit ที่ใช้ได้ (assets.py outfits)",
+      "cmd": [
+        "scripts/assets.py",
+        "outfits"
+      ]
+    },
+    {
+      "title": "pose ที่ใช้ได้ (assets.py poses)",
+      "cmd": [
+        "scripts/assets.py",
+        "poses"
+      ]
+    },
+    {
+      "title": "prop ที่ใช้ได้ (assets.py props)",
+      "cmd": [
+        "scripts/assets.py",
+        "props"
+      ]
+    }
+  ]
 }

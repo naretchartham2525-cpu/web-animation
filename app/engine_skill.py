@@ -163,7 +163,30 @@ def chat_prompt(skill, proj_name, start_ep, count, s, idea=""):
         p = sdir / f
         if p.exists():
             parts.append(f"===== {f} =====\n" + p.read_text(encoding="utf-8", errors="replace").strip())
+    for c in m.get("prompt_commands") or []:
+        out = _cmd_output(sdir, c.get("cmd") or [])
+        if out:
+            parts.append(f"===== {c.get('title') or ' '.join(c.get('cmd'))} =====\n"
+                         "ใช้เฉพาะค่าในรายการนี้เท่านั้น\n" + out)
     return "\n\n".join(parts)
+
+
+_CMD_CACHE = {}
+
+
+def _cmd_output(sdir, cmd):
+    """รันคำสั่งของสกิล (เช่น assets.py poses) เพื่อแนบรายการค่าที่ใช้ได้ในคำสั่ง (แคชไว้)"""
+    if not cmd or not str(cmd[0]).endswith(".py"):
+        return ""
+    key = (str(sdir), tuple(cmd))
+    if key not in _CMD_CACHE:
+        try:
+            r = subprocess.run([sys.executable] + [str(x) for x in cmd], cwd=str(sdir),
+                               capture_output=True, text=True, timeout=60)
+            _CMD_CACHE[key] = r.stdout.strip() if r.returncode == 0 else ""
+        except Exception:
+            _CMD_CACHE[key] = ""
+    return _CMD_CACHE[key]
 
 
 # ---------------- ทำ 1 EP ----------------

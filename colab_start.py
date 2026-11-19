@@ -16,6 +16,16 @@ for d in sorted(os.listdir(f'{CODE}/skills')):
     if not os.path.exists(f'{ROOT}/skills/{d}'):
         shutil.copytree(f'{CODE}/skills/{d}', f'{ROOT}/skills/{d}')
         added.append(d)
+    else:
+        # สกิลที่มีอยู่แล้ว: อัปเดต autoclip.json (ไฟล์ของระบบเรา) + เติมไฟล์ที่ขาด ไม่ทับไฟล์อื่น
+        for base, _, files in os.walk(f'{CODE}/skills/{d}'):
+            rel = os.path.relpath(base, f'{CODE}/skills/{d}')
+            for fn in files:
+                src = os.path.join(base, fn)
+                dst = os.path.normpath(os.path.join(f'{ROOT}/skills/{d}', rel, fn))
+                if fn == 'autoclip.json' and rel == '.' or not os.path.exists(dst):
+                    os.makedirs(os.path.dirname(dst), exist_ok=True)
+                    shutil.copy2(src, dst)
 if added:
     print('➕ เพิ่มเทมเพลตใหม่จาก GitHub:', added)
 print('✅ Drive:', ROOT)
