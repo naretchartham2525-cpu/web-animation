@@ -2,7 +2,7 @@
 settings.json
 jobs.json
 projects/
-fonts/
+/fonts/
 *.tmp
 __pycache__/
 *.pyc
