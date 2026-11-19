@@ -212,13 +212,12 @@ body.eng .steps{grid-template-columns:auto minmax(0,1fr) auto}
 .stp svg{width:13px;height:13px}
 #durNum{width:30px;font-size:13.5px;border:none;background:transparent;text-align:right;font-weight:500;outline:none;-moz-appearance:textfield}
 #durNum::-webkit-inner-spin-button{display:none}
-.go{position:relative;overflow:hidden;isolation:isolate;background:linear-gradient(135deg,#d0633a 0%,#b5532f 45%,#8f3b1f 100%);color:#fff;border:none;border-radius:14px;height:44px;padding:0 18px 0 22px;font-family:Kanit;font-weight:600;font-size:15.5px;letter-spacing:.4px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:10px;box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 8px 22px -6px rgba(181,83,47,.65),0 2px 4px rgba(90,35,15,.2);transition:transform .15s,box-shadow .2s}
+.go{position:relative;overflow:hidden;isolation:isolate;background:linear-gradient(135deg,#d0633a 0%,#b5532f 45%,#8f3b1f 100%);color:#fff;border:none;border-radius:14px;height:44px;padding:0 26px;font-family:Kanit;font-weight:600;font-size:15.5px;letter-spacing:.4px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:10px;box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 8px 22px -6px rgba(181,83,47,.65),0 2px 4px rgba(90,35,15,.2);transition:transform .15s,box-shadow .2s}
 .go::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);transform:translateX(-120%);transition:transform .7s}
 .go:hover{transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 12px 26px -6px rgba(181,83,47,.75),0 2px 4px rgba(90,35,15,.2)}
 .go:hover::after{transform:translateX(120%)}
 .go:active{transform:translateY(0) scale(.98)}
-.go svg{width:17px;height:17px;padding:5px;box-sizing:content-box;border-radius:9px;background:rgba(255,255,255,.18);transition:transform .2s}
-.go:hover svg{transform:translateX(2px)}
+.go svg{width:16px;height:16px}
 .go:disabled{opacity:.45;cursor:not-allowed}
 .pop{position:absolute;bottom:calc(100% + 10px);right:0;background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:0 14px 40px rgba(60,40,20,.18);padding:16px;width:350px;display:none;z-index:5}
 .pop.on{display:block}
@@ -409,7 +408,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
       <button class="chip ghost" id="moreBtn" title="ตั้งค่าเพิ่มเติม"><svg class="i"><use href="#i-sliders"/></svg>ตั้งค่าเพิ่ม</button>
       <span class="swl" id="oWm" title="ลายน้ำชื่อช่อง"><span class="sw"><i></i></span>ลายน้ำ</span>
       <div class="gobox"><span class="cost" id="goCost"></span>
-        <button class="go" id="goBtn" onclick="create()"><span id="goTxt">Create</span><svg class="i"><use href="#i-send"/></svg></button></div>
+        <button class="go" id="goBtn" onclick="create()"><span id="goTxt">Create</span></button></div>
     </div>
   </div>
   <div class="pop" id="pop">
