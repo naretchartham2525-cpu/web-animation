@@ -450,6 +450,44 @@ def job_resume(jid):
     return ok(jobs.resume(jid))
 
 
+@app.delete("/api/jobs/<jid>")
+def job_delete(jid):
+    return ok(jobs.delete(jid))
+
+
+@app.post("/api/jobs/clear")
+def jobs_clear():
+    return ok(jobs.clear_finished())
+
+
+@app.delete("/api/projects/<name>/episodes/<int:ep>")
+def episode_delete(name, ep):
+    """ลบคลิป 1 EP → ย้ายไปถังขยะในโปรเจกต์ (กู้คืนได้จาก Drive)"""
+    if jobs.has_pending(name):
+        raise ValueError("เรื่องนี้มีงานค้างอยู่ หยุดหรือลบงานก่อน")
+    d = core.ep_dir(name, ep)
+    if not d.exists():
+        abort(404)
+    trash = core.project_dir(name) / "_trash"
+    trash.mkdir(exist_ok=True)
+    shutil.move(str(d), str(trash / f"ep{ep:02d}_{int(time.time())}"))
+    return ok()
+
+
+@app.delete("/api/projects/<name>")
+def project_delete(name):
+    """ลบทั้งเรื่อง → ย้ายไป projects/_trash (กู้คืนได้จาก Drive)"""
+    if jobs.has_pending(name):
+        raise ValueError("เรื่องนี้มีงานค้างอยู่ หยุดหรือลบงานก่อน")
+    d = core.project_dir(name)
+    if not (d / "project.json").exists():
+        abort(404)
+    trash = core.PROJECTS_DIR / "_trash"
+    trash.mkdir(exist_ok=True)
+    shutil.move(str(d), str(trash / f"{d.name}_{int(time.time())}"))
+    return ok()
+
+
 @app.post("/api/jobs/stop_all")
 def jobs_stop_all():
     return ok(jobs.stop_all())

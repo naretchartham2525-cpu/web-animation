@@ -303,8 +303,7 @@ def chat_prompt(skill, idea, start_ep, count, s, context="", bible=""):
         lines.append(f"\nตัวละครและโลกของเรื่อง:\n{bible.strip()}")
     if context:
         lines.append(f"\n{context}")
-    if idea:
-        lines.append(f"\nไอเดีย/สิ่งที่อยากให้เกิดขึ้น: {idea}")
+    lines.append(f"\nหัวข้อ/เรื่อง: {idea}" if idea else "\nหัวข้อ/เรื่อง: (ผมจะกำหนดเอง ให้รอรับหัวข้อก่อนเขียน)")
     lines.append(f"""
 รูปแบบคำตอบ (สำคัญมาก ระบบจะอ่านอัตโนมัติ):
 - แต่ละตอนขึ้นบรรทัดแรกด้วย "# EP <เลขตอน>: <ชื่อตอน>"

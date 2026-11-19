@@ -392,6 +392,8 @@ def list_projects():
     if not PROJECTS_DIR.exists():
         return out
     for d in sorted(PROJECTS_DIR.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True):
+        if d.name.startswith("_"):
+            continue
         p = read_json(d / "project.json")
         if not p:
             continue

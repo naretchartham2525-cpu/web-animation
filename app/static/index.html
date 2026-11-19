@@ -138,6 +138,11 @@ body.eng .noeng{display:none!important}
 .dur{display:inline-flex;align-items:center;gap:8px;background:var(--soft);border-radius:99px;padding:5px 12px;font-size:13.5px}
 .dur input[type=range]{width:110px;accent-color:var(--ink)}
 .dur b{font-weight:500;min-width:52px;text-align:right}
+.stp{border:none;background:var(--paper);border-radius:50%;width:24px;height:24px;display:grid;place-items:center;cursor:pointer;padding:0;box-shadow:0 1px 2px rgba(60,40,20,.15)}
+.stp:hover{background:var(--bg2)}
+.stp svg{width:13px;height:13px}
+#durNum{width:46px;border:none;background:transparent;text-align:right;font-weight:500;outline:none;-moz-appearance:textfield}
+#durNum::-webkit-inner-spin-button{display:none}
 .go{margin-left:auto;background:var(--ink);color:var(--paper);border:none;border-radius:99px;padding:10px 16px 10px 20px;font-family:Kanit;font-weight:500;font-size:16px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
 .go:hover{background:#3b332b}
 .go:disabled{opacity:.45;cursor:not-allowed}
@@ -228,6 +233,8 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
     <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.8"/><path d="M12 3.2l1.5 2.1 2.5-.6.6 2.5 2.4 1-.9 2.4 1.5 2.1-2.1 1.5.4 2.6-2.6.2-1.1 2.3-2.2-1.3-2.2 1.3-1.1-2.3-2.6-.2.4-2.6L3.8 13l1.5-2.1-.9-2.4 2.4-1 .6-2.5 2.5.6z"/></symbol>
     <symbol id="i-wand" viewBox="0 0 24 24"><path d="M5 19L15.5 8.5M14 5.5l.6-2 .6 2 2 .6-2 .6-.6 2-.6-2-2-.6zM18.5 10.5l.4-1.3.4 1.3 1.3.4-1.3.4-.4 1.3-.4-1.3-1.3-.4z"/><path d="M13.5 10.5l-2-2"/></symbol>
     <symbol id="i-cc" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="3"/><path d="M10.5 10.2a2.2 2.2 0 1 0 0 3.6M16.5 10.2a2.2 2.2 0 1 0 0 3.6"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V5h5v2M6.5 7l1 12.5h9l1-12.5M10.5 11v5M13.5 11v5"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6 12h12"/></symbol>
     <symbol id="i-reel" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="7.2" r="1.9"/><circle cx="16.2" cy="14.4" r="1.9"/><circle cx="7.8" cy="14.4" r="1.9"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 4l1.8 4.7 4.7 1.8-4.7 1.8L12 17l-1.8-4.7-4.7-1.8 4.7-1.8z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></symbol>
@@ -289,7 +296,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
     <div class="tweakrow" id="twRow"></div>
     <div class="opts">
       <div class="seg noeng" id="segMode"><button data-v="manual" class="on">วางบท (ฟรี)</button><button data-v="ai">AI เขียนบท</button></div>
-      <label class="dur noeng" title="ความยาวต่อ EP (ลากเลือกได้อิสระ)"><svg class="i"><use href="#i-clock"/></svg><input type="range" id="oDur" min="5" max="180" step="1"><b id="durLbl"></b></label>
+      <div class="dur noeng" title="ความยาวต่อ EP"><svg class="i"><use href="#i-clock"/></svg><button class="stp" data-d="-5" aria-label="ลด 5 วินาที"><svg class="i"><use href="#i-minus"/></svg></button><input type="range" id="oDur" min="5" max="180" step="1"><button class="stp" data-d="5" aria-label="เพิ่ม 5 วินาที"><svg class="i"><use href="#i-plus"/></svg></button><input type="number" id="durNum" min="5" max="600" step="1" aria-label="วินาที"><span class="small">วิ</span></div>
       <div class="seg" id="segQ"><button data-v="sd">มาตรฐาน</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div>
       <label class="chip noeng" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ซับไทย</option><option value="en">ซับอังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label>
       <label class="chip" title="เสียงพากย์"><svg class="i"><use href="#i-mic"/></svg><select id="oVoice"></select></label>
@@ -314,7 +321,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
 
 <!-- งานของฉัน -->
 <div class="drawer" id="drawer">
-  <div class="dh"><h3>งานของฉัน</h3><div style="display:flex;gap:6px"><button class="sb red" onclick="stopAll()"><svg class="i"><use href="#i-stop"/></svg>หยุดทั้งหมด</button><button class="x" onclick="closeDrawer()"><svg class="i"><use href="#i-x"/></svg></button></div></div>
+  <div class="dh"><h3>งานของฉัน</h3><div style="display:flex;gap:6px"><button class="sb" onclick="clearJobs()" title="ลบงานที่จบแล้ว/ผิดพลาด/หยุด ออกจากรายการ"><svg class="i"><use href="#i-trash"/></svg>ล้างงานเก่า</button><button class="sb red" onclick="stopAll()"><svg class="i"><use href="#i-stop"/></svg>หยุดทั้งหมด</button><button class="x" onclick="closeDrawer()"><svg class="i"><use href="#i-x"/></svg></button></div></div>
   <div class="db" id="drawerBody"></div>
 </div>
 
@@ -367,7 +374,8 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
       <button class="sb dark" onclick="copyNextPrompt()"><svg class="i"><use href="#i-copy"/></svg>คัดลอกคำสั่ง</button>
       <a class="sb" href="https://claude.ai/new" target="_blank" rel="noopener"><svg class="i"><use href="#i-ext"/></svg>เปิดแชท Claude</a>
     </div>
-    <div class="note" style="margin-top:6px">คำสั่งมีเทมเพลต + เรื่องย่อทุกตอน + บทตอนล่าสุดให้แล้ว</div>
+    <textarea class="in" id="nxIdea" style="min-height:56px;margin-top:8px" placeholder="หัวข้อ / สิ่งที่จะเกิดใน EP นี้ (ไม่บังคับ · ว่างไว้ = ไปกำหนดเองในแชท)"></textarea>
+    <div class="note" style="margin-top:6px">คำสั่งมีรูปแบบบท + เทมเพลต + เรื่องย่อตอนก่อนๆ ให้เรื่องต่อเนื่อง</div>
     <textarea class="in" id="nxPrompt" style="display:none;min-height:120px;margin-top:8px;font-size:13px" readonly></textarea>
   </div>
   <label class="f" style="margin-top:14px"><span><b class="disp" style="color:var(--ink)">2 · วางบทที่ได้</b> (หลาย EP ทีเดียวได้)</span>
@@ -387,8 +395,8 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
 <!-- คำสั่งสำหรับ Claude -->
 <div class="modal" id="mPrompt"><div class="mbox">
   <h2>คำสั่งสำหรับ Claude</h2>
-  <div class="note" style="margin:-4px 0 12px">คัดลอกไปวางในแชท Claude → ได้บทแล้วก๊อปกลับมาวางในแถบพิมพ์ → สร้าง (ฟรี)</div>
-  <label class="f"><span>ไอเดียเรื่อง (ไม่ใส่ก็ได้ ให้ Claude คิดตามเทมเพลต)</span><input class="in" id="prIdea" placeholder="เช่น เด็กหญิงซ่อมเมฆ" onchange="openPromptNew(true)"></label>
+  <div class="note" style="margin:-4px 0 12px">มีแค่รูปแบบบทและเทมเพลตที่จำเป็น · ใส่หัวข้อที่นี่หรือไปกำหนดในแชทก็ได้ → คัดลอก → วางในแชท Claude → ได้บทแล้วก๊อปกลับมาวางในแถบพิมพ์</div>
+  <label class="f"><span>หัวข้อ / เรื่องย่อ (ไม่บังคับ · ว่างไว้ = ไปกำหนดเองในแชท)</span><textarea class="in" id="prIdea" style="min-height:70px" placeholder="เช่น ป้าข้างบ้านจอดรถขวางหน้าบ้านทุกวัน พระเอกใช้กล้องวงจรปิดเอาคืน" onchange="openPromptNew(true)"></textarea></label>
   <div class="acts" style="margin-bottom:10px"><span class="small">จำนวน EP</span><select class="in" id="prCount" style="width:auto;border-radius:99px;padding:6px 12px" onchange="openPromptNew(true)"></select><span class="small">เทมเพลต: <b id="prTpl"></b></span></div>
   <textarea class="in" id="prText" style="min-height:240px;font-size:13px" readonly></textarea>
   <div class="mfoot"><a class="sb" href="https://claude.ai/new" target="_blank" rel="noopener"><svg class="i"><use href="#i-ext"/></svg>เปิดแชท Claude</a><button class="sb" onclick="closeM('mPrompt')">ปิด</button><button class="sb dark" onclick="copyText($('#prText').value)"><svg class="i"><use href="#i-copy"/></svg>คัดลอก</button></div>
@@ -530,7 +538,7 @@ function renderComposer() {
   document.body.classList.toggle("eng", eng);
   if (eng) { O.mode = "manual"; if (O.vis !== "ai") O.vis = "ai"; }
   segSet("#segMode", O.mode); segSet("#segQ", O.q); segSet("#segEngine", O.engine); segSet("#segVis", O.vis); segSet("#segPreset", O.preset); segSet("#segFps", O.fps); segSet("#segSub", O.sub);
-  $("#oDur").value = O.dur; $("#durLbl").textContent = fmtSec(+O.dur);
+  $("#oDur").value = Math.min(180, O.dur); $("#durNum").value = O.dur;
   $("#oRate").value = O.rate; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%";
   $("#oFont").value = O.font; $("#oSub").value = O.lang;
   $("#oVoice").innerHTML = voiceOpts(O.voice, tplSel?.engine ? "เสียงตามสกิล (ฟรี)" : tplSel ? `ตามเทมเพลต${tplVoice() ? " · " + voiceName(tplVoice()).split(" ·")[0] : ""}` : "เสียงหลัก (ฟรี)");
@@ -551,7 +559,9 @@ function renderComposer() {
   autoGrow();
 }
 ["#segMode:mode","#segQ:q","#segEngine:engine","#segVis:vis","#segPreset:preset","#segFps:fps","#segSub:sub"].forEach(x => { const [id, k] = x.split(":"); segBind(id, k); });
-$("#oDur").oninput = e => { O.dur = +e.target.value; $("#durLbl").textContent = fmtSec(O.dur); };
+$("#oDur").oninput = e => { O.dur = +e.target.value; $("#durNum").value = O.dur; };
+$("#durNum").onchange = e => { O.dur = Math.max(5, Math.min(600, Math.round(+e.target.value || 30))); renderComposer(); };
+document.querySelectorAll(".stp").forEach(b => b.onclick = () => { O.dur = Math.max(5, Math.min(600, O.dur + +b.dataset.d)); renderComposer(); });
 $("#oRate").oninput = e => { O.rate = +e.target.value; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%"; };
 $("#oFont").onchange = e => O.font = e.target.value;
 $("#oSub").onchange = e => { O.lang = e.target.value; renderComposer(); };
@@ -595,8 +605,7 @@ async function copyText(t) {
 async function openPromptNew(keep) {
   if (!keep) {
     $("#prCount").innerHTML = [1,2,3,4,5].map(n => `<option value="${n}">${n} EP</option>`).join("");
-    const t = $("#idea").value.trim();
-    $("#prIdea").value = t && !t.includes("#") && !t.includes("\n") && t.length < 300 ? t : "";
+    $("#prIdea").value = "";
   }
   $("#prTpl").textContent = tplSel ? tplSel.name : "ไม่ได้เลือก";
   const r = await call(() => api("POST", "/api/prompt", {template: tplSel?.id || "", idea: $("#prIdea").value.trim(), count: +$("#prCount").value, options: buildOpts()}));
@@ -642,6 +651,7 @@ function jobCard(j) {
   if (j.status === "review") a.push(`<button class="sb dark" onclick="openReview(dq('${q(j.review?.project || j.project)}'),${j.review?.ep || j.episode},'${j.id}')">${ic("pen")}ตรวจบท</button>`);
   if (["stopped","error","interrupted"].includes(j.status)) a.push(`<button class="sb" onclick="resumeJob('${j.id}')">${ic("redo")}ทำงานที่ค้างต่อ</button>`);
   a.push(`<button class="sb" onclick="openLog['${j.id}']=!openLog['${j.id}'];refreshJobs()">${ic("list")}log</button>`);
+  a.push(`<button class="sb red" onclick="delJob('${j.id}')" title="ลบงานนี้ออกจากรายการ (คลิปที่เสร็จแล้วไม่หาย)">${ic("trash")}ลบ</button>`);
   const spin = j.status === "running" ? `<span class="reel">${ic("reel")}</span> ` : "";
   return `<div class="job"><div class="h"><span class="n">${spin}${esc(j.project)}</span><span class="st ${c}">${t}</span></div>
     <div class="prog"><i style="width:${j.progress || 0}%"></i></div>
@@ -675,10 +685,17 @@ function vidActs() {
     ${o.srt ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt}?dl=1">${ic("down")}ซับไทย</a>` : ""}
     ${o.srt_en ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt_en}?dl=1">${ic("down")}ซับ EN</a>` : ""}
     <button class="sb" onclick="openReview(dq('${q(o.project)}'),${o.ep})">${ic("pen")}บท</button>
-    ${isLatest(o) ? `<button class="sb acc" onclick="nextEp(dq('${q(o.project)}'))">${ic("plus")}ทำ EP ${o.ep + 1} ต่อ</button>` : ""}`;
+    ${isLatest(o) ? `<button class="sb acc" onclick="nextEp(dq('${q(o.project)}'))">${ic("plus")}ทำ EP ${o.ep + 1} ต่อ</button>` : ""}
+    <span style="flex-basis:100%;height:0"></span>
+    <button class="sb red" onclick="delClip(dq('${q(o.project)}'),${o.ep})">${ic("trash")}ลบคลิปนี้</button>
+    <button class="sb red" onclick="delProject(dq('${q(o.project)}'))">${ic("trash")}ลบทั้งเรื่อง</button>`;
 }
 async function stopJob(id) { if (!ask("หยุดงานนี้? (ของที่ทำแล้วไม่หาย กดทำต่อได้)")) return; await call(() => api("POST", `/api/jobs/${id}/stop`)); refreshJobs(); }
 async function resumeJob(id) { if (await call(() => api("POST", `/api/jobs/${id}/resume`))) { toast("เข้าคิวแล้ว"); refreshJobs(); } }
+async function delJob(id) { if (!ask("ลบงานนี้ออกจากรายการ? (ถ้ากำลังทำจะหยุดก่อน · คลิปที่เสร็จแล้วไม่หาย)")) return; if (await call(() => api("DELETE", `/api/jobs/${id}`))) { toast("ลบงานแล้ว"); refreshJobs(); } }
+async function clearJobs() { const n = await call(() => api("POST", "/api/jobs/clear")); if (n !== undefined) { toast(`ลบงานเก่า ${n ?? 0} รายการ`); refreshJobs(); } }
+async function delClip(project, ep) { if (!ask(`ลบคลิป ${project} EP ${ep}? (ย้ายไปถังขยะใน Drive กู้คืนได้)`)) return; if (await call(() => api("DELETE", `/api/projects/${enc(project)}/episodes/${ep}`))) { closeM("mVid"); toast("ลบคลิปแล้ว"); refreshJobs(); } }
+async function delProject(project) { if (!ask(`ลบทั้งเรื่อง “${project}” ทุก EP? (ย้ายไปถังขยะใน Drive กู้คืนได้)`)) return; if (await call(() => api("DELETE", `/api/projects/${enc(project)}`))) { closeM("mVid"); toast("ลบทั้งเรื่องแล้ว"); refreshJobs(); } }
 async function stopAll() { if (!ask("หยุดงานทั้งหมด?")) return; await call(() => api("POST", "/api/jobs/stop_all")); refreshJobs(); }
 
 // ================= ทำ EP ต่อ =================
@@ -689,7 +706,7 @@ function nextEp(project) {
   $("#nxTitle").textContent = `ทำ EP ต่อ · ${project}`;
   $("#nxCount").innerHTML = [1,2,3,4,5].map(n => `<option value="${n}">${n === 1 ? "EP " + nx.start : `EP ${nx.start}–${nx.start + n - 1}`}</option>`).join("");
   $("#nxVoice").innerHTML = voiceOpts("", "เสียงเดิมของเรื่อง");
-  $("#nxText").value = ""; $("#nxPrompt").style.display = "none"; nx.engine = false; updNx(); openM("mNext");
+  $("#nxText").value = ""; $("#nxIdea").value = ""; $("#nxPrompt").style.display = "none"; nx.engine = false; updNx(); openM("mNext");
   tweakUI($("#nxTw"), [], "");
   api("GET", "/api/projects/" + enc(project)).then(p => {
     const o = (p && p.options) || {}; tweakUI($("#nxTw"), String(o.tweaks || "").split(","), o.tweak_text || "");
@@ -702,7 +719,7 @@ function updNx() { const n = countEps($("#nxText").value, nx && nx.engine); $("#
 $("#nxText").oninput = updNx;
 const nxOpts = () => ({...($("#nxVoice").value ? {voice: $("#nxVoice").value} : {}), ...tweakVal($("#nxTw"))});
 async function copyNextPrompt() {
-  const r = await call(() => api("POST", "/api/prompt", {project: nx.project, count: +$("#nxCount").value, options: nxOpts()})); if (!r) return;
+  const r = await call(() => api("POST", "/api/prompt", {project: nx.project, count: +$("#nxCount").value, idea: $("#nxIdea").value.trim(), options: nxOpts()})); if (!r) return;
   $("#nxPrompt").value = r.prompt;
   if (!await copyText(r.prompt)) { $("#nxPrompt").style.display = ""; $("#nxPrompt").select(); }
 }

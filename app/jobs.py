@@ -180,6 +180,34 @@ class JobManager:
         self._save(force=True)
         return self._public(j)
 
+    def delete(self, job_id):
+        """ลบงานออกจากรายการ (ถ้ากำลังทำอยู่ หยุดก่อนแล้วลบเมื่อหยุดเสร็จ) — ไม่ลบไฟล์คลิป"""
+        with self.lock:
+            j = self.jobs.get(job_id)
+            if not j:
+                raise ValueError("ไม่พบงาน")
+            if j["status"] in ("running", "review"):
+                j["_stop"] = True
+                j["_delete"] = True
+                j["stage"] = "กำลังหยุดและลบ..."
+            else:
+                if job_id in self.queue:
+                    self.queue.remove(job_id)
+                self.jobs.pop(job_id, None)
+                if job_id in self.order:
+                    self.order.remove(job_id)
+        self._save(force=True)
+        return True
+
+    def clear_finished(self):
+        with self.lock:
+            ids = [i for i in self.order if self.jobs[i]["status"] in ("done", "stopped", "error", "interrupted")]
+            for i in ids:
+                self.jobs.pop(i, None)
+                self.order.remove(i)
+        self._save(force=True)
+        return len(ids)
+
     def stop_all(self):
         with self.lock:
             ids = [i for i in self.order if self.jobs[i]["status"] in ("queued", "running", "review")]
@@ -255,6 +283,11 @@ class JobManager:
                 job["finished"] = time.time()
                 job["review"] = None
                 self.current = None
+                if job.get("_delete"):
+                    with self.lock:
+                        self.jobs.pop(jid, None)
+                        if jid in self.order:
+                            self.order.remove(jid)
                 self._save(force=True)
                 if self.queue:
                     self.wake.set()

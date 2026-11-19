@@ -149,8 +149,7 @@ def chat_prompt(skill, proj_name, start_ep, count, s, idea=""):
                      + json.dumps(series, ensure_ascii=False, indent=1) + "\n```")
     else:
         parts.append("ยังไม่มีซีรีส์: เขียน series.json ใหม่ก่อน แล้วตามด้วย EP")
-    if idea:
-        parts.append(f"ไอเดีย/พล็อต: {idea}")
+    parts.append(f"หัวข้อ/เรื่อง: {idea}" if idea else "หัวข้อ/เรื่อง: (ผมจะกำหนดเอง ให้รอรับหัวข้อก่อนเขียน)")
     if s.get("_tweak_th"):
         parts.append(f"ปรับแต่งเพิ่มเติม: {s['_tweak_th']}")
     sec = int((series or {}).get("seconds") or s.get("target_seconds") or m.get("default_seconds") or 90)
@@ -160,7 +159,7 @@ def chat_prompt(skill, proj_name, start_ep, count, s, idea=""):
 - ถ้ารันโค้ดได้ ให้รันตัวตรวจ drama_tool.py check จนผ่านก่อนส่ง
 - ฉากหลังเฉพาะ (ไม่บังคับ): ส่งเป็น code block ```python``` บรรทัดแรก "# bg: <place_id>"
 - ไม่ต้องมีคำอธิบายอื่น""")
-    for f in m.get("prompt_files") or ["SKILL.md"]:
+    for f in m.get("prompt_files") or ["reference/format.md"]:
         p = sdir / f
         if p.exists():
             parts.append(f"===== {f} =====\n" + p.read_text(encoding="utf-8", errors="replace").strip())

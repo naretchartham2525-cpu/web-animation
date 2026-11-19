@@ -20,10 +20,8 @@
   ],
   "render": "scripts/render_ep.py",
   "prompt_files": [
-    "SKILL.md",
     "reference/format.md",
-    "reference/craft.md",
-    "reference/styles.md"
+    "reference/craft.md"
   ],
   "default_seconds": 90
 }
