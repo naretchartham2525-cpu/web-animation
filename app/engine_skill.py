@@ -326,6 +326,13 @@ def run_episode(ctx, proj, ep, s, skill):
     work = core.WORK_DIR / core.safe_name(name) / f"ep{ep:02d}"
     shutil.rmtree(work, ignore_errors=True)
     work.mkdir(parents=True)
+    from . import voicecast, voicesheet
+    try:
+        series_now = core.read_json(sdir / "series.json") or {}
+        spk = voicesheet.speakers(voicesheet.lines_engine(str(skill_dir), series_now, raw), series_now)
+        s["voice_map"] = voicecast.resolve_for_episode(ctx, name, skill, s, spk, series_now, engine=True)
+    except Exception as e:
+        ctx.log(f"เลือกเสียงตัวละครอัตโนมัติไม่สำเร็จ: {e}")
     opts = {"voice": s.get("_voice_full") or "", "voice_map": s.get("voice_map") or {},
             "eleven_model": s.get("eleven_model") or "",
             "rate_add": int(str(s.get("edge_rate") or "+0%").replace("%", "") or 0),

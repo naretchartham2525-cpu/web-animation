@@ -342,6 +342,41 @@ def eleven_status():
     return ok(out)
 
 
+@app.post("/api/voice-auto")
+def voice_auto():
+    """ดูเสียงที่ระบบจะเลือกให้ (ไม่บันทึก) + เครดิตโดยประมาณ"""
+    from . import voicecast, eleven
+    b = request.get_json(force=True)
+    sheets = _voice_sheets(text=b.get("text"), tpl=b.get("template"), project=b.get("project"),
+                           ep=b.get("ep"))
+    p = core.get_project(b.get("project")) if b.get("project") else None
+    sid = b.get("template") or (p or {}).get("skill") or ""
+    skill = core.get_skill(sid) if sid else None
+    series = None
+    if skill and skill.get("engine"):
+        from . import engine_skill
+        parsed = engine_skill.parse_paste(b.get("text")) if b.get("text") else {"series": None}
+        series = parsed.get("series") or (core.read_json(engine_skill.engine_dir(p["name"]) / "series.json") if p else None)
+    pmap = dict(((p or {}).get("options") or {}).get("voice_map") or {})
+    pmap.update({k: v for k, v in (b.get("voice_map") or {}).items() if v})
+    spk = sheets[0]["speakers"]
+    provider = voicecast.provider_for(skill)
+    if skill and skill.get("engine") and provider == "edge":
+        vm = pmap
+    else:
+        known = None
+        if not (skill and skill.get("engine")):
+            ctxt = "\n".join(f"[{x['name']}] {x['text']}" for x in sheets[0]["lines"])
+            known = voicecast.classify(skill, spk, ctxt)       # ความรู้เรื่องเพศ/วัย เก็บไว้ได้
+        mem_before = voicecast.load_mem(sid)
+        vm, provider = voicecast.auto_map(spk, skill, pmap, series, known=known)
+        voicecast.save_mem(sid, mem_before)          # แค่ดูตัวอย่าง: ยังไม่จำการเลือกเสียง
+    model = b.get("eleven_model") or ((p or {}).get("options") or {}).get("eleven_model") or eleven.DEFAULT_MODEL
+    rate = eleven.model_info(model)[2]
+    credits = sum(int(x["chars"] * rate) for x in spk if str(vm.get(x["key"], "")).startswith("eleven:"))
+    return ok({"provider": provider, "voice_map": vm, "speakers": spk, "credits": credits, "model": model})
+
+
 @app.post("/api/projects/<name>/voices")
 def project_voices(name):
     """บันทึกเสียงตัวละครของเรื่อง (ใช้ทุก EP ต่อจากนี้)"""

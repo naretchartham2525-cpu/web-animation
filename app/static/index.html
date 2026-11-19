@@ -530,9 +530,16 @@ async function loadEleven() {
   renderComposer();
 }
 const isEl = v => String(v || "").startsWith("eleven:");
+function prettyVoice(v) {   // edge:th-TH-NiwatNeural|-8Hz → นิวัฒน์ · เสียงต่ำ
+  const [base, p] = String(v || "").split("|");
+  const n = (voiceName(base) || base).split(" ·")[0];
+  if (!p) return voiceName(base) || base;
+  const hz = parseInt(p); return `${n} · ${hz <= -15 ? "ทุ้มมาก" : hz < 0 ? "ทุ้ม" : hz >= 15 ? "แหลม" : "สูง"} (${p}) · ฟรี`;
+}
 const elRate = m => (EL.models.find(x => x.id === m) || {rate:1}).rate;
 // ---------- เสียงตัวละคร ----------
-let VC = {main: {map:{}, model:""}, nx: {map:{}, model:""}}, vcCtx = "main", vcSpk = [];
+let VC = {main: {map:{}, model:""}, nx: {map:{}, model:""}}, vcCtx = "main", vcSpk = [], vcAuto = {};
+let AUTO = {provider:"", credits:0};
 async function openVoices(k) {
   vcCtx = k; openM("mVoices"); $("#vcBody").innerHTML = '<div class="small">กำลังโหลดรายชื่อตัวละครจากบท…</div>';
   if (!EL.models.length) await loadEleven();
@@ -548,27 +555,34 @@ async function openVoices(k) {
     const p = await api("GET", `/api/projects/${enc(nx.project)}`).catch(() => null);
     VC.nx = {map: {...(p?.options?.voice_map || {})}, model: p?.options?.eleven_model || ""};
   }
+  // เติมเสียงที่ระบบเลือกให้อัตโนมัติ (ยังแก้ได้)
+  const a = await api("POST", "/api/voice-auto", {text: text || undefined, template: vfTpl(k), project: k === "nx" ? nx.project : undefined,
+    ep: !text && k === "nx" ? nx.lastEp : undefined, voice_map: VC[k].map, eleven_model: VC[k].model || undefined}).catch(() => null);
+  vcAuto = a ? a.voice_map : {};
   vcRender();
 }
 function vcRender() {
   const st = VC[vcCtx];
   const el = EL.enabled;
-  const opts = sel => `<option value="" ${!sel ? "selected" : ""}>ตามเสียงหลัก / สกิล</option>` +
-    VOICE_GROUPS.concat(elGroup()).map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t}</option>`).join("")}</optgroup>`).join("");
+  const all = VOICE_GROUPS.concat(elGroup());
+  const opts = (sel, auto) => `<option value="">อัตโนมัติ${auto ? ": " + esc(prettyVoice(auto)) : ""}</option>` +
+    (sel && !all.some(g => g[1].some(x => x[0] === sel)) ? `<option value="${esc(sel)}" selected>${esc(prettyVoice(sel))}</option>` : "") +
+    all.map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t}</option>`).join("")}</optgroup>`).join("");
   const model = st.model || EL.default_model || "eleven_v4";
   let credits = 0;
   const rows = vcSpk.map(p => {
-    const v = st.map[p.key] || "";
+    const v = st.map[p.key] || vcAuto[p.key] || "";
+    const auto = !st.map[p.key] && vcAuto[p.key];
     const c = isEl(v) ? Math.round(p.chars * elRate(model)) : 0; credits += c;
     const pv = isEl(v) ? (EL.voices.find(x => "eleven:" + x.id === v) || {}).preview : "";
-    return `<div class="vcrow"><div><b>${esc(p.name)}</b><span class="small">${p.count} ประโยค · ${p.chars} ตัวอักษร${c ? ` · ≈ ${c.toLocaleString()} เครดิต` : ""}</span></div>
-      <select class="in" data-k="${esc(p.key)}">${opts(v)}</select>${pv ? `<audio controls preload="none" src="${pv}"></audio>` : "<span></span>"}</div>`;
+    return `<div class="vcrow"><div><b>${esc(p.name)}</b><span class="small">${p.count} ประโยค · ${p.chars} ตัวอักษร${c ? ` · ≈ ${c.toLocaleString()} เครดิต` : ""}${auto ? " · เลือกให้อัตโนมัติ" : ""}</span></div>
+      <select class="in" data-k="${esc(p.key)}">${opts(st.map[p.key] || "", vcAuto[p.key] || "")}</select>${pv ? `<audio controls preload="none" src="${pv}"></audio>` : "<span></span>"}</div>`;
   }).join("");
   const sub = EL.sub && EL.sub.left != null ? `เหลือ ${EL.sub.left.toLocaleString()} จาก ${EL.sub.limit.toLocaleString()} เครดิต` : "";
   $("#vcBody").innerHTML = `${rows || '<div class="small">ไม่พบตัวละครในบท</div>'}
     ${el ? `<label class="f" style="margin-top:12px"><span>โมเดล ElevenLabs (อ่านภาษาไทยได้)</span><select class="in" id="vcModel">${EL.models.map(m => `<option value="${m.id}" ${m.id === model ? "selected" : ""}>${m.name}</option>`).join("")}</select></label>` :
       `<div class="note">ยังไม่ได้เชื่อม ElevenLabs: ใส่ ELEVENLABS_API_KEY ใน Colab Secrets แล้วรันช่องใหม่ (ตอนนี้เลือกได้แค่ Edge ฟรี)</div>`}
-    <div class="vcsum">${credits ? `ใช้ ElevenLabs ≈ <b>${credits.toLocaleString()}</b> เครดิต/EP ${sub ? "· " + sub : ""}<br><span class="small">ประโยคที่เคยสร้างแล้วไม่คิดซ้ำ · tag อารมณ์ใส่ให้อัตโนมัติ (v3/v4)</span>` : "ใช้เสียงฟรีทั้งหมด"}</div>`;
+    <div class="vcsum">${credits ? `ใช้ ElevenLabs ≈ <b>${credits.toLocaleString()}</b> เครดิต/EP ${sub ? "· " + sub : ""}<br><span class="small">ระบบเลือกเสียงให้เองตามเพศ/วัย และจำไว้ทั้งเรื่องนี้และเรื่องใหม่ของเทมเพลตนี้ · ประโยคที่เคยสร้างแล้วไม่คิดซ้ำ · tag อารมณ์ใส่ให้อัตโนมัติ</span>` : "ใช้เสียงฟรีทั้งหมด"}</div>`;
   $("#vcBody").querySelectorAll("select[data-k]").forEach(x => x.onchange = () => { st.map[x.dataset.k] = x.value; vcRender(); });
   const m = $("#vcModel"); if (m) m.onchange = () => { st.model = m.value; vcRender(); };
 }
@@ -581,7 +595,7 @@ async function saveVoices() {
     if (!r) return;
     toast("บันทึกเสียงตัวละครของเรื่องนี้แล้ว (ใช้ทุก EP ต่อจากนี้)");
   } else toast("ตั้งเสียงตัวละครแล้ว");
-  closeM("mVoices"); renderComposer();
+  closeM("mVoices"); renderComposer(); autoPreview();
 }
 
 // ================= state =================
@@ -685,9 +699,13 @@ function segSet(id, v) { document.querySelectorAll(id + " button").forEach(b => 
 function autoGrow() { const t = $("#idea"); t.style.height = "auto"; t.style.height = Math.min(180, t.scrollHeight) + "px"; }
 function tplVoice() { return tplSel?.options?.voice || ""; }
 function effVoice() { return O.voice || tplVoice(); }
-const usesEl = () => isEl(effVoice()) || Object.values(VC.main.map).some(isEl);
+const usesEl = () => isEl(effVoice()) || Object.values(VC.main.map).some(isEl) || (AUTO.provider === "eleven" && AUTO.credits > 0 && !VF.main.length);
 function isFree() { return (O.mode === "manual" || O.engine === "free") && !usesEl(); }
-function goLabel() { const n = O.mode === "manual" ? countEps($("#idea").value) : 1; $("#goTxt").textContent = `สร้าง${n > 1 ? ` ${n} EP` : ""}${isFree() ? " · ฟรี" : ""}`; }
+function goLabel() {
+  const n = O.mode === "manual" ? countEps($("#idea").value) : 1;
+  const el = AUTO.provider === "eleven" && AUTO.credits && !VF.main.length ? ` · ≈${AUTO.credits.toLocaleString()} เครดิตเสียง` : "";
+  $("#goTxt").textContent = `สร้าง${n > 1 ? ` ${n} EP` : ""}${isFree() ? " · ฟรี" : el}`;
+}
 function renderComposer() {
   const eng = !!tplSel?.engine;
   document.body.classList.toggle("eng", eng);
@@ -709,6 +727,7 @@ function renderComposer() {
   if (O.vis === "drive") notes.push("ใช้ภาพ/คลิปจาก Drive: projects/<ชื่อเรื่อง>/input");
   if (O.lang === "en" || O.lang === "both") notes.push("ซับอังกฤษ: ใส่ในบทเป็นช่องที่ 3 (บท | ภาพ | English) หรือให้ระบบแปลด้วย AI ฟรี");
   if (eng) { notes.length = 0; notes.push("สกิลนี้มีเอนจินของตัวเอง: สกิลวาดแอนิเมชันและฉาก · ระบบคุมเสียง ลายน้ำ ความคมชัด"); }
+  if (AUTO.provider === "eleven" && AUTO.credits && !VF.main.length) notes.push(`เสียงตัวละคร ElevenLabs (เลือกให้อัตโนมัติ) ≈ ${AUTO.credits.toLocaleString()} เครดิต · กด 👥 เพื่อดู/เปลี่ยน`);
   $("#popNote").innerHTML = notes.map(esc).join("<br>");
   autoGrow();
 }
@@ -861,7 +880,20 @@ addEventListener("drop", e => { if (!hasFiles(e)) return; e.preventDefault(); dr
 
 function showComposer() { if ($("#composer").classList.contains("min")) toggleComposer(); }
 $("#idea").onkeydown = e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) create(); };
-$("#idea").oninput = () => { autoGrow(); goLabel(); };
+$("#idea").oninput = () => { autoGrow(); goLabel(); autoPreview(); };
+// ดูเสียงที่ระบบจะเลือกให้ + เครดิต (หลังหยุดพิมพ์/วางบท)
+let autoT;
+function autoPreview() {
+  clearTimeout(autoT);
+  autoT = setTimeout(async () => {
+    const text = $("#idea").value.trim();
+    if (!text || O.mode !== "manual" || !EL.enabled || DEMO) { if (AUTO.credits) { AUTO = {provider:"", credits:0}; renderComposer(); } return; }
+    try {
+      const r = await api("POST", "/api/voice-auto", {text, template: tplSel?.id || "", voice_map: VC.main.map, eleven_model: VC.main.model || undefined});
+      AUTO = {provider: r.provider, credits: r.credits}; renderComposer();
+    } catch (e) { AUTO = {provider:"", credits:0}; }
+  }, 900);
+}
 const isEngText = () => !!tplSel?.engine;
 function countEngine(text) { return ((text || "").match(/"shots"\s*:/g) || []).length; }
 function countEps(text, eng) {

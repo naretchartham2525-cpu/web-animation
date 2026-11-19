@@ -63,6 +63,8 @@ def patch_voices(R, opts):
             chosen = main_voice
         if chosen and chosen.startswith("edge:"):
             v = chosen[5:]
+            if "|" in v:
+                v, pitch = v.split("|", 1)
         elif chosen and chosen.startswith("eleven:"):
             v, pitch = chosen, "+0Hz"
         return v, pitch, _rate(rate, rate_add)

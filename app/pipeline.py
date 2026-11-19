@@ -440,12 +440,15 @@ def make_tts(ctx, text, out, s, speaker=""):
         n = eleven.tts(text, voice[7:], s.get("eleven_model") or eleven.DEFAULT_MODEL, out)
         ctx.log(f"ElevenLabs: {n} ตัวอักษร" if n else "ElevenLabs: ใช้เสียงที่เคยสร้างไว้ (ไม่เสียเครดิต)")
         return
+    pitch = ""
     if voice.startswith("edge:"):
         voice = voice[5:]
+    if "|" in voice:
+        voice, pitch = voice.split("|", 1)
     if voice and not voice.startswith(("th-", "en-")):
         voice = ""  # ไม่ใช่ชื่อเสียง Edge → เสียงฟรีหลัก
     cmd = [sys.executable, "-m", "edge_tts", "--voice", voice or s["edge_voice"],
-           f"--rate={s.get('edge_rate', '+0%')}", "--text", text, "--write-media", str(out)]
+           f"--rate={s.get('edge_rate', '+0%')}"] + ([f"--pitch={pitch}"] if pitch else []) + ["--text", text, "--write-media", str(out)]
     ctx.run(cmd, "edge-tts")
 
 
@@ -571,6 +574,14 @@ def run_episode(ctx, proj_name, ep):
 
     # 4) เสียงพากย์ (หรือเสียงเงียบตามความยาวที่ควรอ่าน)
     set_stage("tts")
+    if not own_voices(s) and s.get("voice_on", True):
+        from . import voicecast, voicesheet
+        try:
+            spk = voicesheet.speakers(voicesheet.lines_manual(scenes))
+            ctxt = "\n".join(f"[{sc.get('speaker') or 'ผู้บรรยาย'}] {sc['narration']}" for sc in scenes)
+            s["voice_map"] = voicecast.resolve_for_episode(ctx, proj_name, skill, s, spk, context=ctxt)
+        except Exception as e:
+            ctx.log(f"เลือกเสียงตัวละครอัตโนมัติไม่สำเร็จ: {e}")
     adir = edir / "audio"
     adir.mkdir(exist_ok=True)
     own = own_voices(s)
