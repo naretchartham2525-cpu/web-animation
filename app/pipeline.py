@@ -34,6 +34,52 @@ def _truthy(v):
     return v if isinstance(v, bool) else str(v).lower() in ("1", "true", "on", "yes")
 
 
+# ---------------- ปรับแต่งเพิ่มเติม (สั่งเฉพาะครั้ง ไม่เปลี่ยนเทมเพลต) ----------------
+TWEAKS = {
+    "slow":    {"th": "จังหวะช้าลง นุ่มนวล ไม่รีบ", "img": "", "set": {"scene_gap": 0.8, "kb_speed": 0.00035, "rate_add": -10}},
+    "light":   {"th": "เน้นแสงเงา บรรยากาศมีมิติ", "img": "cinematic lighting, soft shadows, volumetric light, depth"},
+    "real":    {"th": "รายละเอียดสมจริงขึ้น", "img": "highly detailed, realistic textures, natural colors"},
+    "still":   {"th": "", "img": "", "set": {"ken_burns": False}},
+    "vivid":   {"th": "สีสันสดใส มีชีวิตชีวา", "img": "vibrant colors, high contrast, lively"},
+}
+
+
+def _rate_add(rate, add):
+    try:
+        v = int(str(rate or "+0%").replace("%", "")) + add
+    except ValueError:
+        v = add
+    return f"{'+' if v >= 0 else ''}{v}%"
+
+
+def apply_tweaks(s):
+    keys = s.get("_tweaks") or []
+    if isinstance(keys, str):
+        keys = [k.strip() for k in keys.split(",") if k.strip()]
+    th, img = [], []
+    for k in keys:
+        t = TWEAKS.get(k)
+        if not t:
+            continue
+        if t.get("th"):
+            th.append(t["th"])
+        if t.get("img"):
+            img.append(t["img"])
+        for sk, sv in (t.get("set") or {}).items():
+            if sk == "rate_add":
+                s["edge_rate"] = _rate_add(s.get("edge_rate"), sv)
+            else:
+                s[sk] = sv
+    text = str(s.get("_tweak_text") or "").strip()
+    if text:
+        th.append(text)
+        if text.isascii():          # เขียนเป็นอังกฤษ = ใช้กับภาพด้วย
+            img.append(text)
+    s["_tweak_th"] = " · ".join(th)
+    s["_img_extra"] = ", ".join(img)
+    return s
+
+
 def _apply_voice(s, v):
     """เสียง: 'edge:th-TH-NiwatNeural' | 'gemini:Kore' | ชื่อเสียงเฉยๆ"""
     v = str(v).strip()
@@ -53,7 +99,7 @@ def effective_settings(proj, skill, ep_opts=None):
     layers = [(skill or {}).get("options") or {}, proj.get("options") or {}, ep_opts or {}]
     for layer in layers:
         for k, v in layer.items():
-            if v in (None, ""):
+            if v in (None, "") and k not in ("tweaks", "tweak_text"):
                 continue
             if k == "duration":
                 s["target_seconds"] = int(float(v))
@@ -61,6 +107,10 @@ def effective_settings(proj, skill, ep_opts=None):
                 s["scenes_per_episode"] = int(float(v))
             elif k == "voice":
                 _apply_voice(s, v)
+            elif k == "tweaks":
+                s["_tweaks"] = v          # ชั้นหลังแทนที่ชั้นก่อน (EP ต่อสั่งใหม่ได้)
+            elif k == "tweak_text":
+                s["_tweak_text"] = v
             elif k in ("voice_on", "watermark"):
                 s[k] = _truthy(v)
             else:
@@ -73,6 +123,7 @@ def effective_settings(proj, skill, ep_opts=None):
     if proj.get("voice"):
         s["_voice"] = proj["voice"]
     s["aspect"] = "9:16"   # ทำสำหรับ TikTok / Reels เท่านั้น
+    apply_tweaks(s)
     if not int(s.get("scenes_per_episode") or 0):
         # 1 EP ไม่ต้องหลายฉาก แค่ครอบคลุมเรื่อง (~8 วิ/ฉาก)
         s["scenes_per_episode"] = max(2, min(12, round(int(s["target_seconds"]) / 8)))
@@ -93,7 +144,7 @@ def _script_messages(proj, skill_text, ep, s, prev_summary, inputs):
     system = (
         "คุณคือนักเขียนบทหนังสั้นแอนิเมชันมืออาชีพ ทำตามเทมเพลต/สไตล์ด้านล่างอย่างเคร่งครัด\n\n"
         f"=== เทมเพลต ===\n{skill_text or '(ไม่มีเทมเพลต ใช้วิจารณญาณของคุณ)'}\n=== จบเทมเพลต ===\n\n"
-        + (f"=== ความเป็นช่อง (ใส่ทุกตอน) ===\n{s['channel_note']}\n\n" if s.get("channel_note") else "")
+        + (f"=== ปรับแต่งเพิ่มเติมครั้งนี้ (เสริมจากเทมเพลต ไม่เปลี่ยนสไตล์หลัก) ===\n{s['_tweak_th']}\n\n" if s.get("_tweak_th") else "")
         + f"กฎ: บทพากย์เป็นภาษา{s['language']} image_prompt เป็นภาษาอังกฤษ "
         f"ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น ตามรูปแบบ:\n{SCRIPT_SCHEMA}"
     )
@@ -238,8 +289,8 @@ def chat_prompt(skill, idea, start_ep, count, s, context="", bible=""):
     lines = [f"ช่วยเขียนบทพากย์หนังสั้นแอนิเมชัน {eps}" + (" ต่อจากเรื่องเดิม" if start_ep > 1 else "")]
     if skill:
         lines.append(f"\n=== เทมเพลต / สไตล์ (ทำตามนี้เคร่งครัด) ===\n{skill['content'].strip()}\n=== จบเทมเพลต ===")
-    if s.get("channel_note"):
-        lines.append(f"\nความเป็นช่อง (ใส่ทุกตอน):\n{s['channel_note']}")
+    if s.get("_tweak_th"):
+        lines.append(f"\nปรับแต่งเพิ่มเติม (เสริมจากเทมเพลต ไม่เปลี่ยนสไตล์หลัก): {s['_tweak_th']}")
     if bible.strip():
         lines.append(f"\nตัวละครและโลกของเรื่อง:\n{bible.strip()}")
     if context:
@@ -353,7 +404,7 @@ def _ai_images(ctx, proj_name, script, edir, s, w, h, skill):
     idir = edir / "images"
     idir.mkdir(exist_ok=True)
     style = ", ".join(x for x in ((skill or {}).get("options", {}).get("image_style") or s.get("image_style") or "",
-                                   s.get("channel_style") or "") if x)
+                                   s.get("_img_extra") or "") if x)
     # ขนาดที่ขอจากบริการฟรี (ไม่ต้องใหญ่ เดี๋ยว ffmpeg ขยายให้) → เร็วขึ้น
     scale = min(1.0, 1024 / max(w, h))
     iw, ih = int(w * scale) // 8 * 8, int(h * scale) // 8 * 8

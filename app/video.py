@@ -47,7 +47,8 @@ def segment_cmd(kind, src, audio, out, dur, w, h, s, offset=0.0, zoom_in=True):
     if kind == "image":
         frames = max(1, int(dur * fps) + 1)
         if s.get("ken_burns", True):
-            z = "min(zoom+0.0007,1.12)" if zoom_in else "if(eq(on,0),1.12,max(zoom-0.0007,1.0))"
+            k = float(s.get("kb_speed") or 0.0007)
+            z = f"min(zoom+{k},1.12)" if zoom_in else f"if(eq(on,0),1.12,max(zoom-{k},1.0))"
             vf = (f"scale={w*2}:{h*2}:force_original_aspect_ratio=increase,crop={w*2}:{h*2},"
                   f"zoompan=z='{z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={frames}:s={w}x{h}:fps={fps},"
                   f"setsar=1,format=yuv420p")

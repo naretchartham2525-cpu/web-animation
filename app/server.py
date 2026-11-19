@@ -222,7 +222,8 @@ def outputs():
 
 # ---------------- สร้างคลิปจากแถบพิมพ์ (หน้าเดียวจบ) ----------------
 def _clean_opts(o):
-    return {k: v for k, v in (o or {}).items() if v not in (None, "")}
+    # tweaks ว่าง = ตั้งใจไม่ปรับแต่ง (ต้องเก็บไว้เพื่อแทนที่ค่าของ EP ก่อน)
+    return {k: v for k, v in (o or {}).items() if v not in (None, "") or k in ("tweaks", "tweak_text")}
 
 
 def _prep_ep(name, ep, opts=None, script=None):
@@ -308,7 +309,7 @@ def make_prompt():
         if not p:
             abort(404)
         skill = core.get_skill(p.get("skill")) if p.get("skill") else None
-        s = effective_settings(p, skill)
+        s = effective_settings(p, skill, _clean_opts(b.get("options")))
         start = p["done_count"] + 1
         text = chat_prompt(skill, b.get("idea") or "", start, count, s,
                            story_context(p["name"], start - 1), p.get("bible") or "")

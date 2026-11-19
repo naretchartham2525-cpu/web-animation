@@ -47,8 +47,6 @@ DEFAULT_SETTINGS = {
     "quality": "hd",                              # sd (มาตรฐาน 540p) | hd (720p) | fhd (1080p)
     "watermark": True,
     "watermark_text": "สตูดิโอเถื่อน",
-    "channel_style": "",                          # สไตล์ภาพประจำช่อง (ต่อท้ายทุกเทมเพลต)
-    "channel_note": "",                           # คำสั่งประจำช่อง (ใส่ในทุกบท)
     "fps": 30,
     "crf": 20,
     "preset": "veryfast",
