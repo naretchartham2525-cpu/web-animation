@@ -64,7 +64,12 @@ def effective_settings(proj, skill):
 
 
 def script_model(s):
-    return s["free_model"] if s.get("script_engine", "free") == "free" else s["draft_model"]
+    eng = s.get("script_engine", "claude")
+    if eng == "free":
+        return s["free_model"]
+    if eng == "claude":
+        return s.get("claude_model") or "anthropic/claude-haiku-5.5"
+    return s["draft_model"]
 
 
 # ---------------- บท ----------------
@@ -155,7 +160,7 @@ def write_script(ctx, proj, ep, s, skill):
     text, cost = llm.chat(model, msgs, json_mode=True, max_tokens=int(s["max_tokens"]))
     ctx.cost(cost)
     data = _validate_script(llm.parse_json(text))
-    if s.get("polish_enabled") and s.get("script_engine") != "free":
+    if s.get("polish_enabled") and s.get("script_engine") == "paid":
         ctx.check()
         ctx.log(f"✨ ขัดเกลาบทด้วย {s['polish_model']}")
         msgs2 = [msgs[0], {"role": "user", "content":

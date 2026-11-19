@@ -20,7 +20,8 @@ AUDIO_EXT = {".mp3", ".wav", ".m4a", ".aac", ".ogg"}
 
 DEFAULT_SETTINGS = {
     # --- AI เขียนบท (OpenRouter) ---
-    "script_engine": "free",                      # free | paid  (โหมด manual เลือกที่แถบพิมพ์)
+    "script_engine": "claude",                    # claude | free | paid  (โหมดเขียนเองเลือกที่แถบพิมพ์)
+    "claude_model": "anthropic/claude-haiku-5.5", # Claude เขียนบท (ถูกมาก ~$0.001/EP)
     "free_model": "openrouter/free",              # router เลือกโมเดลฟรีที่ว่างให้เอง
     "draft_model": "google/gemini-3.8-flash",     # โมเดลเสียเงิน
     "polish_enabled": False,

@@ -198,7 +198,7 @@ video{width:100%;border-radius:12px;background:#000;max-height:75vh}
   </div>
   <div class="pop" id="pop">
     <label>เขียนบทด้วย</label>
-    <div class="seg" id="segEngine"><button data-v="free" class="on">AI ฟรี</button><button data-v="paid">AI เสียเงิน</button></div>
+    <div class="seg" id="segEngine"><button data-v="claude" class="on">Claude</button><button data-v="free">AI ฟรี</button><button data-v="paid">โมเดลอื่น</button></div>
     <label>ภาพประกอบ</label>
     <div class="seg" id="segVis"><button data-v="ai" class="on">AI สร้าง (ฟรี)</button><button data-v="drive">จาก Drive</button><button data-v="none">ไม่มีภาพ</button></div>
     <label>เสียงพากย์</label>
@@ -301,7 +301,7 @@ async function call(fn) { try { return await fn(); } catch (e) { toast(e.message
 
 // ================= state =================
 let T = [], SET = {}, tagSel = "ทั้งหมด", tplSel = null, JOBS = [], OUTS = [], openLog = {}, libPick = false, editingId = null;
-const O = {mode:"ai", dur:"30", q:"hd", aspect:"9:16", voice:true, wm:false, engine:"free", vis:"ai", tts:"edge"};
+const O = {mode:"ai", dur:"30", q:"hd", aspect:"9:16", voice:true, wm:false, engine:"claude", vis:"ai", tts:"edge"};
 const ASPECTS = ["9:16","16:9","1:1"];
 const QTH = {sd:"มาตรฐาน", hd:"HD", fhd:"FHD"};
 const GRADS = ["#ff9a76,#6a4c93","#4facfe,#1b2a6b","#f7971e,#a83279","#43cea2,#185a9d","#ee9ca7,#5b3b6b","#c2e59c,#2f6b4f","#fbc2eb,#4b3d8f","#fddb92,#8a4f2a"];
@@ -396,15 +396,18 @@ function renderComposer() {
   $("#oVoice").innerHTML = O.voice ? "🔊 มีเสียง" : "🔇 ไม่มีเสียง"; $("#oVoice").classList.toggle("on", O.voice);
   $("#oWm").innerHTML = (O.wm ? "☑" : "☐") + " ลายน้ำ"; $("#oWm").classList.toggle("on", O.wm);
   $("#idea").placeholder = O.mode === "ai"
-    ? "บอกไอเดียให้ AI เขียนบท เช่น แมวส้มนั่งพิมพ์คอมในห้องทำงานตอนกลางคืน แสงจอสะท้อนหน้า"
+    ? "บอกไอเดีย แล้ว Claude จะคิดบทให้ เช่น แมวส้มนั่งพิมพ์คอมในห้องทำงานตอนกลางคืน แสงจอสะท้อนหน้า"
     : "วางบทที่เขียนเอง (ฟรี 100%) · 1 บรรทัด = 1 ฉาก · บรรทัดแรกขึ้นต้นด้วย # = ชื่อตอน";
   $("#selrow").innerHTML = tplSel ? `<span class="selchip">🧩 เทมเพลต: <b>${esc(tplSel.name)}</b><button onclick="useTemplate(dq('${q(tplSel.id)}'))" title="เลิกใช้">✕</button></span>` : `<span class="small">ยังไม่ได้เลือกเทมเพลต (เลือกจากการ์ดด้านบน หรือสร้างแบบอิสระก็ได้)</span>`;
   const free = isFree();
-  $("#goBtn").textContent = free ? "สร้าง (ฟรี)" : "สร้าง (เสียเครดิต)";
+  const cheap = O.mode === "ai" && O.engine === "claude" && (!O.voice || O.tts === "edge");
+  $("#goBtn").textContent = free ? "สร้าง (ฟรี)" : cheap ? "สร้าง (~$0.001)" : "สร้าง (เสียเครดิต)";
+  $("#segMode button[data-v=ai]").textContent = O.engine === "claude" ? "Claude เขียนบท" : "ให้ AI เขียนบท";
   $("#moreBtn").classList.toggle("on", $("#pop").classList.contains("on"));
   const notes = [];
   if (O.mode === "manual") notes.push("เขียนบทเอง: ไม่เรียก AI เขียนบท (ฟรี)");
-  else if (O.engine === "free") notes.push("AI ฟรี: ใช้โมเดลฟรีของ OpenRouter จำกัด ~50 ครั้ง/วัน (1 ตอน ≈ 1-2 ครั้ง)");
+  else if (O.engine === "claude") notes.push("Claude (Haiku 5.5): บทดี ถูกมาก ~$0.001 ต่อ EP ใช้เครดิต OpenRouter");
+  else if (O.engine === "free") notes.push("AI ฟรี: ใช้โมเดลฟรีของ OpenRouter จำกัด ~50 ครั้ง/วัน (1 EP ≈ 1-2 ครั้ง)");
   if (O.vis === "ai") notes.push("ภาพ AI ฟรี (Pollinations): ~15 วิ/ภาพ, ห้ามใช้เชิงพาณิชย์ในแผนฟรี");
   if (O.vis === "drive") notes.push("จาก Drive: ใส่ภาพ/คลิปใน projects/<ชื่อเรื่อง>/input");
   $("#popNote").innerHTML = notes.map(esc).join("<br>");
@@ -525,7 +528,7 @@ async function saveToLib() { const text = $("#idea").value.trim(); if (!text) re
 // ================= ตั้งค่า =================
 const FIELDS = [
   ["ทั่วไป", [["watermark_text","ข้อความลายน้ำ","text","เช่น @ชื่อช่อง (ใช้เมื่อติ๊ก ลายน้ำ)"],["review_script","หยุดให้ตรวจบทก่อนทำเสียง/ภาพทุกตอน","bool","กันเสียเวลา/เครดิตกับบทที่ไม่ชอบ"],["subtitles","ฝังซับในคลิป","bool"],["language","ภาษาบท","text"]]],
-  ["AI เขียนบท", [["free_model","โมเดลฟรี","text","openrouter/free = ให้ระบบเลือกโมเดลฟรีที่ว่างให้"],["draft_model","โมเดลเสียเงิน","text","เช่น google/gemini-3.8-flash"],["max_tokens","จำกัดความยาวคำตอบ (token)","number","ยิ่งน้อยยิ่งประหยัด 1500-3000 พอสำหรับคลิปสั้น"],["update_bible","จำตัวละครข้ามตอน (+1 ครั้ง/ตอน เฉพาะซีรีส์)","bool"],["polish_enabled","ขัดเกลาบทรอบ 2 (เฉพาะโมเดลเสียเงิน)","bool"],["scenes_per_episode","จำนวนฉาก (0 = อัตโนมัติ ~6 วิ/ฉาก)","number"]]],
+  ["AI เขียนบท", [["script_engine","เขียนบทด้วย (ค่าเริ่มต้น)","select",[["claude","Claude"],["free","AI ฟรี"],["paid","โมเดลอื่น"]]],["claude_model","โมเดล Claude","text","anthropic/claude-haiku-5.5 (ถูก) หรือ anthropic/claude-sonnet-5.5 (เก่งกว่า แพงกว่า ~20 เท่า)"],["free_model","โมเดลฟรี","text","openrouter/free = ให้ระบบเลือกโมเดลฟรีที่ว่างให้"],["draft_model","โมเดลอื่น","text","เช่น google/gemini-3.8-flash"],["max_tokens","จำกัดความยาวคำตอบ (token)","number","ยิ่งน้อยยิ่งประหยัด 1500-3000 พอสำหรับคลิปสั้น"],["update_bible","จำตัวละครข้ามตอน (+1 ครั้ง/ตอน เฉพาะซีรีส์)","bool"],["polish_enabled","ขัดเกลาบทรอบ 2 (เฉพาะ โมเดลอื่น)","bool"],["scenes_per_episode","จำนวนฉาก (0 = อัตโนมัติ ~6 วิ/ฉาก)","number"]]],
   ["ภาพ", [["image_style","สไตล์ภาพเริ่มต้น (อังกฤษ)","text"],["image_model","โมเดลภาพ Pollinations (ว่าง = ค่าเริ่มต้น)","text"],["ken_burns","ภาพนิ่งซูมเคลื่อนไหว","bool"]]],
   ["เสียง", [["edge_voice","เสียง Edge (ฟรี)","select",[["th-TH-PremwadeeNeural","Premwadee (หญิง)"],["th-TH-NiwatNeural","Niwat (ชาย)"],["th-TH-AcharaNeural","Achara (หญิง)"]]],["edge_rate","ความเร็ว Edge","text","เช่น +10%"],["openrouter_tts_model","โมเดลเสียง Gemini","text"],["openrouter_voice","เสียง Gemini","text","Kore, Puck, Charon, Aoede, Leda…"],["bgm_volume","ความดังเพลงประกอบ (0-1)","number","ใส่เพลงใน projects/<เรื่อง>/music"]]],
   ["วิดีโอ", [["crf","คุณภาพ CRF (18-23 ต่ำ=ชัด)","number"],["preset","ความเร็ว encode","select",[["veryfast","veryfast (แนะนำ)"],["fast","fast"],["medium","medium"]]],["fps","FPS","number"],["subtitle_font","ฟอนต์ซับ","text","Loma, Garuda หรือไฟล์ใน AutoClip/fonts"],["subtitle_size","ขนาดซับ (0 = อัตโนมัติ)","number"],["scene_gap","เว้นระหว่างฉาก (วิ)","number"]]],
@@ -567,14 +570,14 @@ const MOCK = {
     {id:"night-city", name:"เมืองยามค่ำ", description:"บรรยากาศเหงาๆ ไฟเมือง เสียงบรรยายนุ่ม", tags:["night","relax"], options:{duration:"30",quality:"fhd",aspect:"9:16",voice_on:"false"}},
   ],
   jobs: [
-    {id:"a1", project:"แมวส้มนั่งพิมพ์คอมตอนกลางคืน", count:1, done:0, status:"running", stage:"ตอน 1: สร้างภาพ", progress:28, cost_usd:0, logs:["✍️ เขียนบทด้วย openrouter/free (ฟรี)","📝 บท: เด็กส่งงานเที่ยงคืน (5 ฉาก)","🎨 สร้างภาพฉาก 1/5 (ฟรี, ~15 วิ/ภาพ)","🎨 สร้างภาพฉาก 2/5"]},
+    {id:"a1", project:"แมวส้มนั่งพิมพ์คอมตอนกลางคืน", count:1, done:0, status:"running", stage:"ตอน 1: สร้างภาพ", progress:28, cost_usd:0, logs:["✍️ เขียนบทด้วย anthropic/claude-haiku-5.5","📝 บท: เด็กส่งงานเที่ยงคืน (5 ฉาก)","🎨 สร้างภาพฉาก 1/5 (ฟรี, ~15 วิ/ภาพ)","🎨 สร้างภาพฉาก 2/5"]},
     {id:"b2", project:"มิลิน ช่างปะเมฆเวหา", count:8, done:3, status:"error", stage:"ผิดพลาด", progress:0, cost_usd:0.0545, error:"เครดิต OpenRouter ไม่พอ → เปลี่ยน 'เขียนบท' เป็น ฟรี หรือ เขียนเอง หรือเติมเครดิต", logs:[]},
     {id:"c3", project:"บ้านร้างริมคลอง", count:1, done:1, status:"done", stage:"เสร็จ 1 ตอน", progress:100, cost_usd:0, logs:[]},
   ],
   outs: [{project:"มิลิน ช่างปะเมฆเวหา", ep:3, title:"เมฆรั่ว", path:"ep03/final.mp4", duration:50.5},{project:"มิลิน ช่างปะเมฆเวหา", ep:2, title:"สะพานรุ้ง", path:"ep02/final.mp4", duration:48},{project:"บ้านร้างริมคลอง", ep:1, title:"เสียงเคาะ", path:"ep01/final.mp4", duration:31}],
   lib: [{id:"t1", title:"ไอเดีย: แมวนักสืบ", text:"แมวดำนักสืบไขคดีขนมหายในร้านเบเกอรี่"},{id:"t2", title:"บทตอนพิเศษ (เขียนเอง)", text:"# ของขวัญชิ้นสุดท้าย\nคืนก่อนวันเกิด มิลินนั่งมองฟ้าเงียบๆ\nเมฆก้อนเล็กลอยลงมาเกาะที่หน้าต่าง\nมันส่งกระดาษแผ่นหนึ่งให้เธอ"}],
 };
-const DEF_SET = {watermark_text:"@ช่องของฉัน", review_script:false, subtitles:true, language:"ไทย", free_model:"openrouter/free", draft_model:"google/gemini-3.8-flash", max_tokens:2500, update_bible:true, polish_enabled:false, scenes_per_episode:0, image_style:"anime style, vibrant colors, soft lighting", image_model:"", ken_burns:true, edge_voice:"th-TH-PremwadeeNeural", edge_rate:"+0%", openrouter_tts_model:"google/gemini-3.8-flash-tts", openrouter_voice:"Kore", bgm_volume:0.12, crf:20, preset:"veryfast", fps:30, subtitle_font:"Loma", subtitle_size:0, scene_gap:0.35, quality:"hd", aspect:"9:16", voice_on:true, watermark:false, script_engine:"free", visual_source:"ai", tts_engine:"edge", target_seconds:30};
+const DEF_SET = {watermark_text:"@ช่องของฉัน", review_script:false, subtitles:true, language:"ไทย", claude_model:"anthropic/claude-haiku-5.5", free_model:"openrouter/free", draft_model:"google/gemini-3.8-flash", max_tokens:2500, update_bible:true, polish_enabled:false, scenes_per_episode:0, image_style:"anime style, vibrant colors, soft lighting", image_model:"", ken_burns:true, edge_voice:"th-TH-PremwadeeNeural", edge_rate:"+0%", openrouter_tts_model:"google/gemini-3.8-flash-tts", openrouter_voice:"Kore", bgm_volume:0.12, crf:20, preset:"veryfast", fps:30, subtitle_font:"Loma", subtitle_size:0, scene_gap:0.35, quality:"hd", aspect:"9:16", voice_on:true, watermark:false, script_engine:"claude", visual_source:"ai", tts_engine:"edge", target_seconds:30};
 function mock(m, path, body) {
   const p = decodeURIComponent(path.split("?")[0]);
   if (p === "/api/skills" && m === "GET") return MOCK.skills;
