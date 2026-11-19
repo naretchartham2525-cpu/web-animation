@@ -350,15 +350,19 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
 <!-- เทมเพลต -->
 <div class="modal" id="mTpl"><div class="mbox">
   <h2 id="tplTitle">สร้างเทมเพลต</h2>
-  <div class="two">
-    <label class="f"><span>ชื่อเทมเพลต</span><input class="in" id="tName" placeholder="เช่น อนิเมะผจญภัย"></label>
-    <label class="f"><span>คำอธิบายสั้น</span><input class="in" id="tDesc"></label>
-  </div>
+  <label class="f"><span>ชื่อเทมเพลต</span><input class="in" id="tName" placeholder="เช่น อนิเมะผจญภัย"></label>
   <div class="two">
     <label class="f"><span>เสียงพากย์ของเทมเพลต (ใช้ทุก EP)</span><select class="in" id="tVoice"></select></label>
-    <label class="f"><span>ความยาวเริ่มต้น (วินาที)</span><input class="in" id="tDur" type="number" min="5" max="600" placeholder="ตามแถบพิมพ์"></label>
+    <label class="f"><span>ซับของเทมเพลต (ใช้ทุก EP)</span><select class="in" id="tSub"><option value="th">ซับไทย</option><option value="en">ซับอังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label>
   </div>
-  <label class="f"><span>สไตล์ภาพ (ภาษาอังกฤษ)</span><input class="in" id="tStyle" placeholder="anime style, pastel colors, soft lighting"></label>
+  <div class="note" id="tSubNote" style="display:none;margin:-6px 0 12px">เทมเพลตมีเอนจิน: ซับมาจากเอนจินของสกิล (ภาษาไทย) ซับอังกฤษยังไม่รองรับ</div>
+  <div id="tStyleBox">
+    <span class="swl" id="tStyleOn" onclick="this.classList.toggle('on'); tStyleUI()" style="margin:0 0 10px -5px"><span class="sw"><i></i></span>เพิ่มสไตล์ภาพของระบบ (ปิด = ใช้ตามสกิล/บทอย่างเดียว)</span>
+    <div id="tStyleWrap" style="display:none">
+      <div class="tweakrow on" id="tStylePre" style="margin-bottom:10px;border-top:0"></div>
+      <label class="f"><span>คำสไตล์ (ภาษาอังกฤษ · แก้เองได้)</span><input class="in" id="tStyle" placeholder="เลือกจากปุ่มด้านบน หรือพิมพ์เอง"></label>
+    </div>
+  </div>
   <label class="f"><span>สกิล / คำสั่งเขียนบท (วางสกิลของคุณตรงนี้)</span><textarea class="in" id="tContent" style="min-height:200px" placeholder="# สไตล์&#10;- โทน...&#10;## ตัวละคร&#10;- ...&#10;## กฎบทพากย์&#10;- ประโยคสั้น ไม่มีวงเล็บ"></textarea></label>
   <div class="note">บันทึกเป็นไฟล์ใน Drive: AutoClip/skills/&lt;ชื่อ&gt;/SKILL.md · ใส่ภาพปกได้โดยวาง cover.jpg ในโฟลเดอร์เดียวกัน</div>
   <div class="mfoot"><button class="sb" onclick="closeM('mTpl')">ยกเลิก</button><button class="sb dark" onclick="saveTemplate()"><svg class="i"><use href="#i-check"/></svg>บันทึก</button></div>
@@ -530,24 +534,56 @@ $("#q").oninput = renderGrid;
 function useTemplate(id) {
   const t = T.find(x => x.id === id); if (!t) return;
   tplSel = tplSel?.id === id ? null : t;
-  if (tplSel) { const o = t.options || {}; if (o.duration && !t.engine) O.dur = +o.duration; if (o.quality) O.q = o.quality; O.voice = ""; toast("ใช้เทมเพลต: " + t.name); }
+  if (tplSel) { const o = t.options || {}; if (o.duration && !t.engine) O.dur = +o.duration; if (o.quality) O.q = o.quality; if (o.sub_lang && !t.engine) O.lang = o.sub_lang; O.voice = ""; toast("ใช้เทมเพลต: " + t.name); }
   showComposer(); renderGrid(); renderComposer(); $("#idea").focus();
 }
+// สไตล์ภาพสำเร็จรูป (ต่อท้ายคำสั่งภาพทุกฉาก)
+const STYLE_PRESETS = [
+  ["อนิเมะสดใส", "anime key visual, vibrant colors, soft cinematic lighting, detailed background"],
+  ["การ์ตูน 3D", "3D animated movie style, soft global illumination, expressive characters, smooth shading"],
+  ["สีน้ำนิทาน", "hand-painted watercolor storybook illustration, warm pastel palette, soft edges"],
+  ["หนังภาพยนตร์", "cinematic film still, shallow depth of field, dramatic rim light, 35mm film grain"],
+  ["การ์ตูนแบน", "flat vector illustration, bold clean outlines, limited color palette, minimal shading"],
+  ["คอมิกส์", "comic book art, bold ink lines, halftone shading, dynamic composition"],
+  ["มืด/หลอน", "dark moody atmosphere, low-key lighting, fog, desaturated colors, eerie"],
+  ["อบอุ่นละมุน", "cozy warm golden hour light, soft bokeh, gentle colors"],
+];
+const STYLE_QUALITY = "high detail, clean composition, sharp focus, vertical framing";
+function tStyleUI() {
+  const on = $("#tStyleOn").classList.contains("on");
+  $("#tStyleWrap").style.display = on ? "" : "none";
+  const cur = $("#tStyle").value;
+  $("#tStylePre").innerHTML = STYLE_PRESETS.map(([n, v]) => `<button class="tw ${cur.startsWith(v) ? "on" : ""}" data-v="${esc(v)}">${n}</button>`).join("");
+}
+$("#tStylePre").onclick = e => { const b = e.target.closest(".tw"); if (!b) return;
+  $("#tStyle").value = b.classList.contains("on") ? "" : b.dataset.v + ", " + STYLE_QUALITY; tStyleUI(); };
+function tplForm(t) {
+  const o = (t && t.options) || {};
+  $("#tName").value = t ? t.name : ""; $("#tContent").value = t ? t.content || "" : "";
+  $("#tVoice").innerHTML = voiceOpts(o.voice || "", "เสียงหลักของระบบ");
+  $("#tSub").value = o.sub_lang || "th";
+  const eng = !!(t && t.engine);
+  $("#tSub").disabled = eng; $("#tSubNote").style.display = eng ? "" : "none"; $("#tStyleBox").style.display = eng ? "none" : "";
+  const st = o.image_style && o.image_style !== "none" ? o.image_style : "";
+  $("#tStyle").value = st;
+  $("#tStyleOn").classList.toggle("on", !!st);
+  tStyleUI();
+}
+let editingTpl = null;
 async function viewTemplate(id) {
   const t = await call(() => api("GET", "/api/skills/" + enc(id))); if (!t) return;
-  editingId = id; $("#tplTitle").textContent = "แก้เทมเพลต";
-  $("#tName").value = t.name; $("#tDesc").value = t.description || ""; $("#tDur").value = t.options?.duration || "";
-  $("#tVoice").innerHTML = voiceOpts(t.options?.voice || "", "เสียงหลักของระบบ"); $("#tStyle").value = t.options?.image_style || ""; $("#tContent").value = t.content || "";
-  openM("mTpl");
+  editingId = id; editingTpl = t; $("#tplTitle").textContent = "แก้เทมเพลต";
+  tplForm(t); openM("mTpl");
 }
 function editTemplate() {
-  editingId = null; $("#tplTitle").textContent = "สร้างเทมเพลต";
-  ["tName","tDesc","tDur","tStyle","tContent"].forEach(i => $("#" + i).value = ""); $("#tVoice").innerHTML = voiceOpts("", "เสียงหลักของระบบ");
-  openM("mTpl");
+  editingId = null; editingTpl = null; $("#tplTitle").textContent = "สร้างเทมเพลต";
+  tplForm(null); openM("mTpl");
 }
 async function saveTemplate() {
-  const body = {id: editingId || undefined, is_new: !editingId, name: $("#tName").value.trim(), description: $("#tDesc").value.trim(), content: $("#tContent").value,
-    options: {duration: $("#tDur").value, voice: $("#tVoice").value, image_style: $("#tStyle").value.trim()}};
+  const old = (editingTpl && editingTpl.options) || {};
+  const styleOn = $("#tStyleOn").classList.contains("on");
+  const body = {id: editingId || undefined, is_new: !editingId, name: $("#tName").value.trim(), description: editingTpl?.description || "", content: $("#tContent").value,
+    options: {...old, voice: $("#tVoice").value, image_style: styleOn ? $("#tStyle").value.trim() : "", ...(editingTpl?.engine ? {} : {sub_lang: $("#tSub").value})}};
   if (await call(() => api("POST", "/api/skills", body))) { closeM("mTpl"); toast("บันทึกเทมเพลตแล้ว"); T = await api("GET", "/api/skills"); if (tplSel) tplSel = T.find(x => x.id === tplSel.id) || null; renderGrid(); renderComposer(); }
 }
 

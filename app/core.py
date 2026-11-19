@@ -155,7 +155,7 @@ def _first_line(body):
 
 
 SKILL_OPTION_KEYS = ("duration", "quality", "aspect", "voice_on", "tts_engine", "voice", "edge_rate",
-                     "image_style", "scenes", "visual_source", "watermark")
+                     "image_style", "scenes", "visual_source", "watermark", "sub_lang")
 
 
 def _parse_list(v):
@@ -258,6 +258,8 @@ def save_skill(data):
         fm.append("tags: " + ", ".join(clean(t).lstrip("#") for t in tags))
     for k in SKILL_OPTION_KEYS:
         v = (data.get("options") or {}).get(k)
+        if k == "image_style" and v == "":
+            v = "none"  # ปิดสไตล์ของระบบ (ไม่ใช้ค่าเริ่มต้น)
         if v not in (None, ""):
             fm.append(f"{k}: {clean(v)}")
     (d / "SKILL.md").write_text("---\n" + "\n".join(fm) + "\n---\n\n" + content + "\n", encoding="utf-8")

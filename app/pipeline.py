@@ -428,8 +428,12 @@ def _drive_media(proj_name, scenes, ep):
 def _ai_images(ctx, proj_name, script, edir, s, w, h, skill):
     idir = edir / "images"
     idir.mkdir(exist_ok=True)
-    style = ", ".join(x for x in ((skill or {}).get("options", {}).get("image_style") or s.get("image_style") or "",
-                                   s.get("_img_extra") or "") if x)
+    st = (skill or {}).get("options", {}).get("image_style")
+    if st is None or st == "":
+        st = s.get("image_style") or ""      # เทมเพลตเก่าที่ไม่ได้ตั้ง → ค่าเริ่มต้นของระบบ
+    if str(st).strip().lower() == "none":
+        st = ""                              # ปิดสไตล์ของระบบ → ใช้คำบรรยายภาพจากบทอย่างเดียว
+    style = ", ".join(x for x in (st, s.get("_img_extra") or "") if x)
     # ขนาดที่ขอจากบริการฟรี (ไม่ต้องใหญ่ เดี๋ยว ffmpeg ขยายให้) → เร็วขึ้น
     scale = min(1.0, 1024 / max(w, h))
     iw, ih = int(w * scale) // 8 * 8, int(h * scale) // 8 * 8
