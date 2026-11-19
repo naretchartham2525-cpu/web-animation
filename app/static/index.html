@@ -47,6 +47,11 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .utab td.r,.utab th.r{text-align:right;white-space:nowrap}
 .uh{font-family:Kanit;font-size:14px;margin:14px 0 6px}
 #splash .strip i.fill{width:0;animation:none;transition:width linear}
+#dropZone{position:fixed;inset:10px;z-index:150;border:3px dashed var(--acc);border-radius:28px;background:rgba(244,226,216,.82);backdrop-filter:blur(4px);display:none;place-items:center;pointer-events:none}
+#dropZone.on{display:grid}
+#dropZone div{text-align:center;color:var(--acc);font-family:Kanit;font-size:22px}
+#dropZone svg{width:54px;height:54px;stroke:var(--acc)}
+#dropZone small{display:block;font-family:inherit;font-size:13px;color:var(--ink);opacity:.7;margin-top:6px}
 #splash .msg{font-size:12.5px;color:var(--muted);min-height:18px}
 .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:26px 0 18px}
 .head h1{font-size:38px;margin:0 0 4px;line-height:1.15}
@@ -265,6 +270,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
     <symbol id="i-mute" viewBox="0 0 24 24"><path d="M5 9.5h3l4-3.5v12l-4-3.5H5z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></symbol>
     <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M6 11.5a6 6 0 0 0 12 0M12 17.5v3"/></symbol>
+    <symbol id="i-clip" viewBox="0 0 24 24"><path d="M20 11.5l-7.8 7.8a5 5 0 0 1-7.1-7.1l8.3-8.3a3.4 3.4 0 0 1 4.8 4.8l-8.3 8.3a1.7 1.7 0 0 1-2.4-2.4l7.6-7.6"/></symbol>
     <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 4s5.5 6 5.5 10a5.5 5.5 0 0 1-11 0C6.5 10 12 4 12 4z"/></symbol>
     <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M5 7h9M18 7h1M5 17h3M12 17h7"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></symbol>
     <symbol id="i-ext" viewBox="0 0 24 24"><path d="M13.5 5H19v5.5M19 5l-8 8"/><path d="M17 13.5V18a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 5 18V9a1.5 1.5 0 0 1 1.5-1.5H11"/></symbol>
@@ -275,6 +281,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
   </defs>
 </svg>
 
+<div id="dropZone"><div><svg class="i"><use href="#i-clip"/></svg><br>วางไฟล์บทที่นี่<small>.txt .md .json .py · หลายไฟล์พร้อมกันได้ (series.json, ep01.json, ฉากหลัง .py)</small></div></div>
 <div id="splash"><div class="in2"><span class="reel"><svg class="i"><use href="#i-reel"/></svg></span><b>สตูดิโอเถื่อน</b><div class="strip"><i></i></div><div class="msg" id="splMsg"></div></div></div>
 <div class="top"><div class="wrap"><div class="bar-top">
   <div class="brand"><span class="mk"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span>สตูดิโอเถื่อน <small>หนังสั้น AI</small></div>
@@ -303,6 +310,8 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
       <textarea id="idea" rows="1"></textarea>
       <button class="ib" title="คัดลอกคำสั่งให้ Claude ในแชทเขียนบท (ฟรี)" onclick="openPromptNew()" id="promptBtn"><svg class="i"><use href="#i-copy"/></svg></button>
       <button class="ib noeng" title="ให้ AI ช่วยคิดไอเดีย" onclick="aiIdea()" id="ideaBtn"><svg class="i"><use href="#i-spark"/></svg></button>
+      <button class="ib" title="เปิดไฟล์บท (.txt .json .md .py) หรือลากไฟล์มาวางที่หน้าเว็บ" onclick="$('#fileIn').click()"><svg class="i"><use href="#i-clip"/></svg></button>
+      <input type="file" id="fileIn" multiple accept=".txt,.md,.json,.py,text/plain,application/json" hidden onchange="loadFiles([...this.files]); this.value=''">
       <button class="ib" title="หยิบจากคลังข้อความ" onclick="openLib(true)"><svg class="i"><use href="#i-book"/></svg></button>
       <button class="ib" title="เก็บข้อความนี้ลงคลัง" onclick="saveToLib()"><svg class="i"><use href="#i-save"/></svg></button>
     </div>
@@ -591,6 +600,45 @@ $("#twBtn").onclick = () => { $("#twRow").classList.toggle("on"); $("#twBtn").cl
 $("#moreBtn").onclick = e => { e.stopPropagation(); $("#pop").classList.toggle("on"); $("#moreBtn").classList.toggle("on", $("#pop").classList.contains("on")); };
 document.addEventListener("click", e => { if (!e.target.closest("#pop") && !e.target.closest("#moreBtn")) { $("#pop").classList.remove("on"); $("#moreBtn").classList.remove("on"); } });
 function toggleComposer() { const c = $("#composer"); c.classList.toggle("min"); const m = c.classList.contains("min"); $("#hideBtn span").textContent = m ? "เปิดแถบพิมพ์" : "ย่อ"; $("#hideBtn svg").style.transform = m ? "rotate(180deg)" : ""; }
+// ================= ลากไฟล์มาวาง / เปิดไฟล์ =================
+const FILE_OK = /\.(txt|md|json|py)$/i;
+async function filesToText(files) {
+  files = files.filter(f => FILE_OK.test(f.name) || (f.type || "").startsWith("text/"));
+  if (!files.length) throw new Error("รองรับเฉพาะไฟล์ .txt .md .json .py");
+  if (files.some(f => f.size > 2e6)) throw new Error("ไฟล์ใหญ่เกิน 2 MB");
+  // เรียง: series.json ก่อน → epNN → อื่นๆ → ฉากหลัง .py
+  const rank = f => /series/i.test(f.name) ? 0 : /\.py$/i.test(f.name) ? 3 : /ep\s*0*\d+/i.test(f.name) ? 1 : 2;
+  files.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, undefined, {numeric:true}));
+  const parts = [];
+  for (const f of files) {
+    let t = (await f.text()).replace(/^\uFEFF/, "").trim();
+    if (/\.json$/i.test(f.name) && !/^```/.test(t)) t = "```json\n" + t + "\n```";
+    else if (/\.py$/i.test(f.name) && !/^```/.test(t)) {
+      if (!/^#\s*bg[:/ ]/i.test(t)) t = `# bg: ${f.name.replace(/\.py$/i, "")}\n` + t;
+      t = "```python\n" + t + "\n```";
+    }
+    parts.push(t);
+  }
+  return {text: parts.join("\n\n"), n: files.length};
+}
+async function loadFiles(files) {
+  try {
+    const {text, n} = await filesToText(files);
+    const nx = $("#mNext").classList.contains("on");
+    const box = nx ? $("#nxText") : $("#idea");
+    box.value = box.value.trim() ? box.value.trim() + "\n\n" + text : text;
+    if (!nx) { O.mode = "manual"; renderComposer(); showComposer(); autoGrow(); }
+    box.dispatchEvent(new Event("input", {bubbles:true}));
+    toast(`ใส่บทจาก ${n} ไฟล์แล้ว ตรวจแล้วกดสร้างได้เลย`);
+  } catch (e) { toast(e.message, true); }
+}
+let dragN = 0;
+const hasFiles = e => [...(e.dataTransfer?.types || [])].includes("Files");
+addEventListener("dragenter", e => { if (!hasFiles(e)) return; e.preventDefault(); dragN++; $("#dropZone").classList.add("on"); });
+addEventListener("dragover", e => { if (hasFiles(e)) e.preventDefault(); });
+addEventListener("dragleave", e => { if (!hasFiles(e)) return; if (--dragN <= 0) { dragN = 0; $("#dropZone").classList.remove("on"); } });
+addEventListener("drop", e => { if (!hasFiles(e)) return; e.preventDefault(); dragN = 0; $("#dropZone").classList.remove("on"); if ($("#mLogin").classList.contains("on")) return; loadFiles([...e.dataTransfer.files]); });
+
 function showComposer() { if ($("#composer").classList.contains("min")) toggleComposer(); }
 $("#idea").onkeydown = e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) create(); };
 $("#idea").oninput = () => { autoGrow(); goLabel(); };
