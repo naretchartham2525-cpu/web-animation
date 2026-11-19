@@ -22,7 +22,8 @@
   "prompt_files": [
     "reference/format.md",
     "reference/craft.md",
-    "reference/styles.md"
+    "reference/styles.md",
+    "reference/scenes.md"
   ],
   "default_seconds": 90,
   "prompt_commands": [

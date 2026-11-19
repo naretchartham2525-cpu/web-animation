@@ -157,7 +157,7 @@ def chat_prompt(skill, proj_name, start_ep, count, s, idea=""):
 - ตอบเป็น code block ```json``` แยกก้อนละไฟล์: {'series.json แล้วตามด้วย ' if not series else ''}epNN.json ทีละ EP
 - ความยาวตอนละประมาณ {sec} วินาที · ทุกคนในฉากต้องมี pose (และ prop ถ้าถือของ) · ตัวละครต้องมี rig
 - ถ้ารันโค้ดได้ ให้รันตัวตรวจ drama_tool.py check จนผ่านก่อนส่ง
-- ฉากหลังเฉพาะ (ไม่บังคับ): ส่งเป็น code block ```python``` บรรทัดแรก "# bg: <place_id>"
+- ฉากหลัง: {'วาดทุกสถานที่ใน places ' if not series else 'วาดเฉพาะสถานที่ใหม่ที่ยังไม่เคยมี '}ตาม reference/scenes.md ส่งเป็น code block ```python``` ก้อนละสถานที่ บรรทัดแรก "# bg: <place_id>" (ไม่ส่ง = ระบบใช้ฉากสำเร็จรูปที่มักไม่ตรงเรื่อง)
 - ไม่ต้องมีคำอธิบายอื่น""")
     for f in m.get("prompt_files") or ["reference/format.md"]:
         p = sdir / f
