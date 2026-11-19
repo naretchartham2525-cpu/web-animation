@@ -185,10 +185,13 @@ def _skill_from(p):
                 cover = c.name
                 break
     opts = {k: meta[k] for k in SKILL_OPTION_KEYS if meta.get(k)}
+    engine = read_json(p / "autoclip.json") if p.is_dir() else None   # สกิลที่มีเอนจินของตัวเอง
     return {
         "id": sid,
-        "name": meta.get("name") or sid,
-        "description": meta.get("description") or _first_line(body),
+        "name": (engine or {}).get("title") or meta.get("name") or sid,
+        "description": (engine or {}).get("description_th") or meta.get("description") or _first_line(body),
+        "engine": (engine or {}).get("engine") or "",
+        "dir": str(p) if p.is_dir() else "",
         "tags": _parse_list(meta.get("tags")),
         "cover": cover,
         "options": opts,

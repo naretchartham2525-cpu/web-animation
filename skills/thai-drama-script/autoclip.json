@@ -1,0 +1,29 @@
+{
+  "title": "ละครสั้นดราม่า (ตัวการ์ตูน)",
+  "description_th": "ดราม่าแนวตั้งสไตล์จีน ตัวการ์ตูนขยับท่า ฉาก หน้าจอมือถือ มีเอนจินเรนเดอร์ของตัวเอง",
+  "engine": "drama-json",
+  "about": "สกิลนี้มีเอนจินของตัวเอง: บทเป็น series.json + epNN.json, ระบบสตูดิโอเถื่อนจัดการเสียง ลายน้ำ และความคมชัด",
+  "requirements": [
+    "opencv-python-headless",
+    "pillow",
+    "numpy",
+    "pythainlp",
+    "uharfbuzz",
+    "freetype-py",
+    "edge-tts",
+    "imageio-ffmpeg"
+  ],
+  "check": [
+    "scripts/drama_tool.py",
+    "check",
+    "{episode}"
+  ],
+  "render": "scripts/render_ep.py",
+  "prompt_files": [
+    "SKILL.md",
+    "reference/format.md",
+    "reference/craft.md",
+    "reference/styles.md"
+  ],
+  "default_seconds": 90
+}

@@ -100,6 +100,8 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .nb:hover svg,.ib:hover svg{transform:translateY(-1px) scale(1.08)}
 .tweakrow{display:none;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 0 2px;border-top:1px dashed var(--line);margin-top:4px}
 .tweakrow.on{display:flex}
+body.eng .noeng{display:none!important}
+.engtag{background:var(--ink);color:var(--paper)}
 .tw{border:1px solid var(--line);background:var(--paper);border-radius:99px;padding:5px 11px;font-size:13px;cursor:pointer;color:var(--muted);transition:all .2s}
 .tw:hover{border-color:#cbbca8;color:var(--ink)}
 .tw.on{background:var(--acc-soft);border-color:#e6c7b6;color:#7d3418}
@@ -280,32 +282,32 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
     <div class="tarow">
       <textarea id="idea" rows="1"></textarea>
       <button class="ib" title="คัดลอกคำสั่งให้ Claude ในแชทเขียนบท (ฟรี)" onclick="openPromptNew()" id="promptBtn"><svg class="i"><use href="#i-copy"/></svg></button>
-      <button class="ib" title="ให้ AI ช่วยคิดไอเดีย" onclick="aiIdea()" id="ideaBtn"><svg class="i"><use href="#i-spark"/></svg></button>
+      <button class="ib noeng" title="ให้ AI ช่วยคิดไอเดีย" onclick="aiIdea()" id="ideaBtn"><svg class="i"><use href="#i-spark"/></svg></button>
       <button class="ib" title="หยิบจากคลังข้อความ" onclick="openLib(true)"><svg class="i"><use href="#i-book"/></svg></button>
       <button class="ib" title="เก็บข้อความนี้ลงคลัง" onclick="saveToLib()"><svg class="i"><use href="#i-save"/></svg></button>
     </div>
     <div class="tweakrow" id="twRow"></div>
     <div class="opts">
-      <div class="seg" id="segMode"><button data-v="manual" class="on">วางบท (ฟรี)</button><button data-v="ai">AI เขียนบท</button></div>
-      <label class="dur" title="ความยาวต่อ EP (ลากเลือกได้อิสระ)"><svg class="i"><use href="#i-clock"/></svg><input type="range" id="oDur" min="5" max="180" step="1"><b id="durLbl"></b></label>
+      <div class="seg noeng" id="segMode"><button data-v="manual" class="on">วางบท (ฟรี)</button><button data-v="ai">AI เขียนบท</button></div>
+      <label class="dur noeng" title="ความยาวต่อ EP (ลากเลือกได้อิสระ)"><svg class="i"><use href="#i-clock"/></svg><input type="range" id="oDur" min="5" max="180" step="1"><b id="durLbl"></b></label>
       <div class="seg" id="segQ"><button data-v="sd">มาตรฐาน</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div>
-      <label class="chip" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ซับไทย</option><option value="en">ซับอังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label>
+      <label class="chip noeng" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ซับไทย</option><option value="en">ซับอังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label>
       <label class="chip" title="เสียงพากย์"><svg class="i"><use href="#i-mic"/></svg><select id="oVoice"></select></label>
       <span class="swl" id="oWm" title="ลายน้ำชื่อช่อง"><span class="sw"><i></i></span>ลายน้ำ</span>
-      <button class="chip" id="twBtn" title="สั่งปรับแต่งเพิ่มเติมครั้งนี้ (ไม่เปลี่ยนเทมเพลต)"><svg class="i"><use href="#i-wand"/></svg>ปรับแต่ง</button>
+      <button class="chip noeng" id="twBtn" title="สั่งปรับแต่งเพิ่มเติมครั้งนี้ (ไม่เปลี่ยนเทมเพลต)"><svg class="i"><use href="#i-wand"/></svg>ปรับแต่ง</button>
       <button class="chip" id="moreBtn" title="ปรับเพิ่มเติม"><svg class="i"><use href="#i-sliders"/></svg></button>
       <button class="go" id="goBtn" onclick="create()"><span id="goTxt">สร้าง</span><svg class="i"><use href="#i-send"/></svg></button>
     </div>
   </div>
   <div class="pop" id="pop">
     <h4>ปรับเพิ่มเติม</h4>
-    <div class="prow"><span>AI เขียนบทด้วย</span><div class="seg" id="segEngine"><button data-v="free" class="on">AI ฟรี</button><button data-v="claude">Claude API</button></div></div>
-    <div class="prow"><span>ภาพประกอบ</span><div class="seg" id="segVis"><button data-v="ai" class="on">AI ฟรี</button><button data-v="drive">Drive</button><button data-v="none">ไม่มี</button></div></div>
+    <div class="prow noeng"><span>AI เขียนบทด้วย</span><div class="seg" id="segEngine"><button data-v="free" class="on">AI ฟรี</button><button data-v="claude">Claude API</button></div></div>
+    <div class="prow noeng"><span>ภาพประกอบ</span><div class="seg" id="segVis"><button data-v="ai" class="on">AI ฟรี</button><button data-v="drive">Drive</button><button data-v="none">ไม่มี</button></div></div>
     <div class="prow"><span>ความเร็วเสียงพากย์</span><span><input type="range" id="oRate" min="-30" max="40" step="5"> <b id="rateLbl"></b></span></div>
     <div class="prow"><span>ความเร็ว encode</span><div class="seg" id="segPreset"><button data-v="veryfast" class="on">เร็ว</button><button data-v="fast">กลาง</button><button data-v="medium">ละเอียด</button></div></div>
-    <div class="prow"><span>FPS</span><div class="seg" id="segFps"><button data-v="24">24</button><button data-v="30" class="on">30</button><button data-v="60">60</button></div></div>
-    <div class="prow"><span>ขนาดซับ</span><div class="seg" id="segSub"><button data-v="s">เล็ก</button><button data-v="0" class="on">ปกติ</button><button data-v="l">ใหญ่</button></div></div>
-    <div class="prow"><span>ฟอนต์ซับ</span><select id="oFont"><option>Loma</option><option>Garuda</option><option>Kinnari</option><option>Norasi</option><option>Sawasdee</option><option>Umpush</option></select></div>
+    <div class="prow noeng"><span>FPS</span><div class="seg" id="segFps"><button data-v="24">24</button><button data-v="30" class="on">30</button><button data-v="60">60</button></div></div>
+    <div class="prow noeng"><span>ขนาดซับ</span><div class="seg" id="segSub"><button data-v="s">เล็ก</button><button data-v="0" class="on">ปกติ</button><button data-v="l">ใหญ่</button></div></div>
+    <div class="prow noeng"><span>ฟอนต์ซับ</span><select id="oFont"><option>Loma</option><option>Garuda</option><option>Kinnari</option><option>Norasi</option><option>Sawasdee</option><option>Umpush</option></select></div>
     <div class="note" id="popNote"></div>
   </div>
 </div></div>
@@ -483,7 +485,7 @@ function renderGrid() {
       <div class="cover" onclick="viewTemplate(dq('${q(t.id)}'))">
         <div class="bgi" style="${coverStyle(t)}"></div>
         <div class="ring"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" transform="rotate(-90 32 32)"/><path d="M27 22v20l16-10z"/></svg></div>
-        <div class="meta">${o.duration ? `<span class="tagx">${ic("clock")}${esc(fmtSec(+o.duration))}</span>` : ""}${o.voice ? `<span class="tagx">${ic("mic")}${esc(voiceName(o.voice).split(" ·")[0])}</span>` : ""}</div>
+        <div class="meta">${t.engine ? `<span class="tagx engtag">${ic("sliders")}มีเอนจิน</span>` : ""}${o.duration ? `<span class="tagx">${ic("clock")}${esc(fmtSec(+o.duration))}</span>` : ""}${o.voice ? `<span class="tagx">${ic("mic")}${esc(voiceName(o.voice).split(" ·")[0])}</span>` : ""}</div>
         <div class="ttl">${esc(t.name)}</div></div>
       <div class="cfoot"><div class="d" title="${esc(t.description)}">${esc(t.description || "")}</div>
         <button class="use" onclick="useTemplate(dq('${q(t.id)}'))">${sel ? ic("check") + "เลือกอยู่" : `ใช้<span class="arr">→</span>`}</button></div>
@@ -494,7 +496,7 @@ $("#q").oninput = renderGrid;
 function useTemplate(id) {
   const t = T.find(x => x.id === id); if (!t) return;
   tplSel = tplSel?.id === id ? null : t;
-  if (tplSel) { const o = t.options || {}; if (o.duration) O.dur = +o.duration; if (o.quality) O.q = o.quality; O.voice = ""; toast("ใช้เทมเพลต: " + t.name); }
+  if (tplSel) { const o = t.options || {}; if (o.duration && !t.engine) O.dur = +o.duration; if (o.quality) O.q = o.quality; O.voice = ""; toast("ใช้เทมเพลต: " + t.name); }
   showComposer(); renderGrid(); renderComposer(); $("#idea").focus();
 }
 async function viewTemplate(id) {
@@ -524,15 +526,18 @@ function effVoice() { return O.voice || tplVoice(); }
 function isFree() { return (O.mode === "manual" || O.engine === "free") && !effVoice().startsWith("gemini:"); }
 function goLabel() { const n = O.mode === "manual" ? countEps($("#idea").value) : 1; $("#goTxt").textContent = `สร้าง${n > 1 ? ` ${n} EP` : ""}${isFree() ? " · ฟรี" : ""}`; }
 function renderComposer() {
+  const eng = !!tplSel?.engine;
+  document.body.classList.toggle("eng", eng);
+  if (eng) { O.mode = "manual"; if (O.vis !== "ai") O.vis = "ai"; }
   segSet("#segMode", O.mode); segSet("#segQ", O.q); segSet("#segEngine", O.engine); segSet("#segVis", O.vis); segSet("#segPreset", O.preset); segSet("#segFps", O.fps); segSet("#segSub", O.sub);
   $("#oDur").value = O.dur; $("#durLbl").textContent = fmtSec(+O.dur);
   $("#oRate").value = O.rate; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%";
   $("#oFont").value = O.font; $("#oSub").value = O.lang;
-  $("#oVoice").innerHTML = voiceOpts(O.voice, tplSel ? `ตามเทมเพลต${tplVoice() ? " · " + voiceName(tplVoice()).split(" ·")[0] : ""}` : "เสียงหลัก (ฟรี)");
+  $("#oVoice").innerHTML = voiceOpts(O.voice, tplSel?.engine ? "เสียงตามสกิล (ฟรี)" : tplSel ? `ตามเทมเพลต${tplVoice() ? " · " + voiceName(tplVoice()).split(" ·")[0] : ""}` : "เสียงหลัก (ฟรี)");
   $("#oWm").classList.toggle("on", O.wm);
   $("#pickTpl").innerHTML = tplSel ? `<span class="pick">เทมเพลต <b>${esc(tplSel.name)}</b><button onclick="useTemplate(dq('${q(tplSel.id)}'))" title="เลิกใช้">${ic("x")}</button></span>`
     : `<span class="hint">เลือกเทมเพลตด้านบน หรือสร้างแบบอิสระ</span>`;
-  $("#idea").placeholder = O.mode === "manual" ? `วางบทจาก Claude · 1 บรรทัด = 1 ฉาก${O.lang === "en" || O.lang === "both" ? " (บท | ภาพ | English)" : ""} · “# ชื่อตอน” = เริ่ม EP ใหม่` : "พิมพ์ไอเดีย แล้วให้ AI คิดบท";
+  $("#idea").placeholder = tplSel?.engine ? "วางคำตอบจาก Claude ทั้งก้อน (series.json + epNN.json) · กดปุ่มคัดลอกคำสั่งก่อน" : O.mode === "manual" ? `วางบทจาก Claude · 1 บรรทัด = 1 ฉาก${O.lang === "en" || O.lang === "both" ? " (บท | ภาพ | English)" : ""} · “# ชื่อตอน” = เริ่ม EP ใหม่` : "พิมพ์ไอเดีย แล้วให้ AI คิดบท";
   $("#promptBtn").style.display = O.mode === "manual" ? "" : "none";
   goLabel();
   const notes = [];
@@ -541,6 +546,7 @@ function renderComposer() {
   if (O.vis === "drive") notes.push("ใช้ภาพ/คลิปจาก Drive: projects/<ชื่อเรื่อง>/input");
   if (effVoice().startsWith("gemini:")) notes.push("เสียง Gemini เสียเครดิต");
   if (O.lang === "en" || O.lang === "both") notes.push("ซับอังกฤษ: ใส่ในบทเป็นช่องที่ 3 (บท | ภาพ | English) หรือให้ระบบแปลด้วย AI ฟรี");
+  if (eng) { notes.length = 0; notes.push("สกิลนี้มีเอนจินของตัวเอง: สกิลวาดแอนิเมชันและฉาก · ระบบคุมเสียง ลายน้ำ ความคมชัด"); if (effVoice().startsWith("gemini:")) notes.push("เสียง Gemini เสียเครดิต"); }
   $("#popNote").innerHTML = notes.map(esc).join("<br>");
   autoGrow();
 }
@@ -561,7 +567,10 @@ function toggleComposer() { const c = $("#composer"); c.classList.toggle("min");
 function showComposer() { if ($("#composer").classList.contains("min")) toggleComposer(); }
 $("#idea").onkeydown = e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) create(); };
 $("#idea").oninput = () => { autoGrow(); goLabel(); };
-function countEps(text) {
+const isEngText = () => !!tplSel?.engine;
+function countEngine(text) { return ((text || "").match(/"shots"\s*:/g) || []).length; }
+function countEps(text, eng) {
+  if (eng ?? isEngText()) return countEngine(text);
   let n = 0, has = false;
   for (const raw of (text || "").split("\n")) {
     if (/^\s*(-{3,}|={3,})\s*$/.test(raw)) { if (has) n++; has = false; continue; }
@@ -680,11 +689,16 @@ function nextEp(project) {
   $("#nxTitle").textContent = `ทำ EP ต่อ · ${project}`;
   $("#nxCount").innerHTML = [1,2,3,4,5].map(n => `<option value="${n}">${n === 1 ? "EP " + nx.start : `EP ${nx.start}–${nx.start + n - 1}`}</option>`).join("");
   $("#nxVoice").innerHTML = voiceOpts("", "เสียงเดิมของเรื่อง");
-  $("#nxText").value = ""; $("#nxPrompt").style.display = "none"; updNx(); openM("mNext");
+  $("#nxText").value = ""; $("#nxPrompt").style.display = "none"; nx.engine = false; updNx(); openM("mNext");
   tweakUI($("#nxTw"), [], "");
-  api("GET", "/api/projects/" + enc(project)).then(p => { const o = (p && p.options) || {}; tweakUI($("#nxTw"), String(o.tweaks || "").split(","), o.tweak_text || ""); }).catch(() => {});
+  api("GET", "/api/projects/" + enc(project)).then(p => {
+    const o = (p && p.options) || {}; tweakUI($("#nxTw"), String(o.tweaks || "").split(","), o.tweak_text || "");
+    const sk = T.find(t => t.id === (p && p.skill)); nx.engine = !!(sk && sk.engine);
+    $("#nxText").placeholder = nx.engine ? "วางคำตอบจาก Claude (epNN.json ทีละ EP · หลาย EP ได้)" : "# EP 2: ชื่อตอน\nบทพากย์ฉาก 1 | english image prompt\nบทพากย์ฉาก 2 | ...\n# EP 3: ...";
+    $("#nxTw").parentElement.style.display = nx.engine ? "none" : ""; updNx();
+  }).catch(() => {});
 }
-function updNx() { const n = countEps($("#nxText").value); $("#nxInfo").textContent = n ? `พบ ${n} EP → EP ${nx.start}${n > 1 ? "–" + (nx.start + n - 1) : ""}` : ""; $("#nxGo").textContent = n > 1 ? `สร้าง ${n} EP (ฟรี)` : "สร้าง (ฟรี)"; }
+function updNx() { const n = countEps($("#nxText").value, nx && nx.engine); $("#nxInfo").textContent = n ? `พบ ${n} EP → EP ${nx.start}${n > 1 ? "–" + (nx.start + n - 1) : ""}` : ""; $("#nxGo").textContent = n > 1 ? `สร้าง ${n} EP (ฟรี)` : "สร้าง (ฟรี)"; }
 $("#nxText").oninput = updNx;
 const nxOpts = () => ({...($("#nxVoice").value ? {voice: $("#nxVoice").value} : {}), ...tweakVal($("#nxTw"))});
 async function copyNextPrompt() {
@@ -750,6 +764,7 @@ async function refreshCredit() {
 // ================= โหมดตัวอย่าง =================
 const MOCK = {
   skills: [
+    {id:"thai-drama-script", name:"ละครสั้นดราม่า (ตัวการ์ตูน)", description:"ดราม่าแนวตั้ง ตัวการ์ตูนขยับท่า มีเอนจินเรนเดอร์ของตัวเอง", engine:"drama-json", options:{}},
     {id:"cloud-girl", name:"เด็กหญิงซ่อมเมฆ", description:"แฟนตาซีอบอุ่น ภาพสีพาสเทล", options:{duration:"30", voice:"edge:th-TH-AcharaNeural"}},
     {id:"night-ghost", name:"หลอนกลางดึก", description:"หลอนเบาๆ หักมุมท้ายเรื่อง", options:{duration:"60", voice:"edge:th-TH-NiwatNeural"}},
     {id:"cat-office", name:"แมวมนุษย์เงินเดือน", description:"ตลกสั้น แมวทำงานออฟฟิศ", options:{duration:"20", voice:"gemini:Puck"}},

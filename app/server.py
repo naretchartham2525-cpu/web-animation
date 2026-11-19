@@ -257,6 +257,19 @@ def quick_create():
         raise ValueError("พิมพ์ไอเดียหรือบทก่อน")
     opts = _clean_opts(b.get("options"))
     tpl = b.get("template") or ""
+    skill = core.get_skill(tpl) if tpl else None
+    if skill and skill.get("engine"):
+        from . import engine_skill
+        parsed = engine_skill.parse_paste(idea)
+        if not parsed["episodes"]:
+            raise ValueError("ยังไม่มีบท EP (epNN.json) ในข้อความที่วาง")
+        if not parsed["series"]:
+            raise ValueError("เรื่องใหม่ต้องมี series.json (ไบเบิลซีรีส์) มาด้วย")
+        name = core.unique_project_name(b.get("name") or engine_skill.series_title(parsed, "ซีรีส์ใหม่")[:40])
+        proj = core.create_project({"name": name, "skill": tpl, "episodes_total": len(parsed["episodes"]),
+                                    "topic": "", "script_mode": "engine", "options": opts})
+        n = engine_skill.save_paste(proj["name"], parsed, 1)
+        return ok({"project": proj, "job": jobs.submit(proj["name"], n), "episodes": n})
     eps = []
     if mode == "manual":
         from .pipeline import parse_manual_episodes
@@ -286,6 +299,22 @@ def project_next(name):
     b = request.get_json(silent=True) or {}
     start = p["done_count"] + 1
     ep_opts = _clean_opts(b.get("options"))   # เช่น เลือกเสียงเฉพาะ EP นี้
+    skill = core.get_skill(p.get("skill")) if p.get("skill") else None
+    if skill and skill.get("engine"):
+        from . import engine_skill
+        if b.get("mode") != "manual":
+            raise ValueError("เทมเพลตนี้มีเอนจินของตัวเอง ต้องวางบท JSON จาก Claude (กดคัดลอกคำสั่ง)")
+        parsed = engine_skill.parse_paste(b.get("text"))
+        if not parsed["episodes"]:
+            raise ValueError("ไม่พบบท EP (epNN.json) ในข้อความที่วาง")
+        n = engine_skill.save_paste(name, parsed, start)
+        if ep_opts:
+            for k in range(start, start + n):
+                st = core.read_json(core.ep_dir(name, k) / "state.json", {}) or {}
+                st["opts"] = ep_opts
+                core.write_json(core.ep_dir(name, k) / "state.json", st)
+        core.update_project(name, {"episodes_total": start + n - 1})
+        return ok({**jobs.submit(name, n), "episodes": n})
     if b.get("mode") == "manual":
         from .pipeline import parse_manual_episodes
         eps = parse_manual_episodes(b.get("text"), _scenes_for(p.get("options") or {}, p.get("skill"))["scenes_per_episode"])
@@ -311,11 +340,17 @@ def make_prompt():
         skill = core.get_skill(p.get("skill")) if p.get("skill") else None
         s = effective_settings(p, skill, _clean_opts(b.get("options")))
         start = p["done_count"] + 1
+        if skill and skill.get("engine"):
+            from . import engine_skill
+            return ok({"prompt": engine_skill.chat_prompt(skill, p["name"], start, count, s, b.get("idea") or "")})
         text = chat_prompt(skill, b.get("idea") or "", start, count, s,
                            story_context(p["name"], start - 1), p.get("bible") or "")
     else:
         skill = core.get_skill(b.get("template")) if b.get("template") else None
         s = effective_settings({"options": b.get("options") or {}}, skill)
+        if skill and skill.get("engine"):
+            from . import engine_skill
+            return ok({"prompt": engine_skill.chat_prompt(skill, "", 1, count, s, b.get("idea") or "")})
         text = chat_prompt(skill, b.get("idea") or "", 1, count, s)
     return ok({"prompt": text})
 

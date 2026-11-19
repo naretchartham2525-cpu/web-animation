@@ -1,0 +1,219 @@
+{
+ "series_title": "ป้าข้างร้านไลฟ์ด่า",
+ "slug": "chicken_rice_war",
+ "style": "neighbor",
+ "plot": "ผมเปิดร้านข้าวมันไก่ในตลาดได้สองเดือนก็ขายดี ป้าน้อยเจ้าของร้านข้าวมันไก่เจ้าเก่าข้างๆ ทนไม่ได้ เริ่มไลฟ์ด่าว่าร้านผมสกปรก เอาไก่เน่ามาขาย ปั่นคนในกลุ่มไลน์ตลาด เอาโต๊ะมาวางขวางหน้าร้าน ผิดก็ไม่เคยยอมรับ อ้างตลอดว่าทำเพื่อผู้บริโภค ผมเก็บหลักฐานทุกอย่างทั้งกล้องวงจรปิด แชต ใบเสร็จซื้อไก่ จนสุดท้ายป้ายอมขอโทษเมื่อหมายศาลมาถึง",
+ "hero_profile": {
+  "job": "เชฟ / แม่ครัว",
+  "skill": "ทำอาหารระดับเทพ",
+  "power": "ไม่มี (คนธรรมดา)"
+ },
+ "villain": "ป้าน้อย เจ้าของร้านเจ้าเก่าที่มั่นใจว่าตัวเองถูกเสมอ เถียงวนไปมา บิดเรื่องเก่ง ชอบอ้างว่าทำเพื่อชาวบ้าน และแกล้งร้องไห้เป็นเหยื่อเมื่อจนมุม",
+ "cast": [
+  {
+   "id": "hero",
+   "name": "ผม",
+   "role": "เจ้าของร้านข้าวมันไก่ร้านใหม่",
+   "sex": "m",
+   "age": "late 20s",
+   "voice": "man",
+   "personality": "นิ่ง กวนนิดๆ พูดน้อยแต่เก็บหลักฐานทุกอย่าง",
+   "look": "short black hair, thick eyebrows, white chef jacket with a red neckerchief, a small towel on the shoulder",
+   "rig": {
+    "hair": "short",
+    "hair_c": "#1b1b1e",
+    "hat": "none",
+    "glasses": "none",
+    "outfit": "chef",
+    "shirt_c": "#f0efe8",
+    "mouth": "normal",
+    "brows": "thick",
+    "eyes": "sharp",
+    "nose": "line",
+    "extras": [
+     "scarf"
+    ]
+   }
+  },
+  {
+   "id": "pa_noi",
+   "name": "ป้าน้อย",
+   "role": "เจ้าของร้านข้าวมันไก่เจ้าเก่าข้างๆ",
+   "sex": "f",
+   "age": "50s",
+   "voice": "oldwoman",
+   "personality": "เสียงดัง ขี้อวด เล่นบทเหยื่อเก่ง",
+   "look": "curly permed hair dyed reddish brown, thick gold necklace, flowery purple blouse, red lipstick, a mole above the lip",
+   "rig": {
+    "hair": "curly",
+    "hair_c": "#8a2b2b",
+    "hat": "none",
+    "glasses": "cateye",
+    "shirt": "thai",
+    "shirt_c": "#7a4f9a",
+    "pattern": "floral",
+    "mouth": "lips",
+    "brows": "arched",
+    "eyes": "lashes",
+    "nose": "round",
+    "extras": [
+     "gold_chain",
+     "mole",
+     "lipstick",
+     "earrings"
+    ]
+   }
+  },
+  {
+   "id": "khun_tong",
+   "name": "เฮียต๋อง",
+   "role": "ประธานกลุ่มไลน์ตลาด",
+   "sex": "m",
+   "age": "60s",
+   "voice": "oldman",
+   "personality": "เชื่อคนง่าย แต่ยุติธรรมเมื่อเห็นหลักฐาน",
+   "look": "bald with grey side hair, round glasses, white undershirt, a market fanny pack",
+   "rig": {
+    "hair": "bald_side",
+    "hair_c": "#7a7a80",
+    "hat": "none",
+    "glasses": "round",
+    "shirt": "tank",
+    "shirt_c": "#f0efe8",
+    "mouth": "thin",
+    "brows": "bushy",
+    "eyes": "sleepy",
+    "nose": "big",
+    "extras": [
+     "wrinkles",
+     "watch"
+    ]
+   }
+  },
+  {
+   "id": "mook",
+   "name": "มุก",
+   "role": "ลูกค้าประจำ นักศึกษา",
+   "sex": "f",
+   "age": "early 20s",
+   "voice": "girl",
+   "personality": "ร่าเริง ชอบถ่ายคลิป กล้าพูด",
+   "look": "long straight black hair with a yellow clip, big headphones around the neck, oversized green hoodie",
+   "rig": {
+    "hair": "long",
+    "hair_c": "#1b1b1e",
+    "hat": "none",
+    "glasses": "none",
+    "shirt": "hoodie",
+    "shirt_c": "#4f8a5a",
+    "mouth": "small",
+    "brows": "thin",
+    "eyes": "big",
+    "nose": "dot",
+    "extras": [
+     "headband",
+     "blush"
+    ]
+   }
+  },
+  {
+   "id": "jo",
+   "name": "โจ้",
+   "role": "หลานป้าน้อย ช่วยขายของ",
+   "sex": "m",
+   "age": "late teens",
+   "voice": "boy",
+   "personality": "ลังเล รู้ว่าป้าผิดแต่ไม่กล้าขัด",
+   "look": "spiky hair, freckles, red apron over a striped T-shirt, sandals",
+   "rig": {
+    "hair": "spiky",
+    "hair_c": "#3a2a1c",
+    "hat": "none",
+    "glasses": "none",
+    "shirt": "tee",
+    "shirt_c": "#e2c35a",
+    "pattern": "stripe",
+    "mouth": "buck",
+    "brows": "short",
+    "eyes": "round",
+    "nose": "none",
+    "extras": [
+     "apron",
+     "freckles"
+    ]
+   }
+  }
+ ],
+ "places": [
+  {
+   "id": "my_shop",
+   "name": "ร้านข้าวมันไก่ของผม",
+   "indoor": false,
+   "time": "day",
+   "weather": "clear",
+   "image_prompt": "empty small Thai chicken rice stall in a covered fresh market, steel glass display case with hanging boiled chickens, steaming pot, red plastic stools and steel tables, morning light, painted semi-realistic illustration, vertical 9:16, no people"
+  },
+  {
+   "id": "noi_shop",
+   "name": "ร้านป้าน้อย",
+   "indoor": false,
+   "time": "day",
+   "weather": "clear",
+   "image_prompt": "empty old Thai chicken rice stall next door in the same market, faded signboard, older steel cart, stacked plates, cluttered, morning light, painted semi-realistic illustration, vertical 9:16, no people"
+  },
+  {
+   "id": "market_lane",
+   "name": "ทางเดินในตลาด",
+   "indoor": false,
+   "time": "day",
+   "weather": "clear",
+   "image_prompt": "narrow walkway inside a busy Thai fresh market, stalls on both sides, hanging lamps, wet concrete floor, painted semi-realistic illustration, vertical 9:16, no people"
+  },
+  {
+   "id": "back_alley",
+   "name": "ซอยหลังตลาด",
+   "indoor": false,
+   "time": "golden",
+   "weather": "clear",
+   "image_prompt": "quiet back alley behind a Thai market at sunset, crates, gas tanks, a parked old motorbike, warm golden light, painted semi-realistic illustration, vertical 9:16, no people"
+  },
+  {
+   "id": "my_room",
+   "name": "ห้องเช่าของผม",
+   "indoor": true,
+   "time": "night",
+   "weather": "rain",
+   "image_prompt": "small Thai rented room at night, desk with a laptop showing CCTV screens, rice cooker, rain on the window, single lamp, moody, painted semi-realistic illustration, vertical 9:16, no people"
+  }
+ ],
+ "arc": [
+  {
+   "ep": 1,
+   "beat": "ป้าน้อยไลฟ์ด่าว่าร้านผมใช้ไก่เน่า ลูกค้าหาย ผมเปิดกล้องวงจรปิดแล้วเห็นอะไรบางอย่างตอนตีห้า"
+  },
+  {
+   "ep": 2,
+   "beat": "ผมเจอว่าหลานป้าแอบเอาน้ำมาสาดหน้าร้านผมตอนเช้า ป้าปั่นกลุ่มไลน์ตลาดให้ไล่ผมออก"
+  },
+  {
+   "ep": 3,
+   "beat": "เฮียต๋องเรียกประชุม ผมโชว์ใบเสร็จไก่สดทุกวัน ป้าแกล้งร้องไห้ แต่มุกถ่ายคลิปป้าเทไก่ค้างคืนลงหม้อ"
+  },
+  {
+   "ep": 4,
+   "beat": "ป้าเอาโต๊ะมาวางขวางหน้าร้านแล้วแจ้งเทศกิจว่าผมบุกรุก ผมยื่นแผนผังแผงจากสำนักงานตลาด"
+  },
+  {
+   "ep": 5,
+   "beat": "หมายศาลคดีหมิ่นประมาทมาถึง ป้าน้อยยอมขอโทษในไลฟ์ต่อหน้าคนทั้งตลาด"
+  }
+ ],
+ "episodes": 5,
+ "seconds": 90,
+ "next_ep": 2,
+ "story": [
+  "EP1: ป้าน้อยไลฟ์ด่าว่าร้านผมใช้ไก่เน่าจนลูกค้าหายครึ่งร้าน ผมโชว์ใบเสร็จไก่สดแต่ป้าก็เถียงวน คืนนั้นผมเปิดกล้องวงจรปิดย้อนดู แล้วเห็นคนแอบมาที่หน้าร้านตอนตีห้า"
+ ],
+ "cliff": "คนที่แอบมาหน้าร้านตอนตีห้าคือใคร และเขามาทำอะไร",
+ "teaser": "EP2 คนในกล้องคือคนที่ป้าไม่อยากให้ใครรู้"
+}

@@ -84,6 +84,7 @@ def apply_tweaks(s):
 def _apply_voice(s, v):
     """เสียง: 'edge:th-TH-NiwatNeural' | 'gemini:Kore' | ชื่อเสียงเฉยๆ"""
     v = str(v).strip()
+    s["_voice_full"] = v
     if v.startswith("edge:"):
         s["tts_engine"], s["_voice"] = "edge", v[5:]
     elif v.startswith("gemini:"):
@@ -467,6 +468,10 @@ def run_episode(ctx, proj_name, ep):
     state_f = edir / "state.json"
     state = core.read_json(state_f, {}) or {}
     s = effective_settings(proj, skill, state.get("opts"))
+    if skill and skill.get("engine"):
+        from . import engine_skill        # สกิลมีเอนจินของตัวเอง → ให้สกิลเรนเดอร์ ระบบคุมเสียง/ลายน้ำ
+        ctx.episode = ep
+        return engine_skill.run_episode(ctx, proj, ep, s, skill)
 
     def set_stage(stage, **kw):
         state.update(stage=stage, updated=time.time(), **kw)

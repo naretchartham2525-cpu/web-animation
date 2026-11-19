@@ -47,6 +47,38 @@ class Ctx:
         self.job["status"] = "running"
         self.log("▶️ อนุมัติบทแล้ว ทำต่อ")
 
+    def run_stream(self, cmd, label, cwd=None, on_line=None):
+        """รันคำสั่งยาวๆ (เช่น เอนจินของสกิล) อ่าน log ทีละบรรทัด และหยุดได้"""
+        proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+        self.mgr.proc = proc
+        tail = []
+
+        def reader():
+            for line in proc.stdout:
+                line = line.rstrip()
+                tail.append(line)
+                del tail[:-40]
+                if on_line:
+                    try:
+                        on_line(line)
+                    except Exception:
+                        pass
+
+        th = threading.Thread(target=reader, daemon=True)
+        th.start()
+        try:
+            while proc.poll() is None:
+                if self.job.get("_stop"):
+                    proc.kill()
+                    proc.wait()
+                    raise pipeline.Stopped()
+                time.sleep(0.3)
+            th.join(timeout=5)
+            if proc.returncode != 0:
+                raise RuntimeError(f"{label} ล้มเหลว:\n" + "\n".join(tail[-12:]))
+        finally:
+            self.mgr.proc = None
+
     def run(self, cmd, label, cwd=None):
         proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
         self.mgr.proc = proc
