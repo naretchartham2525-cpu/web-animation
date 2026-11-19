@@ -53,6 +53,7 @@ DEFAULT_SETTINGS = {
     "scene_gap": 0.35,
     "ken_burns": True,
     "subtitles": True,
+    "sub_lang": "th",             # th | en | both | none
     "subtitle_font": "Loma",
     "subtitle_size": 0,           # 0 = อัตโนมัติตามขนาดจอ
     "subtitle_max_chars": 0,      # 0 = อัตโนมัติ
@@ -413,6 +414,7 @@ def list_episodes(name):
             "duration": st.get("duration"),
             "final": f"ep{int(e.name[2:]):02d}/final.mp4" if (e / "final.mp4").exists() else None,
             "srt": f"ep{int(e.name[2:]):02d}/subs.srt" if (e / "subs.srt").exists() else None,
+            "srt_en": f"ep{int(e.name[2:]):02d}/subs_en.srt" if (e / "subs_en.srt").exists() else None,
             "thumb": f"ep{int(e.name[2:]):02d}/thumb.jpg" if (e / "thumb.jpg").exists() else None,
         })
     return eps
@@ -445,7 +447,7 @@ def list_outputs():
                 f = project_dir(p["name"]) / e["final"]
                 out.append({
                     "project": p["name"], "ep": e["ep"], "title": e["title"],
-                    "path": e["final"], "srt": e.get("srt"), "thumb": e.get("thumb"), "duration": e.get("duration"),
+                    "path": e["final"], "srt": e.get("srt"), "srt_en": e.get("srt_en"), "thumb": e.get("thumb"), "duration": e.get("duration"),
                     "mtime": f.stat().st_mtime, "size": f.stat().st_size,
                 })
     out.sort(key=lambda x: x["mtime"], reverse=True)

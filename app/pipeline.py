@@ -23,6 +23,7 @@ SCRIPT_SCHEMA = """{
     {
       "narration": "บทพากย์ของฉากนี้ (อ่านออกเสียงได้ทันที ห้ามมีคำกำกับท่าทาง/วงเล็บ)",
       "image_prompt": "English prompt describing this scene's picture: characters (same look every scene), action, place, camera angle",
+      "subtitle_en": "ซับภาษาอังกฤษ แปลบทพากย์แบบเป็นธรรมชาติ (ใส่เมื่อขอซับอังกฤษ)",
       "clip": "ชื่อไฟล์ภาพ/คลิปจากรายการที่ให้ (ถ้ามีรายการ)"
     }
   ]
@@ -146,7 +147,8 @@ def _script_messages(proj, skill_text, ep, s, prev_summary, inputs):
         f"=== เทมเพลต ===\n{skill_text or '(ไม่มีเทมเพลต ใช้วิจารณญาณของคุณ)'}\n=== จบเทมเพลต ===\n\n"
         + (f"=== ปรับแต่งเพิ่มเติมครั้งนี้ (เสริมจากเทมเพลต ไม่เปลี่ยนสไตล์หลัก) ===\n{s['_tweak_th']}\n\n" if s.get("_tweak_th") else "")
         + f"กฎ: บทพากย์เป็นภาษา{s['language']} image_prompt เป็นภาษาอังกฤษ "
-        f"ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น ตามรูปแบบ:\n{SCRIPT_SCHEMA}"
+        + ("ต้องใส่ subtitle_en ทุกฉาก " if s.get("sub_lang") in ("en", "both") else "ไม่ต้องใส่ subtitle_en ")
+        + f"ตอบเป็น JSON เท่านั้น ไม่มีข้อความอื่น ตามรูปแบบ:\n{SCRIPT_SCHEMA}"
     )
     parts = []
     if proj.get("topic"):
@@ -186,6 +188,7 @@ def _validate_script(data):
             "narration": nar,
             "subtitle": str(sc.get("subtitle") or "").strip(),
             "image_prompt": str(sc.get("image_prompt") or sc.get("visual") or "").strip(),
+            "subtitle_en": str(sc.get("subtitle_en") or "").strip(),
             "clip": str(sc.get("clip") or "").strip(),
         })
     if not scenes:
@@ -204,9 +207,11 @@ _NUM = re.compile(r"^\s*(?:ฉาก(?:ที่)?\s*\d+\s*[:.)\-]?|\d+\s*[.)]|[
 def _scene_from_line(line):
     """'บทพากย์ | english image prompt' → scene  (ส่วนหลัง | ไม่บังคับ)"""
     line = _NUM.sub("", line).strip().strip('"').strip()
-    nar, _, img = line.partition("|")
-    nar = re.sub(r"\s+", " ", nar).strip()
-    return {"narration": nar, "subtitle": "", "image_prompt": img.strip(), "clip": ""} if nar else None
+    parts = [p.strip() for p in line.split("|")]
+    nar = re.sub(r"\s+", " ", parts[0]).strip()
+    img = parts[1] if len(parts) > 1 else ""
+    en = parts[2] if len(parts) > 2 else ""
+    return {"narration": nar, "subtitle": "", "image_prompt": img, "subtitle_en": en, "clip": ""} if nar else None
 
 
 def _split_paragraph(text, n_scenes):
@@ -285,6 +290,8 @@ def story_context(proj_name, upto_ep, max_chars=2500):
 def chat_prompt(skill, idea, start_ep, count, s, context="", bible=""):
     """คำสั่งสำเร็จรูปให้ผู้ใช้ก๊อปไปถาม Claude ในแชท (ฟรี) แล้ววางบทกลับมา"""
     end = start_ep + count - 1
+    line_fmt = (f"บทพากย์ภาษา{s['language']} | คำบรรยายภาพเป็นภาษาอังกฤษ (ใส่ชื่อ/หน้าตาตัวละครแบบเดิมทุกฉาก)"
+                + (" | ซับภาษาอังกฤษ (แปลบทพากย์แบบเป็นธรรมชาติ)" if s.get("sub_lang") in ("en", "both") else ""))
     eps = f"EP {start_ep}" if count == 1 else f"EP {start_ep} ถึง EP {end} ({count} ตอน)"
     lines = [f"ช่วยเขียนบทพากย์หนังสั้นแอนิเมชัน {eps}" + (" ต่อจากเรื่องเดิม" if start_ep > 1 else "")]
     if skill:
@@ -301,7 +308,7 @@ def chat_prompt(skill, idea, start_ep, count, s, context="", bible=""):
 รูปแบบคำตอบ (สำคัญมาก ระบบจะอ่านอัตโนมัติ):
 - แต่ละตอนขึ้นบรรทัดแรกด้วย "# EP <เลขตอน>: <ชื่อตอน>"
 - ใต้หัวข้อ 1 บรรทัด = 1 ฉาก ตอนละประมาณ {s['scenes_per_episode']} ฉาก ไม่ต้องเยอะ แค่ครอบคลุมเรื่อง (ยาวรวมราว {s['target_seconds']} วินาที)
-- แต่ละบรรทัด: บทพากย์ภาษา{s['language']} | คำบรรยายภาพเป็นภาษาอังกฤษ (ใส่ชื่อ/หน้าตาตัวละครแบบเดิมทุกฉาก)
+- แต่ละบรรทัด: {line_fmt}
 - บทพากย์อ่านออกเสียงลื่น ห้ามมีวงเล็บ คำกำกับท่าทาง หรือชื่อคนพูดนำหน้า
 - {"แต่ละตอนต้องต่อเนื่องกัน ใช้ตัวละครและสไตล์เดิม จบตอนให้อยากดูต่อ" if count > 1 or start_ep > 1 else "จบตอนให้อยากดูต่อ"}
 - ตอบเฉพาะบท ไม่ต้องมีคำอธิบายอื่น""")
@@ -369,6 +376,24 @@ def sync_bible(ctx, proj, ep, s):
         except Exception as e:
             ctx.log(f"สรุป bible ไม่สำเร็จ (ใช้สรุปตอนก่อนแทน): {e}")
             break
+
+
+def ensure_english(ctx, script, s):
+    """ขอซับอังกฤษแต่บทยังไม่มี → แปลด้วย AI ฟรี 1 ครั้ง/EP (ไม่เสียเครดิต)"""
+    missing = [i for i, sc in enumerate(script["scenes"]) if not sc.get("subtitle_en")]
+    if not missing:
+        return False
+    lines = [script["scenes"][i]["narration"] for i in missing]
+    msgs = [{"role": "system", "content": "Translate Thai narration lines to natural, short English subtitles. "
+                                          'Reply JSON only: {"lines": ["..."]} same count and order.'},
+            {"role": "user", "content": json.dumps({"lines": lines}, ensure_ascii=False)}]
+    ctx.log(f"แปลซับอังกฤษ {len(lines)} บรรทัด (AI ฟรี)")
+    text, cost = llm.chat(s["free_model"], msgs, json_mode=True, temperature=0.2, max_tokens=1500)
+    ctx.cost(cost)
+    out = llm.parse_json(text).get("lines") or []
+    for i, en in zip(missing, out):
+        script["scenes"][i]["subtitle_en"] = str(en).strip()
+    return True
 
 
 # ---------------- เสียง ----------------
@@ -476,6 +501,13 @@ def run_episode(ctx, proj_name, ep):
         script = _validate_script(core.read_json(script_f))
         core.write_json(script_f, script)
     state["approved"] = True
+    if s.get("sub_lang") in ("en", "both") and s.get("subtitles", True):
+        try:
+            if ensure_english(ctx, script, s):
+                core.write_json(script_f, script)
+        except Exception as e:
+            ctx.log(f"แปลซับอังกฤษไม่สำเร็จ ใช้ซับไทยแทน: {e}")
+            s["sub_lang"] = "th"
     scenes = script["scenes"]
 
     # 3) ภาพ
@@ -536,7 +568,7 @@ def run_episode(ctx, proj_name, ep):
         ctx.run(video.segment_cmd(kind, src, adir / f"s{i:02d}.mp3", out, seg_dur, w, h, s,
                                   offset=offset, zoom_in=(i % 2 == 1)), f"ฉาก {i}")
         segs.append(out)
-        subs.append((t, dur, sc.get("subtitle") or sc["narration"]))
+        subs.append((t, dur, sc.get("subtitle") or sc["narration"], sc.get("subtitle_en") or ""))
         t += seg_dur
         ctx.progress(50 + 35 * i / len(picks))
 
@@ -545,9 +577,12 @@ def run_episode(ctx, proj_name, ep):
              "-i", "list.txt", "-c", "copy", "joined.mp4"], "รวมฉาก", cwd=work)
 
     wm = (s.get("watermark_text") or "AutoClip") if s.get("watermark") else ""
-    ass, srt = video.build_subs(subs if s.get("subtitles", True) else [], w, h, s, watermark=wm, total=t)
+    mode = s.get("sub_lang", "th") if s.get("subtitles", True) else "none"
+    ass, srt_th, srt_en = video.build_subs(subs, w, h, s, watermark=wm, total=t, mode=mode)
     (work / "subs.ass").write_text(ass, encoding="utf-8")
-    (edir / "subs.srt").write_text(video.build_subs(subs, w, h, s)[1], encoding="utf-8")
+    (edir / "subs.srt").write_text(srt_th, encoding="utf-8")
+    if srt_en.strip():
+        (edir / "subs_en.srt").write_text(srt_en, encoding="utf-8")
 
     # 6) ซับ + ลายน้ำ + เพลงประกอบ (encode ครั้งสุดท้าย)
     ctx.check()
@@ -555,7 +590,7 @@ def run_episode(ctx, proj_name, ep):
     music = sorted(p for p in music_dir.glob("*") if p.suffix.lower() in core.AUDIO_EXT) if music_dir.exists() else []
     cmd = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", "joined.mp4"]
     vf = "null"
-    if (s.get("subtitles", True) and subs) or wm:
+    if (mode != "none" and subs) or wm:
         if core.FONTS_DIR.exists() and any(core.FONTS_DIR.iterdir()):
             shutil.copytree(core.FONTS_DIR, work / "fonts", dirs_exist_ok=True)
             vf = "ass=subs.ass:fontsdir=fonts"

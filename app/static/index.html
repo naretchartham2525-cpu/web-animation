@@ -225,6 +225,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
     <symbol id="i-film" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.5v5l4-2.5z"/></symbol>
     <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.8"/><path d="M12 3.2l1.5 2.1 2.5-.6.6 2.5 2.4 1-.9 2.4 1.5 2.1-2.1 1.5.4 2.6-2.6.2-1.1 2.3-2.2-1.3-2.2 1.3-1.1-2.3-2.6-.2.4-2.6L3.8 13l1.5-2.1-.9-2.4 2.4-1 .6-2.5 2.5.6z"/></symbol>
     <symbol id="i-wand" viewBox="0 0 24 24"><path d="M5 19L15.5 8.5M14 5.5l.6-2 .6 2 2 .6-2 .6-.6 2-.6-2-2-.6zM18.5 10.5l.4-1.3.4 1.3 1.3.4-1.3.4-.4 1.3-.4-1.3-1.3-.4z"/><path d="M13.5 10.5l-2-2"/></symbol>
+    <symbol id="i-cc" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="3"/><path d="M10.5 10.2a2.2 2.2 0 1 0 0 3.6M16.5 10.2a2.2 2.2 0 1 0 0 3.6"/></symbol>
     <symbol id="i-reel" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="7.2" r="1.9"/><circle cx="16.2" cy="14.4" r="1.9"/><circle cx="7.8" cy="14.4" r="1.9"/></symbol>
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 4l1.8 4.7 4.7 1.8-4.7 1.8L12 17l-1.8-4.7-4.7-1.8 4.7-1.8z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></symbol>
@@ -288,6 +289,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
       <div class="seg" id="segMode"><button data-v="manual" class="on">วางบท (ฟรี)</button><button data-v="ai">AI เขียนบท</button></div>
       <label class="dur" title="ความยาวต่อ EP (ลากเลือกได้อิสระ)"><svg class="i"><use href="#i-clock"/></svg><input type="range" id="oDur" min="5" max="180" step="1"><b id="durLbl"></b></label>
       <div class="seg" id="segQ"><button data-v="sd">มาตรฐาน</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div>
+      <label class="chip" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ซับไทย</option><option value="en">ซับอังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label>
       <label class="chip" title="เสียงพากย์"><svg class="i"><use href="#i-mic"/></svg><select id="oVoice"></select></label>
       <span class="swl" id="oWm" title="ลายน้ำชื่อช่อง"><span class="sw"><i></i></span>ลายน้ำ</span>
       <button class="chip" id="twBtn" title="สั่งปรับแต่งเพิ่มเติมครั้งนี้ (ไม่เปลี่ยนเทมเพลต)"><svg class="i"><use href="#i-wand"/></svg>ปรับแต่ง</button>
@@ -463,7 +465,7 @@ function tweakUI(el, sel, text, onchange) {
   el.querySelector(".twin").oninput = () => onchange && onchange();
 }
 const tweakVal = el => ({tweaks: [...el.querySelectorAll(".tw.on")].map(b => b.dataset.k).join(","), tweak_text: el.querySelector(".twin")?.value.trim() || ""});
-const O = {mode:"manual", dur:30, q:"hd", voice:"", wm:true, engine:"free", vis:"ai", rate:0, preset:"veryfast", fps:"30", sub:"0", font:"Loma"};
+const O = {lang:"th", mode:"manual", dur:30, q:"hd", voice:"", wm:true, engine:"free", vis:"ai", rate:0, preset:"veryfast", fps:"30", sub:"0", font:"Loma"};
 const TONES = ["#c98a6b,#6e3d2d","#8fa58a,#3e5446","#d4b483,#7a5530","#a68fb3,#4b3a5c","#e0a07c,#8c4a3c","#7f9cb0,#354b5c","#c7a9a0,#6b4a45","#b8b07a,#5e5a33"];
 const hashN = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 
@@ -525,12 +527,12 @@ function renderComposer() {
   segSet("#segMode", O.mode); segSet("#segQ", O.q); segSet("#segEngine", O.engine); segSet("#segVis", O.vis); segSet("#segPreset", O.preset); segSet("#segFps", O.fps); segSet("#segSub", O.sub);
   $("#oDur").value = O.dur; $("#durLbl").textContent = fmtSec(+O.dur);
   $("#oRate").value = O.rate; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%";
-  $("#oFont").value = O.font;
+  $("#oFont").value = O.font; $("#oSub").value = O.lang;
   $("#oVoice").innerHTML = voiceOpts(O.voice, tplSel ? `ตามเทมเพลต${tplVoice() ? " · " + voiceName(tplVoice()).split(" ·")[0] : ""}` : "เสียงหลัก (ฟรี)");
   $("#oWm").classList.toggle("on", O.wm);
   $("#pickTpl").innerHTML = tplSel ? `<span class="pick">เทมเพลต <b>${esc(tplSel.name)}</b><button onclick="useTemplate(dq('${q(tplSel.id)}'))" title="เลิกใช้">${ic("x")}</button></span>`
     : `<span class="hint">เลือกเทมเพลตด้านบน หรือสร้างแบบอิสระ</span>`;
-  $("#idea").placeholder = O.mode === "manual" ? "วางบทจาก Claude · 1 บรรทัด = 1 ฉาก · “# ชื่อตอน” = เริ่ม EP ใหม่" : "พิมพ์ไอเดีย แล้วให้ AI คิดบท";
+  $("#idea").placeholder = O.mode === "manual" ? `วางบทจาก Claude · 1 บรรทัด = 1 ฉาก${O.lang === "en" || O.lang === "both" ? " (บท | ภาพ | English)" : ""} · “# ชื่อตอน” = เริ่ม EP ใหม่` : "พิมพ์ไอเดีย แล้วให้ AI คิดบท";
   $("#promptBtn").style.display = O.mode === "manual" ? "" : "none";
   goLabel();
   const notes = [];
@@ -538,6 +540,7 @@ function renderComposer() {
   if (O.vis === "ai") notes.push("ภาพ AI ฟรี ใช้เวลาราว 15 วิ/ภาพ · แผนฟรีห้ามใช้เชิงพาณิชย์");
   if (O.vis === "drive") notes.push("ใช้ภาพ/คลิปจาก Drive: projects/<ชื่อเรื่อง>/input");
   if (effVoice().startsWith("gemini:")) notes.push("เสียง Gemini เสียเครดิต");
+  if (O.lang === "en" || O.lang === "both") notes.push("ซับอังกฤษ: ใส่ในบทเป็นช่องที่ 3 (บท | ภาพ | English) หรือให้ระบบแปลด้วย AI ฟรี");
   $("#popNote").innerHTML = notes.map(esc).join("<br>");
   autoGrow();
 }
@@ -545,6 +548,7 @@ function renderComposer() {
 $("#oDur").oninput = e => { O.dur = +e.target.value; $("#durLbl").textContent = fmtSec(O.dur); };
 $("#oRate").oninput = e => { O.rate = +e.target.value; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%"; };
 $("#oFont").onchange = e => O.font = e.target.value;
+$("#oSub").onchange = e => { O.lang = e.target.value; renderComposer(); };
 $("#oVoice").onchange = e => { O.voice = e.target.value; renderComposer(); };
 $("#oWm").onclick = () => { O.wm = !O.wm; renderComposer(); };
 tweakUI($("#twRow"), [], "", twCount);
@@ -567,7 +571,7 @@ function countEps(text) {
   return n + (has ? 1 : 0);
 }
 function buildOpts() {
-  const o = {duration:O.dur, quality:O.q, watermark:O.wm, script_engine:O.engine, visual_source:O.vis, preset:O.preset, fps:O.fps, subtitle_font:O.font};
+  const o = {sub_lang:O.lang, duration:O.dur, quality:O.q, watermark:O.wm, script_engine:O.engine, visual_source:O.vis, preset:O.preset, fps:O.fps, subtitle_font:O.font};
   if (O.voice) o.voice = O.voice;
   const tw = tweakVal($("#twRow")); if (tw.tweaks) o.tweaks = tw.tweaks; if (tw.tweak_text) o.tweak_text = tw.tweak_text;
   if (O.rate) o.edge_rate = (O.rate > 0 ? "+" : "") + O.rate + "%";
@@ -659,7 +663,8 @@ function vidActs() {
   $("#vActs").innerHTML = `
     <button class="sb" onclick="toggleMute()">${vMuted ? ic("mute") + "เสียงปิด" : ic("vol") + "เสียงเปิด"}</button>
     <a class="sb dark" href="${src}?dl=1${vMuted ? "&mute=1" : ""}">${ic("down")}ดาวน์โหลด${vMuted ? " (ไม่มีเสียง)" : ""}</a>
-    ${o.srt ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt}?dl=1">${ic("down")}ซับ</a>` : ""}
+    ${o.srt ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt}?dl=1">${ic("down")}ซับไทย</a>` : ""}
+    ${o.srt_en ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt_en}?dl=1">${ic("down")}ซับ EN</a>` : ""}
     <button class="sb" onclick="openReview(dq('${q(o.project)}'),${o.ep})">${ic("pen")}บท</button>
     ${isLatest(o) ? `<button class="sb acc" onclick="nextEp(dq('${q(o.project)}'))">${ic("plus")}ทำ EP ${o.ep + 1} ต่อ</button>` : ""}`;
 }
@@ -756,7 +761,7 @@ const MOCK = {
     {id:"b2", project:"แมวมนุษย์เงินเดือน", count:1, done:0, status:"error", stage:"ผิดพลาด", progress:0, cost_usd:0, error:"เครดิต OpenRouter ไม่พอ → ใช้ วางบท (ฟรี) แทน", logs:[]},
     {id:"c3", project:"หลอนกลางดึก", count:1, done:1, status:"done", stage:"เสร็จ EP 1", progress:100, cost_usd:0, logs:[]},
   ],
-  outs: [{project:"มิลิน ช่างปะเมฆเวหา", ep:4, title:"ฝนสีทอง", path:"ep04/final.mp4", duration:31},{project:"มิลิน ช่างปะเมฆเวหา", ep:3, title:"เมฆรั่ว", path:"ep03/final.mp4", duration:29},{project:"หลอนกลางดึก", ep:1, title:"เสียงเคาะ", path:"ep01/final.mp4", duration:58}],
+  outs: [{project:"มิลิน ช่างปะเมฆเวหา", ep:4, title:"ฝนสีทอง", path:"ep04/final.mp4", srt:"ep04/subs.srt", srt_en:"ep04/subs_en.srt", duration:31},{project:"มิลิน ช่างปะเมฆเวหา", ep:3, title:"เมฆรั่ว", path:"ep03/final.mp4", duration:29},{project:"หลอนกลางดึก", ep:1, title:"เสียงเคาะ", path:"ep01/final.mp4", duration:58}],
   lib: [{id:"t1", title:"บท EP 1–2 มิลิน", text:"# EP 1: เมฆรั่ว\nเช้าวันนั้น ฟ้าเหนือหมู่บ้านมีรูโหว่ | a small hole in the sky\n…"},{id:"t2", title:"ไอเดีย: แมวนักสืบ", text:"แมวดำนักสืบไขคดีขนมหายในร้านเบเกอรี่"}],
 };
 const DEF_SET = {watermark:true, watermark_text:"สตูดิโอเถื่อน", script_engine:"free", visual_source:"ai", quality:"hd", target_seconds:30};

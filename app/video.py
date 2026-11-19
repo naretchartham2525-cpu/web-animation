@@ -124,13 +124,35 @@ def _ts_srt(t):
     return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
 
 
-def build_subs(items, w, h, s, watermark="", total=0.0):
-    """items: [(start, speech_dur, text)] → (ass_text, srt_text)  watermark = ข้อความลายน้ำมุมขวาบน"""
+def _esc_ass(t):
+    return t.replace("{", "(").replace("}", ")").replace("\\", "/")
+
+
+def _events(start, dur, text, max_chars):
+    chunks = split_chunks(text, max_chars)
+    if not chunks or dur <= 0:
+        return []
+    n = sum(len(c) for c in chunks)
+    out, t = [], start
+    for c in chunks:
+        d = dur * len(c) / n
+        out.append((t, t + d, c))
+        t += d
+    return out
+
+
+def build_subs(items, w, h, s, watermark="", total=0.0, mode="th"):
+    """items: [(start, speech_dur, text_th, text_en)]  mode: th | en | both | none
+    คืน (ass, srt_th, srt_en)"""
     portrait = h > w
     size = int(s.get("subtitle_size") or 0) or (int(w * 0.068) if portrait else int(h * 0.058))
-    max_chars = int(s.get("subtitle_max_chars") or 0) or (20 if portrait else 38)
+    en_size = int(size * (0.78 if mode == "both" else 0.92))
+    max_th = int(s.get("subtitle_max_chars") or 0) or (20 if portrait else 38)
+    max_en = 30 if portrait else 52
     margin_v = int(h * (0.16 if portrait else 0.07))
+    th_margin = margin_v + int(en_size * 1.55) if mode == "both" else margin_v
     font = s.get("subtitle_font") or "Loma"
+    ol = max(3, size // 14)
     ass = [
         "[Script Info]", "ScriptType: v4.00+", f"PlayResX: {w}", f"PlayResY: {h}",
         "WrapStyle: 0", "ScaledBorderAndShadow: yes", "",
@@ -139,30 +161,29 @@ def build_subs(items, w, h, s, watermark="", total=0.0):
         "Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, "
         "Alignment, MarginL, MarginR, MarginV, Encoding",
         f"Style: Default,{font},{size},&H00FFFFFF,&H000000FF,&H00000000,&H64000000,"
-        f"-1,0,0,0,100,100,0,0,1,{max(3, size // 14)},2,2,60,60,{margin_v},1",
+        f"-1,0,0,0,100,100,0,0,1,{ol},2,2,60,60,{th_margin},1",
+        f"Style: EN,{font},{en_size},&H00F0F7FF,&H000000FF,&H00000000,&H64000000,"
+        f"{'0' if mode == 'both' else '-1'},0,0,0,100,100,0,0,1,{max(2, ol - 1)},2,2,60,60,{margin_v},1",
         f"Style: WM,{font},{max(14, int(min(w, h) * 0.035))},&H60FFFFFF,&H000000FF,&H80000000,&H00000000,"
         f"-1,0,0,0,100,100,0,0,1,{max(1, int(min(w, h) * 0.002))},0,9,30,30,30,1",
         "", "[Events]",
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
     ]
-    srt, n = [], 0
     if watermark and total > 0:
-        wm = watermark.replace("{", "(").replace("}", ")").replace("\\", "/")
-        ass.append(f"Dialogue: 1,{_ts_ass(0)},{_ts_ass(total + 1)},WM,,0,0,0,,{wm}")
-    for start, dur, text in items:
-        chunks = split_chunks(text, max_chars)
-        if not chunks or dur <= 0:
-            continue
-        total = sum(len(c) for c in chunks)
-        t = start
-        for c in chunks:
-            d = dur * len(c) / total
-            safe = c.replace("{", "(").replace("}", ")").replace("\\", "/")
-            ass.append(f"Dialogue: 0,{_ts_ass(t)},{_ts_ass(t + d)},Default,,0,0,0,,{safe}")
-            n += 1
-            srt.append(f"{n}\n{_ts_srt(t)} --> {_ts_srt(t + d)}\n{c}\n")
-            t += d
-    return "\n".join(ass) + "\n", "\n".join(srt)
+        ass.append(f"Dialogue: 2,{_ts_ass(0)},{_ts_ass(total + 1)},WM,,0,0,0,,{_esc_ass(watermark)}")
+    srt_th, srt_en = [], []
+    for it in items:
+        start, dur, th = it[0], it[1], it[2]
+        en = it[3] if len(it) > 3 else ""
+        for a, b2, c in _events(start, dur, th, max_th):
+            srt_th.append(f"{len(srt_th) + 1}\n{_ts_srt(a)} --> {_ts_srt(b2)}\n{c}\n")
+            if mode in ("th", "both"):
+                ass.append(f"Dialogue: 0,{_ts_ass(a)},{_ts_ass(b2)},Default,,0,0,0,,{_esc_ass(c)}")
+        for a, b2, c in _events(start, dur, en, max_en):
+            srt_en.append(f"{len(srt_en) + 1}\n{_ts_srt(a)} --> {_ts_srt(b2)}\n{c}\n")
+            if mode in ("en", "both"):
+                ass.append(f"Dialogue: 1,{_ts_ass(a)},{_ts_ass(b2)},EN,,0,0,0,,{_esc_ass(c)}")
+    return "\n".join(ass) + "\n", "\n".join(srt_th), "\n".join(srt_en)
 
 
 def silent_audio_cmd(out, dur):

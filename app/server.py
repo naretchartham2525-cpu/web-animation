@@ -188,7 +188,7 @@ def episode_reset(name, ep):
     if mode == "all":
         d.rename(d.parent / f"_old_ep{ep:02d}_{int(time.time())}")
     else:
-        for f in ("final.mp4", "subs.srt"):
+        for f in ("final.mp4", "subs.srt", "subs_en.srt", "final_nosound.mp4"):
             (d / f).unlink(missing_ok=True)
         if mode == "voice":
             shutil.rmtree(d / "audio", ignore_errors=True)
