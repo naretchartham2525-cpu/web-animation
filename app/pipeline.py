@@ -211,9 +211,13 @@ def _scene_from_line(line):
     line = _NUM.sub("", line).strip().strip('"').strip()
     parts = [p.strip() for p in line.split("|")]
     nar = re.sub(r"\s+", " ", parts[0]).strip()
+    sp = ""
+    m = re.match(r"^\[([^\]]{1,30})\]\s*", nar)   # [ชื่อตัวละคร] หน้าบท = ผู้พูด (ไม่มี = ผู้บรรยาย)
+    if m:
+        sp, nar = m.group(1).strip(), nar[m.end():].strip()
     img = parts[1] if len(parts) > 1 else ""
     en = parts[2] if len(parts) > 2 else ""
-    return {"narration": nar, "subtitle": "", "image_prompt": img, "subtitle_en": en, "clip": ""} if nar else None
+    return {"narration": nar, "speaker": sp, "subtitle": "", "image_prompt": img, "subtitle_en": en, "clip": ""} if nar else None
 
 
 def _split_paragraph(text, n_scenes):
@@ -310,7 +314,8 @@ def chat_prompt(skill, idea, start_ep, count, s, context="", bible=""):
 - แต่ละตอนขึ้นบรรทัดแรกด้วย "# EP <เลขตอน>: <ชื่อตอน>"
 - ใต้หัวข้อ 1 บรรทัด = 1 ฉาก ตอนละประมาณ {s['scenes_per_episode']} ฉาก ไม่ต้องเยอะ แค่ครอบคลุมเรื่อง (ยาวรวมราว {s['target_seconds']} วินาที)
 - แต่ละบรรทัด: {line_fmt}
-- บทพากย์อ่านออกเสียงลื่น ห้ามมีวงเล็บ คำกำกับท่าทาง หรือชื่อคนพูดนำหน้า
+- ผู้พูด: ถ้าตัวละครพูดในฉากนั้น ใส่ [ชื่อตัวละคร] หน้าบทพากย์ เช่น "[เจ๊แหม่ม] ล้างช้าแบบนี้หักเงิน!" (ชื่อเดิมทุกครั้ง ห้ามเปลี่ยนชื่อเรียก) · บรรทัดผู้บรรยายไม่ต้องใส่ · 1 บรรทัด = ผู้พูดคนเดียว (ระบบจะแยกบทพากย์ตามตัวละครให้อัดเสียง)
+- บทพากย์อ่านออกเสียงลื่น ห้ามมีวงเล็บ ( ) หรือคำกำกับท่าทาง (ยกเว้น [ชื่อผู้พูด] ตามข้อด้านบน)
 - {"แต่ละตอนต้องต่อเนื่องกัน ใช้ตัวละครและสไตล์เดิม จบตอนให้อยากดูต่อ" if count > 1 or start_ep > 1 else "จบตอนให้อยากดูต่อ"}
 - ตอบเฉพาะบท ไม่ต้องมีคำอธิบายอื่น""")
     return "\n".join(lines).strip()
@@ -398,15 +403,24 @@ def ensure_english(ctx, script, s):
 
 
 # ---------------- เสียง ----------------
-def voice_file_path(s):
-    """ไฟล์เสียงพากย์ที่ผู้ใช้อัป (เฉพาะ EP นี้) หรือ None"""
+def own_voices(s):
+    """ไฟล์เสียงพากย์ที่ผู้ใช้อัป (เฉพาะ EP นี้): {"*": ไฟล์เดียวทั้งตอน} หรือ {speaker_key: ไฟล์ของตัวละคร} หรือ {}"""
     vf = s.get("voice_file")
     if not vf:
-        return None
-    p = core.ROOT / "uploads" / "voice" / Path(str(vf)).name
-    if not p.exists():
-        raise FileNotFoundError(f"ไม่พบไฟล์เสียงที่อัปไว้: {vf}")
-    return p
+        return {}
+    m = vf if isinstance(vf, dict) else {"*": vf}
+    out = {}
+    for k, v in m.items():
+        p = core.ROOT / "uploads" / "voice" / Path(str(v)).name
+        if not p.exists():
+            raise FileNotFoundError(f"ไม่พบไฟล์เสียงที่อัปไว้: {v}")
+        out[str(k)] = p
+    return out
+
+
+def voice_file_path(s):
+    """(ใช้กับเอนจิน) คืน dict ไฟล์เสียงของผู้ใช้ หรือ None"""
+    return own_voices(s) or None
 
 
 def make_tts(ctx, text, out, s):
@@ -545,17 +559,26 @@ def run_episode(ctx, proj_name, ep):
     set_stage("tts")
     adir = edir / "audio"
     adir.mkdir(exist_ok=True)
-    own = voice_file_path(s)
-    sig = f"own:{own.name}" if own else f"{s.get('voice_on')}|{s['tts_engine']}|{s.get('_voice', '')}"
+    own = own_voices(s)
+    sig = ("own:" + ",".join(f"{k}={v.name}" for k, v in sorted(own.items()))) if own else f"{s.get('voice_on')}|{s['tts_engine']}|{s.get('_voice', '')}"
     if state.get("tts_sig") and state["tts_sig"] != sig:
         shutil.rmtree(adir, ignore_errors=True)
         adir.mkdir()
     state["tts_sig"] = sig
     if own and any(not (adir / f"s{i:02d}.mp3").exists() for i in range(1, len(scenes) + 1)):
-        from . import voiceover
-        ctx.log(f"ใช้เสียงพากย์ที่อัปโหลด ({own.name}) ตัดเป็น {len(scenes)} ท่อนตามฉาก")
-        cuts = voiceover.split(own, [sc["narration"] for sc in scenes], [adir / f"s{i:02d}.mp3" for i in range(1, len(scenes) + 1)])
-        ctx.log("จุดตัด (วินาที): " + ", ".join(f"{a:.1f}" for a, _ in cuts))
+        from . import voiceover, voicesheet
+        groups = {"*": list(range(len(scenes)))} if "*" in own else {}
+        if not groups:
+            for i, sc in enumerate(scenes):
+                groups.setdefault((sc.get("speaker") or "").strip() or voicesheet.NARRATOR, []).append(i)
+        for key, idx in groups.items():
+            f = own.get(key)
+            if not f:
+                ctx.log(f"ไม่มีไฟล์เสียงของ {key} → ใช้เสียง AI {len(idx)} ประโยค")
+                continue
+            ctx.log(f"เสียงพากย์ที่อัป: {key} ({f.name}) ตัดเป็น {len(idx)} ท่อน")
+            cuts = voiceover.split(f, [scenes[i]["narration"] for i in idx], [adir / f"s{i + 1:02d}.mp3" for i in idx])
+            ctx.log("จุดตัด (วินาที): " + ", ".join(f"{a:.1f}" for a, _ in cuts))
     durations = []
     for i, sc in enumerate(scenes, 1):
         ctx.check()

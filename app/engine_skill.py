@@ -158,7 +158,8 @@ def chat_prompt(skill, proj_name, start_ep, count, s, idea=""):
 - ความยาวตอนละประมาณ {sec} วินาที · ทุกคนในฉากต้องมี pose (และ prop ถ้าถือของ) · ตัวละครต้องมี rig
 - ถ้ารันโค้ดได้ ให้รันตัวตรวจ drama_tool.py check จนผ่านก่อนส่ง
 - ฉากหลัง: {'วาดทุกสถานที่ใน places ' if not series else 'วาดเฉพาะสถานที่ใหม่ที่ยังไม่เคยมี '}ตาม reference/scenes.md ส่งเป็น code block ```python``` ก้อนละสถานที่ บรรทัดแรก "# bg: <place_id>" (ไม่ส่ง = ระบบใช้ฉากสำเร็จรูปที่มักไม่ตรงเรื่อง)
-{'- ซับอังกฤษ: ทุกช็อตเพิ่มฟิลด์ "line_en" (คำแปลอังกฤษสั้นๆ ของ line) และเพิ่ม "ask_en" ระดับตอน\n' if s.get("sub_lang") in ("en", "both") else ""}- ไม่ต้องมีคำอธิบายอื่น""")
+{'- ซับอังกฤษ: ทุกช็อตเพิ่มฟิลด์ "line_en" (คำแปลอังกฤษสั้นๆ ของ line) และเพิ่ม "ask_en" ระดับตอน\n' if s.get("sub_lang") in ("en", "both") else ""}- ผู้พูดต้องถูกตัวทุกประโยค (ระบบแยกบทพากย์ตามตัวละครให้อัดเสียง): scene ใช้ "say" = id ตัวละคร หรือ narration · แชทใช้ "from" = id ตัวละคร · author/name ในโพสต์/ฟอรัม/คอมเมนต์ใช้ชื่อตามที่อยู่ใน cast ทุกตัวอักษร
+- ไม่ต้องมีคำอธิบายอื่น""")
     for f in m.get("prompt_files") or ["reference/format.md"]:
         p = sdir / f
         if p.exists():
@@ -332,8 +333,8 @@ def run_episode(ctx, proj, ep, s, skill):
     from .pipeline import voice_file_path
     own = voice_file_path(s)
     if own:
-        opts.update(voice_file=str(own), mute=False)
-        ctx.log(f"ใช้เสียงพากย์ที่อัปโหลด ({own.name}) แทนเสียง AI")
+        opts.update(voice_file={k: str(v) for k, v in own.items()}, mute=False)
+        ctx.log("ใช้เสียงพากย์ที่อัปโหลดแทนเสียง AI: " + ", ".join(f"{k}={v.name}" for k, v in own.items()))
     rawmp4 = work / "raw.mp4"
     total_shots = max(1, len(raw.get("shots") or []))
 

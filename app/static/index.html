@@ -56,7 +56,11 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .vfchip.on{display:flex}
 .vfchip b{font-weight:600}
 .vfchip .small{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.vfchip audio{height:28px;max-width:190px}
+.vfchip audio{height:28px;max-width:170px}
+.vfrow{display:flex;align-items:center;gap:6px;margin:5px 0}
+.vfrow .small{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vfrow select.in{width:auto;max-width:200px;padding:4px 8px;font-size:12.5px;height:30px}
+.vfchip{align-items:flex-start}
 #splash .msg{font-size:12.5px;color:var(--muted);min-height:18px}
 .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:26px 0 18px}
 .head h1{font-size:38px;margin:0 0 4px;line-height:1.15}
@@ -316,6 +320,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
       <textarea id="idea" rows="1"></textarea>
       <button class="ib" title="คัดลอกคำสั่งให้ Claude ในแชทเขียนบท (ฟรี)" onclick="openPromptNew()" id="promptBtn"><svg class="i"><use href="#i-copy"/></svg></button>
       <button class="ib noeng" title="ให้ AI ช่วยคิดไอเดีย" onclick="aiIdea()" id="ideaBtn"><svg class="i"><use href="#i-spark"/></svg></button>
+      <button class="ib" title="บทพากย์แยกตัวละคร (.txt) สำหรับอัดเสียงเอง" onclick="voiceSheet('main')"><svg class="i"><use href="#i-mic"/></svg></button>
       <button class="ib" title="เปิดไฟล์บท (.txt .json .md .py) หรือไฟล์เสียงพากย์ (.mp3 .wav .m4a) · ลากมาวางที่หน้าเว็บก็ได้" onclick="$('#fileIn').click()"><svg class="i"><use href="#i-clip"/></svg></button>
       <input type="file" id="fileIn" multiple accept=".txt,.md,.json,.py,text/plain,application/json,audio/*,.mp3,.wav,.m4a,.aac,.ogg,.opus,.flac" hidden onchange="loadFiles([...this.files]); this.value=''">
       <button class="ib" title="หยิบจากคลังข้อความ" onclick="openLib(true)"><svg class="i"><use href="#i-book"/></svg></button>
@@ -421,7 +426,10 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
     <div class="small" id="nxInfo" style="align-self:center"></div>
   </div>
   <div class="vfchip" id="nxVfChip"></div>
-  <button class="sb" style="margin-bottom:12px" onclick="$('#fileIn').click()"><svg class="i"><use href="#i-mic"/></svg>ใช้ไฟล์เสียงพากย์ของฉัน (EP แรกที่วาง)</button>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+    <button class="sb" onclick="voiceSheet('nx')"><svg class="i"><use href="#i-down"/></svg>บทพากย์แยกตัวละคร</button>
+    <button class="sb" onclick="$('#fileIn').click()"><svg class="i"><use href="#i-mic"/></svg>ใส่ไฟล์เสียงพากย์ของฉัน (EP แรกที่วาง)</button>
+  </div>
   <div class="mfoot">
     <button class="sb" onclick="nextEpAI()" title="ใช้ AI ตามที่ตั้งไว้">ให้ AI เขียนแทน</button>
     <button class="sb" onclick="closeM('mNext')">ยกเลิก</button>
@@ -670,38 +678,99 @@ async function filesToText(files) {
   return {text: parts.join("\n\n"), n: files.length};
 }
 const AUDIO_OK = /\.(mp3|wav|m4a|aac|ogg|opus|flac|webm)$/i;
-let VF = {main: null, nx: null};
+// ไฟล์เสียงพากย์ของผู้ใช้: 1 ไฟล์ทั้งตอน หรือ 1 ไฟล์ต่อ 1 ตัวละคร (จับคู่จากชื่อไฟล์)
+let VF = {main: [], nx: []}, SPK = {main: [], nx: []};
+const vfCtx = () => $("#mNext").classList.contains("on") ? "nx" : "main";
+const vfText = k => k === "nx" ? $("#nxText").value : $("#idea").value;
+const vfTpl = k => k === "nx" ? "" : (tplSel?.id || "");
+async function loadSpeakers(k) {
+  const text = vfText(k).trim();
+  if (!text) { SPK[k] = []; return; }
+  try {
+    const r = await api("POST", "/api/voice-sheet", {text, template: vfTpl(k), project: k === "nx" ? nx.project : undefined});
+    SPK[k] = r[0]?.speakers || [];
+  } catch (e) { SPK[k] = []; }
+}
+async function vfMatch(k) {
+  await loadSpeakers(k);
+  const files = VF[k];
+  if (files.length === 1 && !files[0].speaker) { files[0].speaker = "*"; return; }
+  if (!SPK[k].length) return;
+  const m = await api("POST", "/api/voice-match", {files: files.map(f => f.name), speakers: SPK[k]}).catch(() => ({}));
+  files.forEach(f => { if (!f.speaker || f.speaker === "*") f.speaker = m[f.name] || f.speaker || ""; });
+}
 function vfRender() {
   for (const [k, id] of [["main", "#vfChip"], ["nx", "#nxVfChip"]]) {
-    const v = VF[k], el = $(id);
-    el.classList.toggle("on", !!v);
-    el.innerHTML = v ? `<svg class="i"><use href="#i-mic"/></svg><div class="small"><b>เสียงพากย์ของคุณ</b> · ${esc(v.name)} · ${fmtDur(v.duration)}<br>ใช้แทนเสียง AI ของ EP แรก · อ่านตามลำดับบท เว้นจังหวะสั้นๆ ระหว่างประโยค</div>
-      <audio controls preload="none" src="${v.url}"></audio><button class="ib" title="เอาออก" onclick="VF.${k}=null;vfRender()"><svg class="i"><use href="#i-x"/></svg></button>` : "";
+    const files = VF[k], el = $(id);
+    el.classList.toggle("on", files.length > 0);
+    if (!files.length) { el.innerHTML = ""; continue; }
+    const opt = sel => `<option value="*" ${sel === "*" ? "selected" : ""}>ทั้งตอน (ไฟล์เดียว)</option>` +
+      SPK[k].map(p => `<option value="${esc(p.key)}" ${sel === p.key ? "selected" : ""}>${esc(p.name)} · ${p.count} ประโยค</option>`).join("") +
+      (sel && sel !== "*" && !SPK[k].some(p => p.key === sel) ? `<option value="${esc(sel)}" selected>${esc(sel)}</option>` : "") +
+      (!sel ? `<option value="" selected>— เลือกตัวละคร —</option>` : "");
+    el.innerHTML = `<svg class="i"><use href="#i-mic"/></svg><div style="flex:1;min-width:0">
+      <div class="small"><b>เสียงพากย์ของคุณ</b> · ใช้แทนเสียง AI ของ EP แรก · ตัวละครที่ไม่มีไฟล์ใช้เสียง AI</div>
+      ${files.map((f, i) => `<div class="vfrow"><span class="small" title="${esc(f.name)}">${esc(f.name)} · ${fmtDur(f.duration)}</span>
+        <select class="in" onchange="VF.${k}[${i}].speaker=this.value">${opt(f.speaker)}</select>
+        <audio controls preload="none" src="${f.url}"></audio>
+        <button class="ib" title="เอาออก" onclick="VF.${k}.splice(${i},1);vfRender()"><svg class="i"><use href="#i-x"/></svg></button></div>`).join("")}
+      <button class="mini" onclick="vfMatch('${k}').then(vfRender)">จับคู่ตัวละครจากบทอีกครั้ง</button></div>`;
   }
+}
+function vfOpt(k) {
+  const files = VF[k];
+  if (!files.length) return undefined;
+  if (files.length === 1 && (files[0].speaker || "*") === "*") return files[0].id;
+  if (files.some(f => !f.speaker)) throw new Error("เลือกตัวละครให้ไฟล์เสียงทุกไฟล์ก่อน");
+  if (files.some(f => f.speaker === "*") && files.length > 1) throw new Error("ไฟล์ 'ทั้งตอน' ใช้ได้ไฟล์เดียว");
+  const o = {}; files.forEach(f => { if (o[f.speaker]) throw new Error("มีสองไฟล์เป็นตัวละครเดียวกัน"); o[f.speaker] = f.id; });
+  return o;
 }
 async function uploadVoice(f) {
   if (f.size > 80e6) throw new Error("ไฟล์เสียงใหญ่เกิน 80 MB");
   if (DEMO) return {id: "demo.mp3", name: f.name, duration: 62, url: URL.createObjectURL(f)};
-  toast("กำลังอัปไฟล์เสียง…");
   const fd = new FormData(); fd.append("file", f);
   const r = await fetch("/api/voice-upload", {method: "POST", body: fd, credentials: "same-origin"});
   const j = await r.json().catch(() => ({ok: false, error: "HTTP " + r.status}));
   if (!j.ok) throw new Error(j.error || "อัปไฟล์เสียงไม่สำเร็จ");
-  return {...j.data, url: URL.createObjectURL(f)};
+  return {...j.data, url: URL.createObjectURL(f), speaker: ""};
+}
+async function voiceSheet(k) {
+  const text = vfText(k).trim();
+  if (!text) return toast("วางบทก่อน แล้วค่อยกดบทพากย์", true);
+  const r = await call(() => api("POST", "/api/voice-sheet", {text, template: vfTpl(k), project: k === "nx" ? nx.project : undefined}));
+  if (!r) return;
+  r.forEach((e, i) => downloadText(`บทพากย์_${(e.title || "EP" + (i + 1)).slice(0, 40)}.txt`, e.sheet));
+  toast(`ดาวน์โหลดบทพากย์ ${r.length} ไฟล์ · ${r[0].speakers.map(p => p.name).join(", ")}`);
+}
+async function voiceSheetEp(project, ep) {
+  const r = await call(() => api("GET", `/api/projects/${enc(project)}/episodes/${ep}/voice-sheet`));
+  if (r) downloadText(`บทพากย์_${project}_EP${ep}.txt`, r[0].sheet);
+}
+function downloadText(name, text) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\uFEFF" + text], {type: "text/plain;charset=utf-8"}));
+  a.download = name.replace(/[\\/:*?"<>|]/g, "_"); a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 async function loadFiles(files) {
   const nx = $("#mNext").classList.contains("on");
   const aud = files.filter(f => AUDIO_OK.test(f.name) || (f.type || "").startsWith("audio/"));
   files = files.filter(f => !aud.includes(f));
   if (aud.length) {
+    const k = nx ? "nx" : "main";
     try {
-      if (aud.length > 1) toast("ใช้ไฟล์เสียงได้ทีละ 1 ไฟล์ต่อ EP · ใช้ไฟล์แรก", true);
-      VF[nx ? "nx" : "main"] = await uploadVoice(aud[0]); vfRender();
-      if (!nx) { showComposer(); }
-      toast("อัปไฟล์เสียงแล้ว · วางบทแล้วกดสร้างได้เลย");
+      toast(`กำลังอัปไฟล์เสียง ${aud.length} ไฟล์…`);
+      for (const f of aud) VF[k].push(await uploadVoice(f));
+      if (!nx) showComposer();
     } catch (e) { toast(e.message, true); }
-    if (!files.length) return;
+    if (files.length) await loadFilesText(files, nx);
+    await vfMatch(k); vfRender();
+    toast(VF[k].length > 1 ? "อัปแล้ว · เช็กว่าแต่ละไฟล์เป็นเสียงตัวละครถูกตัว" : "อัปไฟล์เสียงแล้ว · วางบทแล้วกดสร้างได้เลย");
+    return;
   }
+  return loadFilesText(files, nx);
+}
+async function loadFilesText(files, nx) {
   try {
     const {text, n} = await filesToText(files);
     const box = nx ? $("#nxText") : $("#idea");
@@ -736,7 +805,7 @@ function countEps(text, eng) {
 function buildOpts() {
   const o = {sub_lang:O.lang, duration:O.dur, quality:O.q, watermark:O.wm, script_engine:O.engine, visual_source:O.vis, preset:O.preset, fps:O.fps, subtitle_font:O.font};
   if (O.voice) o.voice = O.voice;
-  if (VF.main) o.voice_file = VF.main.id;
+  const vf = vfOpt("main"); if (vf) o.voice_file = vf;
   const tw = tweakVal($("#twRow")); if (tw.tweaks) o.tweaks = tw.tweaks; if (tw.tweak_text) o.tweak_text = tw.tweak_text;
   if (O.rate) o.edge_rate = (O.rate > 0 ? "+" : "") + O.rate + "%";
   if (O.sub === "s") o.subtitle_size = O.q === "sd" ? 26 : O.q === "hd" ? 36 : 54;
@@ -769,7 +838,7 @@ async function create() {
   $("#goBtn").disabled = true; const old = $("#goBtn").innerHTML; $("#goBtn").innerHTML = `<span class="reel">${ic("reel")}</span>กำลังส่ง`;
   const r = await call(() => api("POST", "/api/create", {idea, mode:O.mode, template: tplSel?.id || "", options: buildOpts()}));
   $("#goBtn").disabled = false; $("#goBtn").innerHTML = old;
-  if (r) { toast(`เริ่มสร้าง: ${r.project.name}${r.episodes > 1 ? ` (${r.episodes} EP)` : ""}`); $("#idea").value = ""; VF.main = null; vfRender(); tweakUI($("#twRow"), [], "", twCount); twCount(); renderComposer(); openDrawer(); }
+  if (r) { toast(`เริ่มสร้าง: ${r.project.name}${r.episodes > 1 ? ` (${r.episodes} EP)` : ""}`); $("#idea").value = ""; VF.main = []; vfRender(); tweakUI($("#twRow"), [], "", twCount); twCount(); renderComposer(); openDrawer(); }
 }
 async function aiIdea() {
   const b = $("#ideaBtn"); b.disabled = true; b.style.opacity = .4;
@@ -836,6 +905,7 @@ function vidActs() {
     <a class="sb dark" href="${src}?dl=1${vMuted ? "&mute=1" : ""}">${ic("down")}ดาวน์โหลด${vMuted ? " (ไม่มีเสียง)" : ""}</a>
     ${o.srt ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt}?dl=1">${ic("down")}ซับไทย</a>` : ""}
     ${o.srt_en ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt_en}?dl=1">${ic("down")}ซับ EN</a>` : ""}
+    <button class="sb" onclick="voiceSheetEp(dq('${q(o.project)}'), ${o.ep})">${ic("mic")}บทพากย์</button>
     <button class="sb" onclick="openReview(dq('${q(o.project)}'),${o.ep})">${ic("pen")}บท</button>
     ${isLatest(o) ? `<button class="sb acc" onclick="nextEp(dq('${q(o.project)}'))">${ic("plus")}ทำ EP ${o.ep + 1} ต่อ</button>` : ""}
     <span style="flex-basis:100%;height:0"></span>
@@ -869,7 +939,7 @@ function nextEp(project) {
 }
 function updNx() { const n = countEps($("#nxText").value, nx && nx.engine); $("#nxInfo").textContent = n ? `พบ ${n} EP → EP ${nx.start}${n > 1 ? "–" + (nx.start + n - 1) : ""}` : ""; $("#nxGo").textContent = n > 1 ? `สร้าง ${n} EP (ฟรี)` : "สร้าง (ฟรี)"; }
 $("#nxText").oninput = updNx;
-const nxOpts = () => ({...($("#nxVoice").value ? {voice: $("#nxVoice").value} : {}), ...(VF.nx ? {voice_file: VF.nx.id} : {}), ...tweakVal($("#nxTw"))});
+const nxOpts = () => ({...($("#nxVoice").value ? {voice: $("#nxVoice").value} : {}), ...(VF.nx.length ? {voice_file: vfOpt("nx")} : {}), ...tweakVal($("#nxTw"))});
 async function copyNextPrompt() {
   const r = await call(() => api("POST", "/api/prompt", {project: nx.project, count: +$("#nxCount").value, idea: $("#nxIdea").value.trim(), options: nxOpts()})); if (!r) return;
   $("#nxPrompt").value = r.prompt;
@@ -878,12 +948,12 @@ async function copyNextPrompt() {
 async function nextEpManual() {
   const text = $("#nxText").value.trim(); if (!text) return toast("วางบทก่อน", true);
   const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/next`, {mode:"manual", text, options: nxOpts()}));
-  if (r) { closeM("mNext"); VF.nx = null; vfRender(); toast(`เข้าคิว ${r.episodes || 1} EP`); openDrawer(); }
+  if (r) { closeM("mNext"); VF.nx = []; vfRender(); toast(`เข้าคิว ${r.episodes || 1} EP`); openDrawer(); }
 }
 async function nextEpAI() {
   if (!ask("ให้ AI เขียนบท EP ต่อ? (ใช้ AI ตามที่เลือกไว้ อาจเสียเครดิต)")) return;
   const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/next`, {mode:"ai", options: nxOpts()}));
-  if (r) { closeM("mNext"); VF.nx = null; vfRender(); toast("เริ่มทำ EP ต่อด้วย AI"); openDrawer(); }
+  if (r) { closeM("mNext"); VF.nx = []; vfRender(); toast("เริ่มทำ EP ต่อด้วย AI"); openDrawer(); }
 }
 
 // ================= บท =================

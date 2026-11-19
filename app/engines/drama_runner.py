@@ -52,16 +52,25 @@ def patch_voices(R, opts):
     tts_model = opts.get("tts_model") or "google/gemini-3.8-flash-tts"
 
     async def synth(items, outdir):
+        # ไฟล์ที่มีแล้ว (เสียงที่ผู้ใช้อัป/แคช) ไม่ต้องสร้าง · สร้างไม่สำเร็จ = เฉพาะประโยคนั้นเงียบ ไม่ทำให้เสียงทั้งตอนหาย
+        items = [it for it in items if not ((Path(outdir) / f"{it['key']}.mp3").exists()
+                                            and (Path(outdir) / f"{it['key']}.mp3").stat().st_size > 800)]
         gem = [it for it in items if str(it["voice"]).startswith("gemini:")]
         rest = [it for it in items if not str(it["voice"]).startswith("gemini:")]
         if rest:
-            await orig_synth(rest, outdir)
+            try:
+                await orig_synth(rest, outdir)
+            except Exception as ex:
+                print(f"WARNING AI voice failed for {len(rest)} lines (they stay silent): {str(ex)[:150]}", flush=True)
         if gem:
             from app import llm
             for it in gem:
                 p = Path(outdir) / f"{it['key']}.mp3"
                 if not (p.exists() and p.stat().st_size > 800):
-                    llm.tts(tts_model, it["tts"], it["voice"][7:], p)
+                    try:
+                        llm.tts(tts_model, it["tts"], it["voice"][7:], p)
+                    except Exception as ex:
+                        print(f"WARNING Gemini voice failed (line stays silent): {str(ex)[:150]}", flush=True)
 
     R._synth_all = synth
 
@@ -82,24 +91,37 @@ def patch_subs(R, opts):
 
 
 def patch_own_voice(R, opts):
-    """เสียงพากย์ทั้ง EP ของผู้ใช้: ตัดเป็นท่อนตามทุกประโยคที่เอนจินจะพูด แล้วให้เอนจินใช้แทน TTS"""
+    """เสียงพากย์ของผู้ใช้: {"*": ไฟล์ทั้งตอน} หรือ {speaker_key: ไฟล์ของตัวละคร}
+    ตัดเป็นท่อนตามประโยคของเจ้าของไฟล์ แล้วให้เอนจินใช้แทน TTS (ตัวละครที่ไม่มีไฟล์ = เสียง AI ตามเดิม)"""
     vf = opts.get("voice_file")
     if not vf:
         return
+    if not isinstance(vf, dict):
+        vf = {"*": vf}
     import hashlib
     from app import voiceover
+    from app.voicesheet import engine_key
     inner = R.voice_track
 
     def voice_track(segs, cast, work, ff, mute, log):
-        own = Path(work).parent / (".own_voice_" + hashlib.md5(str(vf).encode()).hexdigest()[:10])
-        keys = []
+        own = Path(work).parent / (".own_voice_" + hashlib.md5(json.dumps(vf, sort_keys=True).encode()).hexdigest()[:10])
+        keyed = []
         for s in segs:
             v, pitch, rate = cast.voice(s["who"])
             tts = R.clean_tts(s["text"])
-            keys.append(hashlib.md5(f"{v}|{pitch}|{rate}|{tts}".encode()).hexdigest()[:16])
-        log(f"voice: own recording, splitting into {len(segs)} lines")
-        cuts = voiceover.split(vf, [s["text"] for s in segs], [own / f"{k}.mp3" for k in keys])
-        log("own voice cuts: " + ", ".join(f"{a:.1f}" for a, _ in cuts))
+            keyed.append((s, hashlib.md5(f"{v}|{pitch}|{rate}|{tts}".encode()).hexdigest()[:16]))
+        groups = {"*": keyed} if "*" in vf else {}
+        if not groups:
+            for s, k in keyed:
+                groups.setdefault(engine_key(s["who"], getattr(cast, "by", None)), []).append((s, k))
+        for spk, items in groups.items():
+            f = vf.get(spk)
+            if not f:
+                log(f"voice: no own file for {spk} -> AI voice ({len(items)} lines)")
+                continue
+            log(f"voice: own recording {spk}, splitting into {len(items)} lines")
+            cuts = voiceover.split(f, [s["text"] for s, _ in items], [own / f"{k}.mp3" for _, k in items])
+            log(f"own voice cuts {spk}: " + ", ".join(f"{a:.1f}" for a, _ in cuts))
         return inner(segs, cast, own, ff, False, log)
     R.voice_track = voice_track
 

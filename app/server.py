@@ -260,9 +260,17 @@ def voice_upload():
 def _take_voice(opts):
     """voice_file ใช้กับ EP เดียว (EP แรกของงานนี้) → แยกออกจากค่าของเรื่อง"""
     vf = (opts or {}).pop("voice_file", None)
-    if vf and not (VOICE_DIR / Path(vf).name).exists():
-        raise ValueError("ไม่พบไฟล์เสียงที่อัปไว้ ลองอัปใหม่")
-    return Path(vf).name if vf else None
+    if not vf:
+        return None
+    m = vf if isinstance(vf, dict) else {"*": vf}
+    out = {}
+    for k, v in m.items():
+        if not v:
+            continue
+        if not (VOICE_DIR / Path(str(v)).name).exists():
+            raise ValueError(f"ไม่พบไฟล์เสียงที่อัปไว้ ({v}) ลองอัปใหม่")
+        out[str(k)] = Path(str(v)).name
+    return out or None
 
 
 def _attach_voice(name, ep, vf):
@@ -272,6 +280,68 @@ def _attach_voice(name, ep, vf):
     st = core.read_json(f, {}) or {}
     st.setdefault("opts", {})["voice_file"] = vf
     core.write_json(f, st)
+
+
+def _voice_sheets(text=None, tpl=None, project=None, ep=None):
+    """บทพากย์แยกตัวละคร จากบทที่วาง (ก่อนสร้าง) หรือจาก EP ที่ทำแล้ว"""
+    from . import voicesheet as VS
+    p = core.get_project(project) if project else None
+    sid = tpl or (p or {}).get("skill") or ""
+    skill = core.get_skill(sid) if sid else None
+    out = []
+    if skill and skill.get("engine"):
+        from . import engine_skill
+        if text:
+            parsed = engine_skill.parse_paste(text)
+            series = parsed["series"] or (core.read_json(engine_skill.engine_dir(project) / "series.json") if project else None)
+            eps = parsed["episodes"]
+        else:
+            series = core.read_json(engine_skill.engine_dir(project) / "series.json")
+            eps = [core.read_json(core.ep_dir(project, ep) / "engine_ep.json")]
+        if not series:
+            raise ValueError("ต้องมี series.json (รายชื่อตัวละคร) ในบทที่วาง")
+        for e in eps:
+            if not e:
+                continue
+            lines = VS.lines_engine(skill["dir"], series, e)
+            spk = VS.speakers(lines, series)
+            out.append({"title": e.get("title") or f"EP{e.get('ep', '')}", "speakers": spk, "lines": lines,
+                        "sheet": VS.sheet_text(e.get("title") or "", lines, spk)})
+    else:
+        from .pipeline import parse_manual_episodes
+        if text:
+            eps = parse_manual_episodes(text, 99)
+        else:
+            eps = [core.read_json(core.ep_dir(project, ep) / "script.json")]
+        for e in eps:
+            if not e:
+                continue
+            lines = VS.lines_manual(e.get("scenes") or [])
+            spk = VS.speakers(lines)
+            out.append({"title": e.get("title") or "", "speakers": spk, "lines": lines, "sheet": VS.sheet_text(e.get("title") or "", lines, spk)})
+    if not out:
+        raise ValueError("ไม่พบบทพากย์")
+    return out
+
+
+@app.post("/api/voice-sheet")
+def voice_sheet():
+    b = request.get_json(force=True)
+    return ok(_voice_sheets(text=b.get("text"), tpl=b.get("template"), project=b.get("project")))
+
+
+@app.get("/api/projects/<name>/episodes/<int:ep>/voice-sheet")
+def voice_sheet_ep(name, ep):
+    return ok(_voice_sheets(project=name, ep=ep))
+
+
+@app.post("/api/voice-match")
+def voice_match():
+    """จับคู่ชื่อไฟล์เสียงกับตัวละคร"""
+    from . import voicesheet as VS
+    b = request.get_json(force=True)
+    spk = b.get("speakers") or []
+    return ok({f: VS.match_file(f, spk) for f in b.get("files") or []})
 
 
 def _prep_ep(name, ep, opts=None, script=None):
