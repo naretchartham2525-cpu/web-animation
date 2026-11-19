@@ -100,6 +100,16 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .reel{display:inline-block;animation:spin 1.6s linear infinite}
 .reel svg{display:block}
 @keyframes spin{to{transform:rotate(360deg)}}
+#mLogin{position:fixed;inset:0;z-index:210;display:none;place-items:center;background:var(--bg)}
+#mLogin.on{display:grid}
+#lgForm{position:relative;display:flex;align-items:center;gap:6px;background:var(--paper);border:1px solid var(--line);border-radius:99px;padding:6px 6px 6px 18px;box-shadow:0 10px 30px rgba(60,40,20,.10)}
+#lgPw{border:none;outline:none;background:none;font-size:16px;width:220px;padding:8px 0}
+#lgBtn{border:none;background:var(--ink);color:var(--paper);width:40px;height:40px;border-radius:50%;display:grid;place-items:center;cursor:pointer}
+#lgBtn:disabled{opacity:.5;cursor:wait}
+#lgErr{position:absolute;top:100%;left:0;right:0;text-align:center;margin-top:10px;font-size:13px;color:var(--err);min-height:18px}
+#lgForm.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(7px)}75%{transform:translateX(-4px)}}
+#splash.pre .in2{visibility:hidden}
 #splash{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:var(--bg);transition:opacity .45s,visibility .45s}
 #splash.off{opacity:0;visibility:hidden}
 #splash .in2{display:flex;flex-direction:column;align-items:center;gap:14px;color:var(--ink)}
@@ -315,7 +325,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
 </svg>
 
 <div id="dropZone"><div><svg class="i"><use href="#i-clip"/></svg><br>วางไฟล์บทที่นี่<small>บท: .txt .md .json .py · เสียงพากย์ของคุณ: .mp3 .wav .m4a</small></div></div>
-<div id="splash"><div class="in2"><span class="reel"><svg class="i"><use href="#i-reel"/></svg></span><b>สตูดิโอเถื่อน</b><div class="strip"><i></i></div><div class="msg" id="splMsg"></div></div></div>
+<div id="splash" class="pre"><div class="in2"><span class="reel"><svg class="i"><use href="#i-reel"/></svg></span><b>สตูดิโอเถื่อน</b><div class="strip"><i></i></div><div class="msg" id="splMsg"></div></div></div>
 <div class="top"><div class="wrap"><div class="bar-top">
   <div class="brand"><span class="mk"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span>สตูดิโอเถื่อน <small>หนังสั้น AI</small></div>
   <span class="credit" id="credit" title="ดูรายละเอียดค่าใช้จ่าย" onclick="openUsage()"></span>
@@ -500,11 +510,11 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
   <div class="mfoot" id="vActs" style="justify-content:center"></div>
 </div></div>
 
-<div class="modal" id="mLogin"><div class="mbox" style="max-width:380px">
-  <h2>เข้าสู่ระบบ</h2>
-  <label class="f"><span>รหัสผ่าน (AUTOCLIP_PASSWORD ใน Colab Secrets)</span><input class="in" type="password" id="lgPw"></label>
-  <div class="mfoot"><button class="sb dark" id="lgBtn">เข้าสู่ระบบ</button></div>
-</div></div>
+<div id="mLogin"><form id="lgForm" autocomplete="on">
+  <input type="password" id="lgPw" placeholder="รหัสผ่าน" autocomplete="current-password" aria-label="รหัสผ่าน">
+  <button id="lgBtn" type="submit" aria-label="เข้าสู่ระบบ"><svg class="i"><use href="#i-send"/></svg></button>
+  <div id="lgErr"></div>
+</form></div>
 
 <div class="toast" id="toast"></div>
 
@@ -534,7 +544,7 @@ async function api(method, path, body) {
     r = await fetch(path, o);
   } catch (e) { DEMO = true; boot(); toast("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ → โหมดตัวอย่าง", true); return mock(method, path, body); }
   const j = await r.json().catch(() => ({ok:false, error:"HTTP " + r.status}));
-  if (r.status === 401 && j.auth) { openM("mLogin"); throw new Error("ต้องเข้าสู่ระบบ"); }
+  if (r.status === 401 && j.auth) { needLogin = true; showGate(); throw new Error("ต้องเข้าสู่ระบบ"); }
   if (!j.ok) throw new Error(j.error || "ผิดพลาด");
   return j.data;
 }
@@ -1218,18 +1228,36 @@ function mock(m, path, body) {
 }
 
 // ================= เริ่มต้น =================
-$("#lgBtn").onclick = async () => {
-  try { await api("POST", "/api/login", {password:$("#lgPw").value}); } catch (e) { return toast(e.message, true); }
-  closeM("mLogin"); needLogin = false;
-  await Promise.all([splashRun(LOGIN_SPLASH_MS), boot()]);   // ใส่รหัสถูก → หน้ารอโหลด → เข้าเว็บ
+function showGate() {   // ช่องใส่รหัสอย่างเดียว ขึ้นก่อนทุกอย่าง
+  const g = $("#mLogin"); if (g.classList.contains("on")) return;
+  g.classList.add("on"); setTimeout(() => $("#lgPw").focus(), 50);
+}
+let lgBusy = false;
+$("#lgForm").onsubmit = async e => {
+  e.preventDefault();
+  if (lgBusy) return;                                   // กันกดซ้ำ
+  const pw = $("#lgPw").value; if (!pw) return $("#lgPw").focus();
+  lgBusy = true; $("#lgBtn").disabled = true; $("#lgErr").textContent = "";
+  try { await api("POST", "/api/login", {password: pw}); }
+  catch (err) {
+    lgBusy = false; $("#lgBtn").disabled = false;
+    $("#lgErr").textContent = /เข้าสู่ระบบ|401|รหัส/.test(err.message) ? "รหัสไม่ถูก" : err.message;
+    const f = $("#lgForm"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake");
+    $("#lgPw").select(); return;
+  }
+  needLogin = false; $("#lgPw").value = "";
+  $("#splash").classList.remove("pre");
+  const run = splashRun(LOGIN_SPLASH_MS);                // หน้ารอโหลดขึ้นใต้ช่องรหัส แล้วค่อยเอาช่องรหัสออก
+  $("#mLogin").classList.remove("on");
+  lgBusy = false; $("#lgBtn").disabled = false;
+  await Promise.all([run, boot()]);                      // รหัสถูก → หน้ารอโหลด → เข้าเว็บ
 };
-$("#lgPw").onkeydown = e => { if (e.key === "Enter") $("#lgBtn").click(); };
-document.querySelectorAll(".modal").forEach(m => m.addEventListener("mousedown", e => { if (e.target === m && m.id !== "mLogin") closeM(m.id); }));
-document.addEventListener("keydown", e => { if (e.key === "Escape") { document.querySelectorAll(".modal.on").forEach(m => m.id !== "mLogin" && closeM(m.id)); closeDrawer(); } });
+document.querySelectorAll(".modal").forEach(m => m.addEventListener("mousedown", e => { if (e.target === m) closeM(m.id); }));
+document.addEventListener("keydown", e => { if (e.key === "Escape") { document.querySelectorAll(".modal.on").forEach(m => closeM(m.id)); closeDrawer(); } });
 let timer;
 $("#grid").innerHTML = Array(4).fill('<div class="card skel"><div class="cover"></div><div class="cfoot"><span></span></div></div>').join("");
 const t0 = Date.now();
-const LOGIN_SPLASH_MS = 5000;  // หน้าโหลดก่อนใส่รหัสผ่าน (มิลลิวินาที)
+const LOGIN_SPLASH_MS = 5000;  // หน้ารอโหลดหลังใส่รหัสผ่าน (มิลลิวินาที)
 let needLogin = false, splashDone = false;
 function splashRun(ms) {   // หน้ารอโหลด: แถบวิ่ง + ข้อความ เป็นเวลา ms แล้วปิด
   const sp = $("#splash"), bar = $("#splash .strip i");
@@ -1242,9 +1270,10 @@ function splashRun(ms) {   // หน้ารอโหลด: แถบวิ่
 }
 function hideSplash() {
   if (splashDone) return; splashDone = true;
-  // ยังไม่ได้เข้าสู่ระบบ → ขึ้นช่องรหัสผ่านทันที (หน้ารอโหลดมาหลังใส่รหัส) · เข้าแล้ว → โลโก้สั้นๆ
-  setTimeout(() => { $("#splash").classList.add("off"); if (needLogin) setTimeout(() => $("#lgPw").focus(), 100); },
-             needLogin ? 0 : Math.max(0, 700 - (Date.now() - t0)));
+  // เข้าแล้ว → โลโก้สั้นๆ
+  if (needLogin) { showGate(); return; }            // ยังไม่ได้เข้าสู่ระบบ: ช่องรหัสอย่างเดียว (หน้ารอโหลดมาหลังใส่รหัส)
+  $("#splash").classList.remove("pre");
+  setTimeout(() => $("#splash").classList.add("off"), Math.max(0, 700 - (Date.now() - t0)));
 }
 async function boot() {
   $("#demoBar").innerHTML = DEMO ? `<div class="demo">${ic("info")}ตัวอย่างหน้าเว็บ: ข้อมูลสมมติ เมื่อรันบน Colab จะใช้ข้อมูลจริงจาก Drive</div>` : "";
@@ -1254,9 +1283,12 @@ async function boot() {
     O.q = SET.quality || O.q; O.wm = SET.watermark !== false; O.engine = SET.script_engine === "claude" ? "claude" : "free"; O.vis = SET.visual_source || O.vis;
     O.dur = +(SET.target_seconds || O.dur);
   } catch (e) { if (/เข้าสู่ระบบ/.test(e.message)) needLogin = true; }
-  renderGrid(); renderComposer(); refreshJobs(); refreshCredit(); hideSplash();
-  if (!needLogin && !DEMO) loadEleven();
-  clearInterval(timer); timer = setInterval(refreshJobs, 2500);
+  renderGrid(); renderComposer(); hideSplash();
+  clearInterval(timer);
+  if (needLogin) return;                                 // ยังไม่ได้เข้า: ไม่ยิง API อื่น (กันช่องรหัสเด้งซ้ำ)
+  refreshJobs(); refreshCredit();
+  if (!DEMO) loadEleven();
+  timer = setInterval(refreshJobs, 2500);
 }
 boot();
 </script>
