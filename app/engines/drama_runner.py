@@ -66,6 +66,29 @@ def patch_voices(R, opts):
     R._synth_all = synth
 
 
+def patch_subs(R, opts):
+    """ซับเป็นงานของระบบ: th = ซับไทยของเอนจินตามเดิม · en/none = ปิดซับไทยของเอนจิน
+    และเก็บไทม์ไลน์เสียงจริง (t0, dur ของทุกประโยค) ไว้ให้ระบบใส่ซับอังกฤษ/ทำ .srt"""
+    if (opts.get("sub_mode") or "th") in ("en", "none") and hasattr(R, "T"):
+        R.T.subtitle = lambda *a, **k: None
+    captured = []
+    orig = R.voice_track
+
+    def voice_track(segs, *a, **k):
+        captured.append(segs)
+        return orig(segs, *a, **k)
+    R.voice_track = voice_track
+    return captured
+
+
+def dump_timeline(captured, out):
+    if not captured:
+        return
+    rows = [{"t0": round(float(x.get("t0", 0)), 3), "dur": round(float(x.get("dur", 0)), 3), "text": x.get("text", ""),
+             "sub": bool(x.get("sub")), "shot": x.get("shot")} for x in captured[-1] if "t0" in x]
+    Path(out).with_suffix(".timeline.json").write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("skill_dir")
@@ -77,8 +100,10 @@ def main():
     opts = json.loads(a.opts or "{}")
     R = load_engine(a.skill_dir)
     patch_voices(R, opts)
+    captured = patch_subs(R, opts)
     sys.argv = ["render_ep.py", a.episode, "--out", a.out] + (["--mute"] if a.mute or opts.get("mute") else [])
     R.main()
+    dump_timeline(captured, a.out)
 
 
 if __name__ == "__main__":

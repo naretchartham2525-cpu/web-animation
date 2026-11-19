@@ -158,7 +158,7 @@ def chat_prompt(skill, proj_name, start_ep, count, s, idea=""):
 - ความยาวตอนละประมาณ {sec} วินาที · ทุกคนในฉากต้องมี pose (และ prop ถ้าถือของ) · ตัวละครต้องมี rig
 - ถ้ารันโค้ดได้ ให้รันตัวตรวจ drama_tool.py check จนผ่านก่อนส่ง
 - ฉากหลัง: {'วาดทุกสถานที่ใน places ' if not series else 'วาดเฉพาะสถานที่ใหม่ที่ยังไม่เคยมี '}ตาม reference/scenes.md ส่งเป็น code block ```python``` ก้อนละสถานที่ บรรทัดแรก "# bg: <place_id>" (ไม่ส่ง = ระบบใช้ฉากสำเร็จรูปที่มักไม่ตรงเรื่อง)
-- ไม่ต้องมีคำอธิบายอื่น""")
+{'- ซับอังกฤษ: ทุกช็อตเพิ่มฟิลด์ "line_en" (คำแปลอังกฤษสั้นๆ ของ line) และเพิ่ม "ask_en" ระดับตอน\n' if s.get("sub_lang") in ("en", "both") else ""}- ไม่ต้องมีคำอธิบายอื่น""")
     for f in m.get("prompt_files") or ["reference/format.md"]:
         p = sdir / f
         if p.exists():
@@ -187,6 +187,74 @@ def _cmd_output(sdir, cmd):
         except Exception:
             _CMD_CACHE[key] = ""
     return _CMD_CACHE[key]
+
+
+# ---------------- ซับ (งานของระบบ ใช้ได้กับทุกเทมเพลต) ----------------
+GAP_END = 0.16
+SUB_Y = {"scene": 1500, "phone": 1700, "card": 1700, "end": 1560}   # ตำแหน่งซับไทยของเอนจิน (พิกัด 1080x1920)
+
+
+def sub_mode(s):
+    return (s.get("sub_lang") or "th") if s.get("subtitles", True) else "none"
+
+
+def timeline_subs(ctx, ep, rawmp4, s):
+    """ไทม์ไลน์เสียงจริงจากเอนจิน → [{t0, t1, th, en, typ}] · ขาดคำแปล → แปลด้วย AI ฟรี"""
+    f = Path(rawmp4).with_suffix(".timeline.json")
+    rows = core.read_json(f, []) or []
+    shots = ep.get("shots") or []
+    out = []
+    for r in rows:
+        if not r.get("sub") or not str(r.get("text") or "").strip():
+            continue
+        k = r.get("shot")
+        sh = shots[k] if isinstance(k, int) and k < len(shots) else None
+        en = (sh or {}).get("line_en") if sh else ep.get("ask_en")
+        out.append({"t0": r["t0"], "t1": r["t0"] + r["dur"] + GAP_END, "th": r["text"], "en": str(en or "").strip(),
+                    "typ": (sh or {}).get("type") or "end"})
+    if out and sub_mode(s) in ("en", "both") and any(not x["en"] for x in out):
+        from .pipeline import ensure_english
+        sc = {"scenes": [{"narration": x["th"], "subtitle_en": x["en"]} for x in out]}
+        try:
+            ensure_english(ctx, sc, s)
+            for x, y in zip(out, sc["scenes"]):
+                x["en"] = y.get("subtitle_en") or x["en"]
+        except Exception as e:
+            ctx.log(f"แปลซับอังกฤษไม่สำเร็จ: {e}")
+    return out
+
+
+def _t(sec, ass=True):
+    sec = max(0.0, sec)
+    h, m, x = int(sec // 3600), int(sec % 3600 // 60), sec % 60
+    return f"{h}:{m:02d}:{x:05.2f}" if ass else f"{h:02d}:{m:02d}:{int(x):02d},{int(round((x % 1) * 1000)) % 1000:03d}"
+
+
+def _srt(items):
+    return "\n".join(f"{i}\n{_t(a, False)} --> {_t(b, False)}\n{t}\n" for i, (a, b, t) in enumerate(items, 1))
+
+
+def english_ass(subs, mode):
+    """ซับอังกฤษ: both = ใต้ซับไทยของเอนจิน · en = แทนที่ซับไทย"""
+    size = 46 if mode == "both" else 60
+    head = ("[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nWrapStyle: 0\n\n[V4+ Styles]\n"
+            "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, "
+            "Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
+            f"Style: EN,Liberation Sans,{size},&H00FFFFFF,&H00FFFFFF,&H000C0A0A,&H00000000,1,0,0,0,100,100,0,0,1,{5 if mode == 'both' else 6},0,2,90,90,60,1\n\n"
+            "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n")
+    ev = []
+    for x in subs:
+        if not x.get("en"):
+            continue
+        y = SUB_Y.get(x["typ"], 1700)
+        if mode == "both":   # ใต้ซับไทย: ประมาณจำนวนบรรทัดไทย (กว้าง 900px, ~34px/ตัว, สูงสุด 3 บรรทัด)
+            lines = max(1, min(3, -(-len(x["th"]) * 34 // 900)))
+            pos = f"{{\\an8\\pos(540,{min(1840, y + lines * 43 + 18)})}}"
+        else:
+            pos = f"{{\\an5\\pos(540,{y})}}"
+        txt = x["en"].replace("\n", " ").replace("{", "(").replace("}", ")")
+        ev.append(f"Dialogue: 0,{_t(x['t0'])},{_t(x['t1'])},EN,,0,0,0,,{pos}{txt}")
+    return head + "\n".join(ev) + "\n"
 
 
 # ---------------- ซ่อมไฟล์สกิลที่หาย (เทียบกับสกิลใน repo) ----------------
@@ -259,7 +327,8 @@ def run_episode(ctx, proj, ep, s, skill):
     work.mkdir(parents=True)
     opts = {"voice": s.get("_voice_full") or "", "voice_map": s.get("voice_map") or {},
             "rate_add": int(str(s.get("edge_rate") or "+0%").replace("%", "") or 0),
-            "tts_model": s.get("openrouter_tts_model"), "mute": not s.get("voice_on", True)}
+            "tts_model": s.get("openrouter_tts_model"), "mute": not s.get("voice_on", True),
+            "sub_mode": sub_mode(s)}
     rawmp4 = work / "raw.mp4"
     total_shots = max(1, len(raw.get("shots") or []))
 
@@ -284,6 +353,10 @@ def run_episode(ctx, proj, ep, s, skill):
         ass, _, _ = video.build_subs([], w, h, s, watermark=wm, total=total, mode="none")
         (work / "wm.ass").write_text(ass, encoding="utf-8")
         vf.append("ass=wm.ass")
+    subs = timeline_subs(ctx, raw, rawmp4, s)
+    if subs and sub_mode(s) in ("en", "both"):
+        (work / "en.ass").write_text(english_ass(subs, sub_mode(s)), encoding="utf-8")
+        vf.append("ass=en.ass")
     ctx.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", "raw.mp4", "-vf", ",".join(vf),
              "-c:v", "libx264", "-preset", s["preset"], "-crf", str(s["crf"]), "-c:a", "aac", "-b:a", "192k",
              "-movflags", "+faststart", "final.mp4"], "export", cwd=work)
@@ -292,15 +365,20 @@ def run_episode(ctx, proj, ep, s, skill):
     tmp.replace(edir / "final.mp4")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", f"{min(3.0, total / 3):.1f}", "-i", str(edir / "final.mp4"),
                     "-frames:v", "1", "-vf", "scale=360:-1", str(edir / "thumb.jpg")])
-    # ซับ .srt จากตัว export ของสกิล (ถ้ามี)
-    try:
-        subprocess.run([py, str(skill_dir / "scripts" / "drama_tool.py"), "export", str(ep_json), "--cps", "12"],
-                       capture_output=True, cwd=str(skill_dir), timeout=120)
-        srt = sdir / f"ep{ep:02d}.srt"
-        if srt.exists():
-            shutil.copyfile(srt, edir / "subs.srt")
-    except Exception:
-        pass
+    # ซับ .srt: จากไทม์ไลน์เสียงจริง (แม่นกว่า) · ไม่มีไทม์ไลน์ → ตัว export ของสกิล
+    if subs:
+        (edir / "subs.srt").write_text(_srt([(x["t0"], x["t1"], x["th"]) for x in subs]), encoding="utf-8")
+        if any(x.get("en") for x in subs):
+            (edir / "subs_en.srt").write_text(_srt([(x["t0"], x["t1"], x["en"]) for x in subs if x.get("en")]), encoding="utf-8")
+    else:
+        try:
+            subprocess.run([py, str(skill_dir / "scripts" / "drama_tool.py"), "export", str(ep_json), "--cps", "12"],
+                           capture_output=True, cwd=str(skill_dir), timeout=120)
+            srt = sdir / f"ep{ep:02d}.srt"
+            if srt.exists():
+                shutil.copyfile(srt, edir / "subs.srt")
+        except Exception:
+            pass
     shutil.rmtree(work, ignore_errors=True)
     dur = video.probe_duration(edir / "final.mp4")
     stage("done", duration=round(dur, 1))

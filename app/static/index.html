@@ -320,7 +320,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
       <div class="seg noeng" id="segMode"><button data-v="manual" class="on">วางบท (ฟรี)</button><button data-v="ai">AI เขียนบท</button></div>
       <div class="dur noeng" title="ความยาวต่อ EP"><svg class="i"><use href="#i-clock"/></svg><button class="stp" data-d="-5" aria-label="ลด 5 วินาที"><svg class="i"><use href="#i-minus"/></svg></button><input type="range" id="oDur" min="5" max="180" step="1"><button class="stp" data-d="5" aria-label="เพิ่ม 5 วินาที"><svg class="i"><use href="#i-plus"/></svg></button><input type="number" id="durNum" min="5" max="600" step="1" aria-label="วินาที"><span class="small">วิ</span></div>
       <div class="seg" id="segQ"><button data-v="sd">มาตรฐาน</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div>
-      <label class="chip noeng" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ซับไทย</option><option value="en">ซับอังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label>
+      <label class="chip" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ซับไทย</option><option value="en">ซับอังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label>
       <label class="chip" title="เสียงพากย์"><svg class="i"><use href="#i-mic"/></svg><select id="oVoice"></select></label>
       <span class="swl" id="oWm" title="ลายน้ำชื่อช่อง"><span class="sw"><i></i></span>ลายน้ำ</span>
       <button class="chip noeng" id="twBtn" title="สั่งปรับแต่งเพิ่มเติมครั้งนี้ (ไม่เปลี่ยนเทมเพลต)"><svg class="i"><use href="#i-wand"/></svg>ปรับแต่ง</button>
@@ -355,7 +355,6 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
     <label class="f"><span>เสียงพากย์ของเทมเพลต (ใช้ทุก EP)</span><select class="in" id="tVoice"></select></label>
     <label class="f"><span>ซับของเทมเพลต (ใช้ทุก EP)</span><select class="in" id="tSub"><option value="th">ซับไทย</option><option value="en">ซับอังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label>
   </div>
-  <div class="note" id="tSubNote" style="display:none;margin:-6px 0 12px">เทมเพลตมีเอนจิน: ซับมาจากเอนจินของสกิล (ภาษาไทย) ซับอังกฤษยังไม่รองรับ</div>
   <div id="tStyleBox">
     <span class="swl" id="tStyleOn" onclick="this.classList.toggle('on'); tStyleUI()" style="margin:0 0 10px -5px"><span class="sw"><i></i></span>เพิ่มองค์ประกอบภาพของระบบ (ปิด = ใช้ตามสกิล/บทอย่างเดียว)</span>
     <div id="tStyleWrap" style="display:none">
@@ -534,7 +533,7 @@ $("#q").oninput = renderGrid;
 function useTemplate(id) {
   const t = T.find(x => x.id === id); if (!t) return;
   tplSel = tplSel?.id === id ? null : t;
-  if (tplSel) { const o = t.options || {}; if (o.duration && !t.engine) O.dur = +o.duration; if (o.quality) O.q = o.quality; if (o.sub_lang && !t.engine) O.lang = o.sub_lang; O.voice = ""; toast("ใช้เทมเพลต: " + t.name); }
+  if (tplSel) { const o = t.options || {}; if (o.duration && !t.engine) O.dur = +o.duration; if (o.quality) O.q = o.quality; if (o.sub_lang) O.lang = o.sub_lang; O.voice = ""; toast("ใช้เทมเพลต: " + t.name); }
   showComposer(); renderGrid(); renderComposer(); $("#idea").focus();
 }
 // องค์ประกอบเสริมให้ภาพน่าสนใจ (ไม่เปลี่ยนลายเส้น/ตัวละครของสกิล) · เลือกได้หลายอัน
@@ -566,7 +565,7 @@ function tplForm(t) {
   $("#tVoice").innerHTML = voiceOpts(o.voice || "", "เสียงหลักของระบบ");
   $("#tSub").value = o.sub_lang || "th";
   const eng = !!(t && t.engine);
-  $("#tSub").disabled = eng; $("#tSubNote").style.display = eng ? "" : "none"; $("#tStyleBox").style.display = eng ? "none" : "";
+  $("#tStyleBox").style.display = eng ? "none" : "";
   const st = o.image_style && o.image_style !== "none" ? o.image_style : "";
   $("#tStyle").value = st;
   $("#tStyleOn").classList.toggle("on", !!st);
@@ -586,7 +585,7 @@ async function saveTemplate() {
   const old = (editingTpl && editingTpl.options) || {};
   const styleOn = $("#tStyleOn").classList.contains("on");
   const body = {id: editingId || undefined, is_new: !editingId, name: $("#tName").value.trim(), description: editingTpl?.description || "", content: $("#tContent").value,
-    options: {...old, voice: $("#tVoice").value, image_style: styleOn ? $("#tStyle").value.trim() : "", ...(editingTpl?.engine ? {} : {sub_lang: $("#tSub").value})}};
+    options: {...old, voice: $("#tVoice").value, image_style: styleOn ? $("#tStyle").value.trim() : "", sub_lang: $("#tSub").value}};
   if (await call(() => api("POST", "/api/skills", body))) { closeM("mTpl"); toast("บันทึกเทมเพลตแล้ว"); T = await api("GET", "/api/skills"); if (tplSel) tplSel = T.find(x => x.id === tplSel.id) || null; renderGrid(); renderComposer(); }
 }
 
