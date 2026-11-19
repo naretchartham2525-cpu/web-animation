@@ -214,6 +214,20 @@ def outputs():
 
 
 # ---------------- สร้างคลิปจากแถบพิมพ์ (หน้าเดียวจบ) ----------------
+def _write_manual_eps(name, eps, start):
+    for i, sc in enumerate(eps):
+        d = core.ep_dir(name, start + i)
+        if d.exists():
+            d.rename(d.parent / f"_old_ep{start + i:02d}_{int(time.time())}")
+        core.write_json(d / "script.json", sc)
+        core.write_json(d / "state.json", {"stage": "script", "approved": True, "updated": time.time()})
+
+
+def _scenes_for(opts, skill_id):
+    from .pipeline import effective_settings
+    return effective_settings({"options": opts}, core.get_skill(skill_id) if skill_id else None)
+
+
 @app.post("/api/create")
 def quick_create():
     b = request.get_json(force=True)
@@ -221,28 +235,73 @@ def quick_create():
     idea = str(b.get("idea") or "").strip()
     if not idea:
         raise ValueError("พิมพ์ไอเดียหรือบทก่อน")
-    first = idea.lstrip("#").strip().splitlines()[0]
-    name = core.unique_project_name(b.get("name") or first[:40])
     opts = {k: v for k, v in (b.get("options") or {}).items() if v not in (None, "")}
+    tpl = b.get("template") or ""
+    eps = []
+    if mode == "manual":
+        from .pipeline import parse_manual_episodes
+        eps = parse_manual_episodes(idea, _scenes_for(opts, tpl)["scenes_per_episode"])
+        first = eps[0]["title"]
+    else:
+        first = idea.lstrip("#").strip().splitlines()[0]
+    name = core.unique_project_name(b.get("name") or first[:40])
     proj = core.create_project({
-        "name": name, "skill": b.get("template") or "", "episodes_total": 1,
-        "topic": idea if mode == "ai" else "", "script_mode": mode,
-        "manual_text": idea if mode == "manual" else "", "options": opts,
+        "name": name, "skill": tpl, "episodes_total": max(1, len(eps)),
+        "topic": idea if mode == "ai" else "", "script_mode": mode, "options": opts,
     })
-    job = jobs.submit(proj["name"], 1)
-    return ok({"project": proj, "job": job})
+    if eps:
+        _write_manual_eps(proj["name"], eps, 1)
+    job = jobs.submit(proj["name"], max(1, len(eps)))
+    return ok({"project": proj, "job": job, "episodes": max(1, len(eps))})
 
 
 @app.post("/api/projects/<name>/next")
 def project_next(name):
-    """ทำ EP ต่อ: เทมเพลต/สไตล์/ตัวละครเดิม AI คิดแค่บท EP ใหม่"""
+    """ทำ EP ต่อ: mode=manual วางบท (หลาย EP ได้, ฟรี) | mode=ai ให้ AI เขียน 1 EP"""
     p = core.get_project(name)
     if not p:
         abort(404)
     if jobs.has_pending(name):
         raise ValueError("เรื่องนี้มีงานค้างอยู่แล้ว รอให้เสร็จก่อน")
-    core.update_project(name, {"episodes_total": p["done_count"] + 1})
+    b = request.get_json(silent=True) or {}
+    start = p["done_count"] + 1
+    if b.get("mode") == "manual":
+        from .pipeline import parse_manual_episodes
+        eps = parse_manual_episodes(b.get("text"), _scenes_for(p.get("options") or {}, p.get("skill"))["scenes_per_episode"])
+        _write_manual_eps(name, eps, start)
+        core.update_project(name, {"episodes_total": start + len(eps) - 1})
+        return ok({**jobs.submit(name, len(eps)), "episodes": len(eps)})
+    core.update_project(name, {"episodes_total": start})
     return ok(jobs.submit(name, 1))
+
+
+@app.post("/api/prompt")
+def make_prompt():
+    """คำสั่งสำเร็จรูปสำหรับก๊อปไปถาม Claude ในแชท (ฟรี)"""
+    from .pipeline import chat_prompt, effective_settings, story_context
+    b = request.get_json(force=True)
+    count = max(1, min(20, int(b.get("count") or 1)))
+    if b.get("project"):
+        p = core.get_project(b["project"])
+        if not p:
+            abort(404)
+        skill = core.get_skill(p.get("skill")) if p.get("skill") else None
+        s = effective_settings(p, skill)
+        start = p["done_count"] + 1
+        text = chat_prompt(skill, b.get("idea") or "", start, count, s,
+                           story_context(p["name"], start - 1), p.get("bible") or "")
+    else:
+        skill = core.get_skill(b.get("template")) if b.get("template") else None
+        s = effective_settings({"options": b.get("options") or {}}, skill)
+        text = chat_prompt(skill, b.get("idea") or "", 1, count, s)
+    return ok({"prompt": text})
+
+
+@app.post("/api/parse")
+def parse_preview():
+    from .pipeline import parse_manual_episodes
+    eps = parse_manual_episodes(request.get_json(force=True).get("text"))
+    return ok([{"title": e["title"], "scenes": len(e["scenes"])} for e in eps])
 
 
 # ---------------- คลังข้อความ ----------------

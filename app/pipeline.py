@@ -128,26 +128,114 @@ def _validate_script(data):
     return data
 
 
-def manual_script(text, n_scenes):
-    """โหมดเขียนบทเอง (ฟรี 100%): 1 บรรทัด/ย่อหน้า = 1 ฉาก ถ้ามีย่อหน้าเดียวจะแบ่งให้ตามจำนวนฉาก"""
-    text = (text or "").strip()
+_EP_HEAD = re.compile(r"^\s*#{1,3}\s*(.+?)\s*$")
+_EP_SEP = re.compile(r"^\s*(-{3,}|={3,})\s*$")
+_NUM = re.compile(r"^\s*(?:ฉาก(?:ที่)?\s*\d+\s*[:.)\-]?|\d+\s*[.)]|[-*•])\s*")
+
+
+def _scene_from_line(line):
+    """'บทพากย์ | english image prompt' → scene  (ส่วนหลัง | ไม่บังคับ)"""
+    line = _NUM.sub("", line).strip().strip('"').strip()
+    nar, _, img = line.partition("|")
+    nar = re.sub(r"\s+", " ", nar).strip()
+    return {"narration": nar, "subtitle": "", "image_prompt": img.strip(), "clip": ""} if nar else None
+
+
+def _split_paragraph(text, n_scenes):
+    parts = [p for p in re.split(r"(?<=[.!?。…])\s+|\s{2,}|\s(?=\S{25,})", text) if p.strip()]
+    if len(parts) < 2:
+        if len(text) < 120:
+            return [text]
+        parts = text.split(" ")
+    n = max(1, min(n_scenes, len(parts)))
+    size = len(parts) / n
+    return [" ".join(parts[round(i * size):round((i + 1) * size)]).strip() for i in range(n)]
+
+
+def parse_manual_episodes(text, n_scenes=6):
+    """บทเขียนเอง (ฟรี 100%) วางได้หลาย EP ทีเดียว:
+    - '# ชื่อตอน' (หรือ # EP 2: ...) = เริ่ม EP ใหม่, '---' = คั่น EP
+    - ใต้หัวข้อ 1 บรรทัด = 1 ฉาก, ท้ายบรรทัดใส่ '| english image prompt' ได้"""
+    text = (text or "").replace("\r", "").strip()
     if not text:
         raise ValueError("ยังไม่ได้ใส่บท")
-    title = ""
-    m = re.match(r"^\s*#\s*(.+)\n", text)
-    if m:
-        title, text = m.group(1).strip(), text[m.end():]
-    lines = [l.strip() for l in re.split(r"\n+", text) if l.strip()]
-    if len(lines) == 1:
-        parts = [p for p in re.split(r"(?<=[.!?。…])\s+|\s{2,}|\s(?=\S{25,})", lines[0]) if p.strip()]
-        if len(parts) < 2:
-            parts = lines[0].split(" ")
-        n = max(1, min(n_scenes, len(parts)))
-        size = len(parts) / n
-        lines = [" ".join(parts[round(i * size):round((i + 1) * size)]).strip() for i in range(n)]
-        lines = [l for l in lines if l]
-    return {"title": title or lines[0][:40], "summary": " ".join(lines)[:300],
-            "scenes": [{"narration": l, "subtitle": "", "image_prompt": "", "clip": ""} for l in lines]}
+    eps, cur = [], None
+    for raw in text.split("\n"):
+        if _EP_SEP.match(raw):
+            if cur and cur["lines"]:
+                eps.append(cur)
+            cur = None
+            continue
+        m = _EP_HEAD.match(raw)
+        if m:
+            if cur and cur["lines"]:
+                eps.append(cur)
+            cur = {"title": m.group(1).strip(), "lines": []}
+            continue
+        if raw.strip():
+            if cur is None:
+                cur = {"title": "", "lines": []}
+            cur["lines"].append(raw.strip())
+    if cur and cur["lines"]:
+        eps.append(cur)
+    out = []
+    for e in eps:
+        lines = e["lines"]
+        if len(lines) == 1 and "|" not in lines[0]:
+            lines = _split_paragraph(lines[0], n_scenes)
+        scenes = [sc for sc in (_scene_from_line(l) for l in lines) if sc]
+        if not scenes:
+            continue
+        title = re.sub(r"^EP\s*\d+\s*[:：.\-]?\s*", "", e["title"], flags=re.I).strip()
+        out.append({"title": title or scenes[0]["narration"][:40],
+                    "summary": " ".join(sc["narration"] for sc in scenes)[:300], "scenes": scenes})
+    if not out:
+        raise ValueError("ไม่พบบทพากย์ (1 บรรทัด = 1 ฉาก)")
+    return out
+
+
+def manual_script(text, n_scenes):
+    return parse_manual_episodes(text, n_scenes)[0]
+
+
+def story_context(proj_name, upto_ep, max_chars=2500):
+    """สรุปเรื่องที่ผ่านมาแบบไม่ใช้ AI (ฟรี): ชื่อทุกตอน + บทเต็มของตอนล่าสุด"""
+    titles, last = [], None
+    for k in range(1, upto_ep + 1):
+        sc = core.read_json(core.ep_dir(proj_name, k) / "script.json")
+        if sc:
+            titles.append(f"EP {k}: {sc.get('title') or '-'} — {sc.get('summary', '')[:160]}")
+            last = (k, sc)
+    parts = []
+    if titles:
+        parts.append("ตอนที่ผ่านมา:\n" + "\n".join(titles[-12:]))
+    if last:
+        parts.append(f"บทเต็มของ EP {last[0]} (ตอนล่าสุด):\n" + "\n".join(s["narration"] for s in last[1]["scenes"]))
+    return "\n\n".join(parts)[-max_chars:]
+
+
+def chat_prompt(skill, idea, start_ep, count, s, context="", bible=""):
+    """คำสั่งสำเร็จรูปให้ผู้ใช้ก๊อปไปถาม Claude ในแชท (ฟรี) แล้ววางบทกลับมา"""
+    end = start_ep + count - 1
+    eps = f"EP {start_ep}" if count == 1 else f"EP {start_ep} ถึง EP {end} ({count} ตอน)"
+    lines = [f"ช่วยเขียนบทพากย์หนังสั้นแอนิเมชัน {eps}" + (" ต่อจากเรื่องเดิม" if start_ep > 1 else "")]
+    if skill:
+        lines.append(f"\n=== เทมเพลต / สไตล์ (ทำตามนี้เคร่งครัด) ===\n{skill['content'].strip()}\n=== จบเทมเพลต ===")
+    if bible.strip():
+        lines.append(f"\nตัวละครและโลกของเรื่อง:\n{bible.strip()}")
+    if context:
+        lines.append(f"\n{context}")
+    if idea:
+        lines.append(f"\nไอเดีย/สิ่งที่อยากให้เกิดขึ้น: {idea}")
+    lines.append(f"""
+รูปแบบคำตอบ (สำคัญมาก ระบบจะอ่านอัตโนมัติ):
+- แต่ละตอนขึ้นบรรทัดแรกด้วย "# EP <เลขตอน>: <ชื่อตอน>"
+- ใต้หัวข้อ 1 บรรทัด = 1 ฉาก ตอนละประมาณ {s['scenes_per_episode']} ฉาก (ยาวรวมราว {s['target_seconds']} วินาที)
+- แต่ละบรรทัด: บทพากย์ภาษา{s['language']} | คำบรรยายภาพเป็นภาษาอังกฤษ (ใส่ชื่อ/หน้าตาตัวละครแบบเดิมทุกฉาก)
+- บทพากย์อ่านออกเสียงลื่น ห้ามมีวงเล็บ คำกำกับท่าทาง หรือชื่อคนพูดนำหน้า
+- {"แต่ละตอนต้องต่อเนื่องกัน ใช้ตัวละครและสไตล์เดิม จบตอนให้อยากดูต่อ" if count > 1 or start_ep > 1 else "จบตอนให้อยากดูต่อ"}
+- ตอบเฉพาะบท ไม่ต้องมีคำอธิบายอื่น""")
+    return "\n".join(lines).strip()
 
 
 def write_script(ctx, proj, ep, s, skill):

@@ -180,13 +180,14 @@ video{width:100%;border-radius:12px;background:#000;max-height:75vh}
     <div class="ta">
       <textarea id="idea" rows="3"></textarea>
       <div class="tools">
+        <button class="ib" title="คัดลอกคำสั่งไปให้ Claude ในแชทเขียนบท (ฟรี)" onclick="openPromptNew()" id="promptBtn">📋</button>
         <button class="ib" title="ให้ AI ช่วยคิดไอเดีย" onclick="aiIdea()" id="ideaBtn">✨</button>
         <button class="ib" title="หยิบจากคลังข้อความ" onclick="openLib(true)">📚</button>
         <button class="ib" title="เก็บข้อความนี้ลงคลัง" onclick="saveToLib()">💾</button>
       </div>
     </div>
     <div class="bar">
-      <div class="seg" id="segMode"><button data-v="ai" class="on">ให้ AI เขียนบท</button><button data-v="manual">เขียนบทเอง</button></div>
+      <div class="seg" id="segMode"><button data-v="manual" class="on">วางบท (ฟรี)</button><button data-v="ai">AI เขียนบท</button></div>
       <label class="chip">⏱ <select id="oDur"><option value="10">10 วิ</option><option value="20">20 วิ</option><option value="30">30 วิ</option><option value="45">45 วิ</option><option value="60">60 วิ</option><option value="90">90 วิ</option></select></label>
       <div class="seg" id="segQ"><button data-v="sd">มาตรฐาน</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div>
       <button class="chip" id="oAspect" title="สัดส่วนจอ"></button>
@@ -198,7 +199,7 @@ video{width:100%;border-radius:12px;background:#000;max-height:75vh}
   </div>
   <div class="pop" id="pop">
     <label>เขียนบทด้วย</label>
-    <div class="seg" id="segEngine"><button data-v="claude" class="on">Claude</button><button data-v="free">AI ฟรี</button><button data-v="paid">โมเดลอื่น</button></div>
+    <div class="seg" id="segEngine"><button data-v="free" class="on">AI ฟรี</button><button data-v="claude">Claude API</button><button data-v="paid">โมเดลอื่น</button></div>
     <label>ภาพประกอบ</label>
     <div class="seg" id="segVis"><button data-v="ai" class="on">AI สร้าง (ฟรี)</button><button data-v="drive">จาก Drive</button><button data-v="none">ไม่มีภาพ</button></div>
     <label>เสียงพากย์</label>
@@ -261,6 +262,39 @@ video{width:100%;border-radius:12px;background:#000;max-height:75vh}
   <div class="mfoot" id="vActs"></div>
 </div></div>
 
+<div class="modal" id="mNext"><div class="mbox">
+  <h2 id="nxTitle">ทำ EP ต่อ</h2>
+  <div class="note" style="margin:-6px 0 14px">ใช้เทมเพลต สไตล์ ตัวละคร และการตั้งค่าเดิม · วางบทจาก Claude ในแชท = <b>ฟรี 100%</b></div>
+  <div class="scene" style="background:var(--soft);border:none">
+    <b class="disp">① ขอบทจาก Claude</b>
+    <div class="acts" style="align-items:center">
+      <select class="in" id="nxCount" style="width:auto"></select>
+      <button class="sb dark" onclick="copyNextPrompt()">📋 คัดลอกคำสั่ง</button>
+      <a class="sb" href="https://claude.ai/new" target="_blank" rel="noopener">เปิดแชท Claude ↗</a>
+    </div>
+    <div class="note">คำสั่งมีเทมเพลต + เรื่องย่อทุกตอน + บทตอนล่าสุดให้แล้ว แค่วางในแชท Claude แล้วส่ง</div>
+    <textarea class="in" id="nxPrompt" style="display:none;min-height:120px;margin-top:8px;font-size:13px" readonly></textarea>
+  </div>
+  <label class="f" style="margin-top:12px"><span><b class="disp" style="color:var(--ink)">② วางบทที่ได้</b> (วางหลาย EP ทีเดียวได้)</span>
+    <textarea class="in" id="nxText" style="min-height:180px" placeholder="# EP 2: ชื่อตอน&#10;บทพากย์ฉาก 1 | english image prompt&#10;บทพากย์ฉาก 2 | ...&#10;# EP 3: ..."></textarea></label>
+  <div class="small" id="nxInfo"></div>
+  <div class="mfoot">
+    <button class="sb" onclick="nextEpAI()" title="ใช้ AI ตามที่ตั้งไว้ (อาจเสียเครดิต)">ให้ AI เขียนแทน</button>
+    <button class="sb" onclick="closeM('mNext')">ยกเลิก</button>
+    <button class="sb dark" id="nxGo" onclick="nextEpManual()">สร้าง (ฟรี)</button>
+  </div>
+</div></div>
+
+<div class="modal" id="mPrompt"><div class="mbox">
+  <h2>📋 คำสั่งสำหรับ Claude</h2>
+  <div class="note" style="margin:-6px 0 10px">คัดลอกแล้ววางในแชท Claude → ได้บทแล้วก๊อปมาวางในแถบพิมพ์ (โหมด เขียนบทเอง) → สร้าง (ฟรี)</div>
+  <label class="f"><span>ไอเดียเรื่อง (ไม่ใส่ก็ได้ ให้ Claude คิดตามเทมเพลต)</span><input class="in" id="prIdea" placeholder="เช่น เด็กหญิงซ่อมเมฆ" onchange="openPromptNew(true)"></label>
+  <div class="acts" style="align-items:center;margin-bottom:8px"><span class="small">จำนวน EP</span><select class="in" id="prCount" style="width:auto" onchange="openPromptNew(true)"></select>
+    <span class="small">เทมเพลต: <b id="prTpl"></b></span></div>
+  <textarea class="in" id="prText" style="min-height:260px;font-size:13px" readonly></textarea>
+  <div class="mfoot"><a class="sb" href="https://claude.ai/new" target="_blank" rel="noopener">เปิดแชท Claude ↗</a><button class="sb" onclick="closeM('mPrompt')">ปิด</button><button class="sb dark" onclick="copyText($('#prText').value)">📋 คัดลอก</button></div>
+</div></div>
+
 <div class="modal" id="mLogin"><div class="mbox" style="max-width:380px">
   <h2>🔒 เข้าสู่ระบบ</h2>
   <label class="f"><span>รหัสผ่าน (AUTOCLIP_PASSWORD ใน Colab Secrets)</span><input class="in" type="password" id="lgPw"></label>
@@ -301,7 +335,7 @@ async function call(fn) { try { return await fn(); } catch (e) { toast(e.message
 
 // ================= state =================
 let T = [], SET = {}, tagSel = "ทั้งหมด", tplSel = null, JOBS = [], OUTS = [], openLog = {}, libPick = false, editingId = null;
-const O = {mode:"ai", dur:"30", q:"hd", aspect:"9:16", voice:true, wm:false, engine:"claude", vis:"ai", tts:"edge"};
+const O = {mode:"manual", dur:"30", q:"hd", aspect:"9:16", voice:true, wm:false, engine:"free", vis:"ai", tts:"edge"};
 const ASPECTS = ["9:16","16:9","1:1"];
 const QTH = {sd:"มาตรฐาน", hd:"HD", fhd:"FHD"};
 const GRADS = ["#ff9a76,#6a4c93","#4facfe,#1b2a6b","#f7971e,#a83279","#43cea2,#185a9d","#ee9ca7,#5b3b6b","#c2e59c,#2f6b4f","#fbc2eb,#4b3d8f","#fddb92,#8a4f2a"];
@@ -396,17 +430,20 @@ function renderComposer() {
   $("#oVoice").innerHTML = O.voice ? "🔊 มีเสียง" : "🔇 ไม่มีเสียง"; $("#oVoice").classList.toggle("on", O.voice);
   $("#oWm").innerHTML = (O.wm ? "☑" : "☐") + " ลายน้ำ"; $("#oWm").classList.toggle("on", O.wm);
   $("#idea").placeholder = O.mode === "ai"
-    ? "บอกไอเดีย แล้ว Claude จะคิดบทให้ เช่น แมวส้มนั่งพิมพ์คอมในห้องทำงานตอนกลางคืน แสงจอสะท้อนหน้า"
-    : "วางบทที่เขียนเอง (ฟรี 100%) · 1 บรรทัด = 1 ฉาก · บรรทัดแรกขึ้นต้นด้วย # = ชื่อตอน";
+    ? "บอกไอเดีย แล้ว AI จะคิดบทให้ เช่น แมวส้มนั่งพิมพ์คอมในห้องทำงานตอนกลางคืน แสงจอสะท้อนหน้า"
+    : "วางบท (ฟรี 100%) · 1 บรรทัด = 1 ฉาก · # ชื่อตอน = เริ่ม EP ใหม่ (วางหลาย EP ได้) · กด 📋 เพื่อคัดลอกคำสั่งไปให้ Claude เขียน";
   $("#selrow").innerHTML = tplSel ? `<span class="selchip">🧩 เทมเพลต: <b>${esc(tplSel.name)}</b><button onclick="useTemplate(dq('${q(tplSel.id)}'))" title="เลิกใช้">✕</button></span>` : `<span class="small">ยังไม่ได้เลือกเทมเพลต (เลือกจากการ์ดด้านบน หรือสร้างแบบอิสระก็ได้)</span>`;
   const free = isFree();
   const cheap = O.mode === "ai" && O.engine === "claude" && (!O.voice || O.tts === "edge");
-  $("#goBtn").textContent = free ? "สร้าง (ฟรี)" : cheap ? "สร้าง (~$0.001)" : "สร้าง (เสียเครดิต)";
-  $("#segMode button[data-v=ai]").textContent = O.engine === "claude" ? "Claude เขียนบท" : "ให้ AI เขียนบท";
+  const nEp = O.mode === "manual" ? countEps($("#idea").value) : 1;
+  const epTxt = nEp > 1 ? ` ${nEp} EP` : "";
+  $("#goBtn").textContent = free ? `สร้าง${epTxt} (ฟรี)` : cheap ? "สร้าง (~$0.001)" : "สร้าง (เสียเครดิต)";
+  $("#promptBtn").style.display = O.mode === "manual" ? "" : "none";
+  $("#segMode button[data-v=ai]").textContent = O.engine === "claude" ? "Claude API เขียน" : O.engine === "free" ? "AI ฟรีเขียน" : "AI เขียนบท";
   $("#moreBtn").classList.toggle("on", $("#pop").classList.contains("on"));
   const notes = [];
-  if (O.mode === "manual") notes.push("เขียนบทเอง: ไม่เรียก AI เขียนบท (ฟรี)");
-  else if (O.engine === "claude") notes.push("Claude (Haiku 5.5): บทดี ถูกมาก ~$0.001 ต่อ EP ใช้เครดิต OpenRouter");
+  if (O.mode === "manual") notes.push("วางบท: ไม่เรียก AI เขียนบท (ฟรี) · ตัวเลือก 'เขียนบทด้วย' ใช้เมื่อเลือก AI เขียนบท");
+  else if (O.engine === "claude") notes.push("Claude API (Haiku 5.5): เสียเครดิต OpenRouter ~$0.001 ต่อ EP");
   else if (O.engine === "free") notes.push("AI ฟรี: ใช้โมเดลฟรีของ OpenRouter จำกัด ~50 ครั้ง/วัน (1 EP ≈ 1-2 ครั้ง)");
   if (O.vis === "ai") notes.push("ภาพ AI ฟรี (Pollinations): ~15 วิ/ภาพ, ห้ามใช้เชิงพาณิชย์ในแผนฟรี");
   if (O.vis === "drive") notes.push("จาก Drive: ใส่ภาพ/คลิปใน projects/<ชื่อเรื่อง>/input");
@@ -422,6 +459,34 @@ document.addEventListener("click", e => { if (!e.target.closest("#pop") && !e.ta
 function toggleComposer() { const c = $("#composer"); c.classList.toggle("min"); $("#hideBtn").textContent = c.classList.contains("min") ? "▴ แสดงแถบพิมพ์" : "▾ ซ่อนแถบพิมพ์"; }
 function showComposer() { if ($("#composer").classList.contains("min")) toggleComposer(); }
 $("#idea").onkeydown = e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) create(); };
+$("#idea").oninput = () => { if (O.mode === "manual") renderComposer(); };
+// นับจำนวน EP ในบทที่วาง (ตรงกับตัวแยกฝั่งเซิร์ฟเวอร์)
+function countEps(text) {
+  let n = 0, cur = false, has = false;
+  for (const raw of (text || "").split("\n")) {
+    if (/^\s*(-{3,}|={3,})\s*$/.test(raw)) { if (has) n++; cur = false; has = false; continue; }
+    if (/^\s*#{1,3}\s*\S/.test(raw)) { if (has) n++; cur = true; has = false; continue; }
+    if (raw.trim()) has = true;
+  }
+  if (has) n++;
+  return n;
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); toast("คัดลอกแล้ว ไปวางในแชท Claude ได้เลย"); return true; }
+  catch (e) { toast("คัดลอกอัตโนมัติไม่ได้ ให้เลือกข้อความแล้วกด Ctrl+C", true); return false; }
+}
+async function openPromptNew(keep) {
+  if (!keep) {
+    $("#prCount").innerHTML = [1,2,3,4,5,6,8,10].map(n => `<option value="${n}">${n} EP</option>`).join("");
+    const t = $("#idea").value.trim();
+    $("#prIdea").value = t && !t.includes("#") && t.length < 300 && countEps(t) <= 1 && !t.includes("\n") ? t : "";
+  }
+  $("#prTpl").textContent = tplSel ? tplSel.name : "ไม่ได้เลือก";
+  const r = await call(() => api("POST", "/api/prompt", {template: tplSel?.id || "", idea: $("#prIdea").value.trim(),
+    count: +$("#prCount").value, options: {duration: O.dur}}));
+  if (!r) return;
+  $("#prText").value = r.prompt; openM("mPrompt");
+}
 
 async function create() {
   const idea = $("#idea").value.trim();
@@ -432,7 +497,7 @@ async function create() {
   $("#goBtn").disabled = true;
   const r = await call(() => api("POST", "/api/create", body));
   $("#goBtn").disabled = false;
-  if (r) { toast("เริ่มสร้าง: " + r.project.name); $("#idea").value = ""; openDrawer(); }
+  if (r) { toast(`เริ่มสร้าง: ${r.project.name}${r.episodes > 1 ? ` (${r.episodes} EP)` : ""}`); $("#idea").value = ""; renderComposer(); openDrawer(); }
 }
 async function aiIdea() {
   const b = $("#ideaBtn"); b.disabled = true; b.textContent = "⏳";
@@ -492,7 +557,33 @@ function playClip(project, ep) {
     <button class="sb" onclick="closeM('mVid');document.querySelectorAll('#vBody video').forEach(v=>v.pause())">ปิด</button>`;
   openM("mVid");
 }
-async function nextEp(project) { const r = await call(() => api("POST", `/api/projects/${enc(project)}/next`, {})); if (r) { closeM("mVid"); toast("เริ่มทำ EP ต่อ: เทมเพลต/สไตล์/ตัวละครเดิม"); openDrawer(); } }
+let nx = null;
+function nextEp(project) {
+  const done = OUTS.filter(o => o.project === project).reduce((m, o) => Math.max(m, o.ep), 0);
+  nx = {project, start: done + 1};
+  closeM("mVid");
+  $("#nxTitle").textContent = `ทำ EP ต่อ: ${project}`;
+  $("#nxCount").innerHTML = [1,2,3,4,5,6,8,10].map(n => `<option value="${n}">${n === 1 ? "EP " + nx.start : `EP ${nx.start}–${nx.start + n - 1} (${n} ตอน)`}</option>`).join("");
+  $("#nxText").value = ""; $("#nxPrompt").style.display = "none"; updNx();
+  openM("mNext");
+}
+function updNx() { const n = countEps($("#nxText").value); $("#nxInfo").textContent = n ? `พบ ${n} EP: จะสร้าง EP ${nx.start}${n > 1 ? "–" + (nx.start + n - 1) : ""}` : ""; $("#nxGo").textContent = n > 1 ? `สร้าง ${n} EP (ฟรี)` : "สร้าง (ฟรี)"; }
+$("#nxText").oninput = updNx;
+async function copyNextPrompt() {
+  const r = await call(() => api("POST", "/api/prompt", {project: nx.project, count: +$("#nxCount").value})); if (!r) return;
+  $("#nxPrompt").value = r.prompt;
+  if (!await copyText(r.prompt)) { $("#nxPrompt").style.display = ""; $("#nxPrompt").select(); }
+}
+async function nextEpManual() {
+  const text = $("#nxText").value.trim(); if (!text) return toast("วางบทก่อน", true);
+  const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/next`, {mode:"manual", text}));
+  if (r) { closeM("mNext"); toast(`เข้าคิว ${r.episodes || 1} EP (ฟรี)`); openDrawer(); }
+}
+async function nextEpAI() {
+  if (!ask("ให้ AI เขียนบท EP ต่อ? (ใช้ตัวเลือก 'เขียนบทด้วย' ที่ตั้งไว้ อาจเสียเครดิต)")) return;
+  const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/next`, {mode:"ai"}));
+  if (r) { closeM("mNext"); toast("เริ่มทำ EP ต่อด้วย AI"); openDrawer(); }
+}
 async function stopJob(id) { if (!ask("หยุดงานนี้? (ของที่ทำแล้วไม่หาย กดทำต่อได้)")) return; await call(() => api("POST", `/api/jobs/${id}/stop`)); refreshJobs(); }
 async function resumeJob(id) { if (await call(() => api("POST", `/api/jobs/${id}/resume`))) { toast("เข้าคิวแล้ว"); refreshJobs(); } }
 async function stopAll() { if (!ask("หยุดงานทั้งหมด?")) return; await call(() => api("POST", "/api/jobs/stop_all")); refreshJobs(); }
@@ -528,7 +619,7 @@ async function saveToLib() { const text = $("#idea").value.trim(); if (!text) re
 // ================= ตั้งค่า =================
 const FIELDS = [
   ["ทั่วไป", [["watermark_text","ข้อความลายน้ำ","text","เช่น @ชื่อช่อง (ใช้เมื่อติ๊ก ลายน้ำ)"],["review_script","หยุดให้ตรวจบทก่อนทำเสียง/ภาพทุกตอน","bool","กันเสียเวลา/เครดิตกับบทที่ไม่ชอบ"],["subtitles","ฝังซับในคลิป","bool"],["language","ภาษาบท","text"]]],
-  ["AI เขียนบท", [["script_engine","เขียนบทด้วย (ค่าเริ่มต้น)","select",[["claude","Claude"],["free","AI ฟรี"],["paid","โมเดลอื่น"]]],["claude_model","โมเดล Claude","text","anthropic/claude-haiku-5.5 (ถูก) หรือ anthropic/claude-sonnet-5.5 (เก่งกว่า แพงกว่า ~20 เท่า)"],["free_model","โมเดลฟรี","text","openrouter/free = ให้ระบบเลือกโมเดลฟรีที่ว่างให้"],["draft_model","โมเดลอื่น","text","เช่น google/gemini-3.8-flash"],["max_tokens","จำกัดความยาวคำตอบ (token)","number","ยิ่งน้อยยิ่งประหยัด 1500-3000 พอสำหรับคลิปสั้น"],["update_bible","จำตัวละครข้ามตอน (+1 ครั้ง/ตอน เฉพาะซีรีส์)","bool"],["polish_enabled","ขัดเกลาบทรอบ 2 (เฉพาะ โมเดลอื่น)","bool"],["scenes_per_episode","จำนวนฉาก (0 = อัตโนมัติ ~6 วิ/ฉาก)","number"]]],
+  ["AI เขียนบท", [["script_engine","เขียนบทด้วย (ค่าเริ่มต้น)","select",[["free","AI ฟรี"],["claude","Claude API (เสียเครดิต)"],["paid","โมเดลอื่น (เสียเครดิต)"]]],["claude_model","โมเดล Claude","text","anthropic/claude-haiku-5.5 (ถูก) หรือ anthropic/claude-sonnet-5.5 (เก่งกว่า แพงกว่า ~20 เท่า)"],["free_model","โมเดลฟรี","text","openrouter/free = ให้ระบบเลือกโมเดลฟรีที่ว่างให้"],["draft_model","โมเดลอื่น","text","เช่น google/gemini-3.8-flash"],["max_tokens","จำกัดความยาวคำตอบ (token)","number","ยิ่งน้อยยิ่งประหยัด 1500-3000 พอสำหรับคลิปสั้น"],["update_bible","จำตัวละครข้ามตอน (+1 ครั้ง/ตอน เฉพาะซีรีส์)","bool"],["polish_enabled","ขัดเกลาบทรอบ 2 (เฉพาะ โมเดลอื่น)","bool"],["scenes_per_episode","จำนวนฉาก (0 = อัตโนมัติ ~6 วิ/ฉาก)","number"]]],
   ["ภาพ", [["image_style","สไตล์ภาพเริ่มต้น (อังกฤษ)","text"],["image_model","โมเดลภาพ Pollinations (ว่าง = ค่าเริ่มต้น)","text"],["ken_burns","ภาพนิ่งซูมเคลื่อนไหว","bool"]]],
   ["เสียง", [["edge_voice","เสียง Edge (ฟรี)","select",[["th-TH-PremwadeeNeural","Premwadee (หญิง)"],["th-TH-NiwatNeural","Niwat (ชาย)"],["th-TH-AcharaNeural","Achara (หญิง)"]]],["edge_rate","ความเร็ว Edge","text","เช่น +10%"],["openrouter_tts_model","โมเดลเสียง Gemini","text"],["openrouter_voice","เสียง Gemini","text","Kore, Puck, Charon, Aoede, Leda…"],["bgm_volume","ความดังเพลงประกอบ (0-1)","number","ใส่เพลงใน projects/<เรื่อง>/music"]]],
   ["วิดีโอ", [["crf","คุณภาพ CRF (18-23 ต่ำ=ชัด)","number"],["preset","ความเร็ว encode","select",[["veryfast","veryfast (แนะนำ)"],["fast","fast"],["medium","medium"]]],["fps","FPS","number"],["subtitle_font","ฟอนต์ซับ","text","Loma, Garuda หรือไฟล์ใน AutoClip/fonts"],["subtitle_size","ขนาดซับ (0 = อัตโนมัติ)","number"],["scene_gap","เว้นระหว่างฉาก (วิ)","number"]]],
@@ -577,7 +668,7 @@ const MOCK = {
   outs: [{project:"มิลิน ช่างปะเมฆเวหา", ep:3, title:"เมฆรั่ว", path:"ep03/final.mp4", duration:50.5},{project:"มิลิน ช่างปะเมฆเวหา", ep:2, title:"สะพานรุ้ง", path:"ep02/final.mp4", duration:48},{project:"บ้านร้างริมคลอง", ep:1, title:"เสียงเคาะ", path:"ep01/final.mp4", duration:31}],
   lib: [{id:"t1", title:"ไอเดีย: แมวนักสืบ", text:"แมวดำนักสืบไขคดีขนมหายในร้านเบเกอรี่"},{id:"t2", title:"บทตอนพิเศษ (เขียนเอง)", text:"# ของขวัญชิ้นสุดท้าย\nคืนก่อนวันเกิด มิลินนั่งมองฟ้าเงียบๆ\nเมฆก้อนเล็กลอยลงมาเกาะที่หน้าต่าง\nมันส่งกระดาษแผ่นหนึ่งให้เธอ"}],
 };
-const DEF_SET = {watermark_text:"@ช่องของฉัน", review_script:false, subtitles:true, language:"ไทย", claude_model:"anthropic/claude-haiku-5.5", free_model:"openrouter/free", draft_model:"google/gemini-3.8-flash", max_tokens:2500, update_bible:true, polish_enabled:false, scenes_per_episode:0, image_style:"anime style, vibrant colors, soft lighting", image_model:"", ken_burns:true, edge_voice:"th-TH-PremwadeeNeural", edge_rate:"+0%", openrouter_tts_model:"google/gemini-3.8-flash-tts", openrouter_voice:"Kore", bgm_volume:0.12, crf:20, preset:"veryfast", fps:30, subtitle_font:"Loma", subtitle_size:0, scene_gap:0.35, quality:"hd", aspect:"9:16", voice_on:true, watermark:false, script_engine:"claude", visual_source:"ai", tts_engine:"edge", target_seconds:30};
+const DEF_SET = {watermark_text:"@ช่องของฉัน", review_script:false, subtitles:true, language:"ไทย", claude_model:"anthropic/claude-haiku-5.5", free_model:"openrouter/free", draft_model:"google/gemini-3.8-flash", max_tokens:2500, update_bible:true, polish_enabled:false, scenes_per_episode:0, image_style:"anime style, vibrant colors, soft lighting", image_model:"", ken_burns:true, edge_voice:"th-TH-PremwadeeNeural", edge_rate:"+0%", openrouter_tts_model:"google/gemini-3.8-flash-tts", openrouter_voice:"Kore", bgm_volume:0.12, crf:20, preset:"veryfast", fps:30, subtitle_font:"Loma", subtitle_size:0, scene_gap:0.35, quality:"hd", aspect:"9:16", voice_on:true, watermark:false, script_engine:"free", visual_source:"ai", tts_engine:"edge", target_seconds:30};
 function mock(m, path, body) {
   const p = decodeURIComponent(path.split("?")[0]);
   if (p === "/api/skills" && m === "GET") return MOCK.skills;
@@ -591,6 +682,7 @@ function mock(m, path, body) {
   if (p === "/api/library") { MOCK.lib.unshift({id:"t" + Date.now(), title: body.title || body.text.slice(0, 30), text: body.text}); return {}; }
   if (p.startsWith("/api/library/")) { MOCK.lib = MOCK.lib.filter(x => x.id !== p.split("/")[3]); return true; }
   if (p === "/api/credits") return {free_model_daily_requests:{remaining:46, limit:50}, limit_remaining:0.012};
+  if (p === "/api/prompt") return {prompt:"ช่วยเขียนบทพากย์หนังสั้นแอนิเมชัน EP 4 ต่อจากเรื่องเดิม\n\n=== เทมเพลต / สไตล์ ===\n(เนื้อหาเทมเพลต)\n\nตอนที่ผ่านมา:\nEP 1: เมฆรั่ว\nEP 2: สะพานรุ้ง\nEP 3: …\n\nรูปแบบคำตอบ:\n- แต่ละตอนขึ้นต้นด้วย \"# EP <เลข>: <ชื่อตอน>\"\n- 1 บรรทัด = 1 ฉาก: บทพากย์ภาษาไทย | english image prompt"};
   if (p === "/api/ai/idea") return {topic:"หุ่นยนต์เก่าในเมืองร้างพบเมล็ดพันธุ์สุดท้ายของโลก และต้องปกป้องมันจากพายุทราย", episodes_total:3};
   if (p === "/api/create") { const name = body.idea.replace(/^#\s*/, "").split("\n")[0].slice(0, 40); MOCK.jobs.unshift({id:"n" + Date.now(), project:name, count:1, done:0, status:"queued", stage:"รอคิว", progress:0, cost_usd:0, logs:["📥 เข้าคิว (โหมดตัวอย่าง)"]}); return {project:{name}, job:{}}; }
   if (/\/script$/.test(p)) return {title:"เมฆรั่ว", scenes:[{narration:"เช้าวันนั้น ฟ้าเหนือหมู่บ้านมีรูโหว่", image_prompt:"a small girl looking at a hole in the sky, anime"},{narration:"มิลินคว้ากระเป๋าเครื่องมือ แล้วกระโดดขึ้นบันไดเมฆ", image_prompt:"girl climbing cloud stairs with toolbox"}]};
