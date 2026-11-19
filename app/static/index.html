@@ -171,14 +171,11 @@ body.eng .noeng{display:none!important}
 .tarow textarea{flex:1;border:none;outline:none;resize:none;background:none;font-size:15.5px;line-height:1.55;padding:6px 2px;min-height:34px;max-height:180px}
 .ib{border:none;background:none;border-radius:50%;width:34px;height:34px;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
 .ib:hover{background:var(--soft);color:var(--ink)}
-.steps{display:grid;grid-template-columns:auto auto auto minmax(0,1fr) auto;gap:0;padding:8px 0 0;border-top:1px solid var(--line);margin-top:6px;counter-reset:st}
-.grp{display:flex;flex-direction:column;gap:6px;padding:0 12px;min-width:0}
+.steps{display:grid;grid-template-columns:auto auto auto minmax(0,1fr) auto;gap:8px;align-items:center;padding:10px 0 0;border-top:1px solid var(--line);margin-top:6px;counter-reset:st}
+.grp{display:flex;flex-direction:column;justify-content:center;padding:0;min-width:0}
 .subc{width:116px}
-.grp:first-child{padding-left:2px}.grp:last-child{padding-right:2px}
-.grp+.grp{border-left:1px solid var(--line)}
 body.eng .steps{grid-template-columns:auto minmax(0,1fr) auto}
-body.eng .steps .grp:nth-child(3){border-left:none;padding-left:2px}
-.glab{font-size:10.5px;color:var(--muted);letter-spacing:.3px;white-space:nowrap;padding-left:2px}
+
 .gctl{display:flex;align-items:center;gap:4px}
 .grp .chip,.grp .seg,.grp .dur{height:30px;box-sizing:border-box}
 .grp .chip{padding:0 10px;font-size:12.5px}.grp .chip select{font-size:12.5px}.grp .chip svg{width:15px;height:15px}
@@ -309,7 +306,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
   .lbl,.credit,.brand small{display:none}
   .go{flex:1;justify-content:center}
   .steps{grid-template-columns:1fr 1fr;row-gap:10px}
-  .grp{padding:0 8px}.grp+.grp{border-left:none}.gv{grid-column:1/-1;order:9}.subc{width:auto}
+.gv{grid-column:1/-1;order:9}.subc{width:auto}
   .actions{flex-wrap:wrap}.gobox{width:100%;justify-content:space-between}
   .tarow{flex-wrap:wrap}
   .tarow textarea{flex:1 1 100%}
@@ -398,18 +395,14 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
     </div>
     <div class="tweakrow" id="twRow"></div>
     <div class="steps">
-      <div class="grp noeng"><span class="glab">บท</span>
-        <div class="seg" id="segMode"><button data-v="manual" class="on">วางบท</button><button data-v="ai">AI เขียน</button></div></div>
-      <div class="grp noeng"><span class="glab">ความยาว / EP</span>
-        <div class="dur" title="ความยาวต่อ EP (กดค้างเพื่อเพิ่ม/ลดต่อเนื่อง)"><button class="stp" data-d="-1" aria-label="ลด 1 วินาที"><svg class="i"><use href="#i-minus"/></svg></button><input type="number" id="durNum" min="5" max="600" step="1" aria-label="วินาที"><span class="small">วิ</span><button class="stp" data-d="1" aria-label="เพิ่ม 1 วินาที"><svg class="i"><use href="#i-plus"/></svg></button></div></div>
-      <div class="grp"><span class="glab">ความคมชัด</span>
-        <div class="seg" id="segQ"><button data-v="sd">SD</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div></div>
-      <div class="grp gv"><span class="glab">เสียง</span><div class="gctl">
+      <div class="grp noeng"><div class="seg" id="segMode" title="บท: วางเอง หรือให้ AI เขียน"><button data-v="manual" class="on">วางบท</button><button data-v="ai">AI เขียน</button></div></div>
+      <div class="grp noeng"><div class="dur" title="ความยาวต่อ EP (กดค้างเพื่อเพิ่ม/ลดต่อเนื่อง)"><button class="stp" data-d="-1" aria-label="ลด 1 วินาที"><svg class="i"><use href="#i-minus"/></svg></button><input type="number" id="durNum" min="5" max="600" step="1" aria-label="วินาที"><span class="small">วิ</span><button class="stp" data-d="1" aria-label="เพิ่ม 1 วินาที"><svg class="i"><use href="#i-plus"/></svg></button></div></div>
+      <div class="grp"><div class="seg" id="segQ" title="ความคมชัด"><button data-v="sd">SD</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div></div>
+      <div class="grp gv"><div class="gctl">
         <label class="chip" title="เสียงพากย์"><svg class="i"><use href="#i-mic"/></svg><select id="oVoice"></select></label>
         <button class="ib sm" title="เสียงตัวละคร: ดู/เปลี่ยนเสียงรายตัว" onclick="openVoices('main')"><svg class="i"><use href="#i-users"/></svg></button>
         <button class="ib sm" title="ดาวน์โหลดบทพากย์แยกตัวละคร (.txt) สำหรับอัดเสียงเอง" onclick="voiceSheet('main')"><svg class="i"><use href="#i-down"/></svg></button></div></div>
-      <div class="grp"><span class="glab">ซับ</span>
-        <label class="chip subc" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ไทย</option><option value="en">อังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label></div>
+      <div class="grp"><label class="chip subc" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ไทย</option><option value="en">อังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label></div>
     </div>
     <div class="actions">
       <button class="chip ghost noeng" id="twBtn" title="สั่งปรับแต่งเพิ่มเติมครั้งนี้ (ไม่เปลี่ยนเทมเพลต)"><svg class="i"><use href="#i-wand"/></svg>ปรับแต่ง</button>
