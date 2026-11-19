@@ -396,10 +396,10 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
 <div class="modal" id="mPrompt"><div class="mbox">
   <h2>คำสั่งสำหรับ Claude</h2>
   <div class="note" style="margin:-4px 0 12px">มีแค่รูปแบบบทและเทมเพลตที่จำเป็น · ใส่หัวข้อที่นี่หรือไปกำหนดในแชทก็ได้ → คัดลอก → วางในแชท Claude → ได้บทแล้วก๊อปกลับมาวางในแถบพิมพ์</div>
-  <label class="f"><span>หัวข้อ / เรื่องย่อ (ไม่บังคับ · ว่างไว้ = ไปกำหนดเองในแชท)</span><textarea class="in" id="prIdea" style="min-height:70px" placeholder="เช่น ป้าข้างบ้านจอดรถขวางหน้าบ้านทุกวัน พระเอกใช้กล้องวงจรปิดเอาคืน" onchange="openPromptNew(true)"></textarea></label>
+  <label class="f"><span>หัวข้อ / เรื่องย่อ (ไม่บังคับ · ว่างไว้ = ไปกำหนดเองในแชท)</span><textarea class="in" id="prIdea" style="min-height:70px" placeholder="เช่น ป้าข้างบ้านจอดรถขวางหน้าบ้านทุกวัน พระเอกใช้กล้องวงจรปิดเอาคืน" oninput="prDebounce()"></textarea></label>
   <div class="acts" style="margin-bottom:10px"><span class="small">จำนวน EP</span><select class="in" id="prCount" style="width:auto;border-radius:99px;padding:6px 12px" onchange="openPromptNew(true)"></select><span class="small">เทมเพลต: <b id="prTpl"></b></span></div>
   <textarea class="in" id="prText" style="min-height:240px;font-size:13px" readonly></textarea>
-  <div class="mfoot"><a class="sb" href="https://claude.ai/new" target="_blank" rel="noopener"><svg class="i"><use href="#i-ext"/></svg>เปิดแชท Claude</a><button class="sb" onclick="closeM('mPrompt')">ปิด</button><button class="sb dark" onclick="copyText($('#prText').value)"><svg class="i"><use href="#i-copy"/></svg>คัดลอก</button></div>
+  <div class="mfoot"><a class="sb" href="https://claude.ai/new" target="_blank" rel="noopener"><svg class="i"><use href="#i-ext"/></svg>เปิดแชท Claude</a><button class="sb" onclick="closeM('mPrompt')">ปิด</button><button class="sb dark" onclick="copyPrompt()"><svg class="i"><use href="#i-copy"/></svg>คัดลอก</button></div>
 </div></div>
 
 <!-- บท -->
@@ -610,6 +610,13 @@ async function openPromptNew(keep) {
   $("#prTpl").textContent = tplSel ? tplSel.name : "ไม่ได้เลือก";
   const r = await call(() => api("POST", "/api/prompt", {template: tplSel?.id || "", idea: $("#prIdea").value.trim(), count: +$("#prCount").value, options: buildOpts()}));
   if (r) { $("#prText").value = r.prompt; openM("mPrompt"); }
+}
+let prTimer;
+function prDebounce() { clearTimeout(prTimer); prTimer = setTimeout(() => openPromptNew(true), 500); }
+async function copyPrompt() {
+  clearTimeout(prTimer);
+  await openPromptNew(true);
+  copyText($("#prText").value);
 }
 async function create() {
   const idea = $("#idea").value.trim();
