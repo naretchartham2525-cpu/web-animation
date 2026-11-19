@@ -229,6 +229,51 @@ def _clean_opts(o):
     return {k: v for k, v in (o or {}).items() if v not in (None, "") or k in ("tweaks", "tweak_text")}
 
 
+VOICE_DIR = core.ROOT / "uploads" / "voice"
+AUDIO_EXT = {".mp3", ".wav", ".m4a", ".aac", ".ogg", ".opus", ".flac", ".webm"}
+
+
+@app.post("/api/voice-upload")
+def voice_upload():
+    """อัปไฟล์เสียงพากย์ทั้ง EP (ใช้แทนเสียง AI)"""
+    from . import voiceover
+    f = request.files.get("file")
+    if not f or not f.filename:
+        raise ValueError("ไม่พบไฟล์เสียง")
+    ext = Path(f.filename).suffix.lower()
+    if ext not in AUDIO_EXT:
+        raise ValueError("รองรับไฟล์เสียง " + " ".join(sorted(AUDIO_EXT)))
+    VOICE_DIR.mkdir(parents=True, exist_ok=True)
+    name = f"{int(time.time())}_{core.safe_name(Path(f.filename).stem)[:40]}{ext}"
+    dst = VOICE_DIR / name
+    f.save(dst)
+    if dst.stat().st_size > 80e6:
+        dst.unlink()
+        raise ValueError("ไฟล์เสียงใหญ่เกิน 80 MB")
+    dur = voiceover.duration(dst)
+    if dur < 1:
+        dst.unlink()
+        raise ValueError("อ่านไฟล์เสียงไม่ได้ หรือสั้นเกินไป")
+    return ok({"id": name, "name": f.filename, "duration": round(dur, 1)})
+
+
+def _take_voice(opts):
+    """voice_file ใช้กับ EP เดียว (EP แรกของงานนี้) → แยกออกจากค่าของเรื่อง"""
+    vf = (opts or {}).pop("voice_file", None)
+    if vf and not (VOICE_DIR / Path(vf).name).exists():
+        raise ValueError("ไม่พบไฟล์เสียงที่อัปไว้ ลองอัปใหม่")
+    return Path(vf).name if vf else None
+
+
+def _attach_voice(name, ep, vf):
+    if not vf:
+        return
+    f = core.ep_dir(name, ep) / "state.json"
+    st = core.read_json(f, {}) or {}
+    st.setdefault("opts", {})["voice_file"] = vf
+    core.write_json(f, st)
+
+
 def _prep_ep(name, ep, opts=None, script=None):
     d = core.ep_dir(name, ep)
     if d.exists():
@@ -259,6 +304,7 @@ def quick_create():
     if not idea:
         raise ValueError("พิมพ์ไอเดียหรือบทก่อน")
     opts = _clean_opts(b.get("options"))
+    vf = _take_voice(opts)
     tpl = b.get("template") or ""
     skill = core.get_skill(tpl) if tpl else None
     if skill and skill.get("engine"):
@@ -272,6 +318,7 @@ def quick_create():
         proj = core.create_project({"name": name, "skill": tpl, "episodes_total": len(parsed["episodes"]),
                                     "topic": "", "script_mode": "engine", "options": opts})
         n = engine_skill.save_paste(proj["name"], parsed, 1)
+        _attach_voice(proj["name"], 1, vf)
         return ok({"project": proj, "job": jobs.submit(proj["name"], n), "episodes": n})
     eps = []
     if mode == "manual":
@@ -287,6 +334,9 @@ def quick_create():
     })
     if eps:
         _write_manual_eps(proj["name"], eps, 1)
+    elif vf:
+        _prep_ep(proj["name"], 1)
+    _attach_voice(proj["name"], 1, vf)
     job = jobs.submit(proj["name"], max(1, len(eps)))
     return ok({"project": proj, "job": job, "episodes": max(1, len(eps))})
 
@@ -302,6 +352,7 @@ def project_next(name):
     b = request.get_json(silent=True) or {}
     start = p["done_count"] + 1
     ep_opts = _clean_opts(b.get("options"))   # เช่น เลือกเสียงเฉพาะ EP นี้
+    vf = _take_voice(ep_opts)
     skill = core.get_skill(p.get("skill")) if p.get("skill") else None
     if skill and skill.get("engine"):
         from . import engine_skill
@@ -316,16 +367,19 @@ def project_next(name):
                 st = core.read_json(core.ep_dir(name, k) / "state.json", {}) or {}
                 st["opts"] = ep_opts
                 core.write_json(core.ep_dir(name, k) / "state.json", st)
+        _attach_voice(name, start, vf)
         core.update_project(name, {"episodes_total": start + n - 1})
         return ok({**jobs.submit(name, n), "episodes": n})
     if b.get("mode") == "manual":
         from .pipeline import parse_manual_episodes
         eps = parse_manual_episodes(b.get("text"), _scenes_for(p.get("options") or {}, p.get("skill"))["scenes_per_episode"])
         _write_manual_eps(name, eps, start, ep_opts)
+        _attach_voice(name, start, vf)
         core.update_project(name, {"episodes_total": start + len(eps) - 1})
         return ok({**jobs.submit(name, len(eps)), "episodes": len(eps)})
-    if ep_opts:
+    if ep_opts or vf:
         _prep_ep(name, start, ep_opts)
+    _attach_voice(name, start, vf)
     core.update_project(name, {"episodes_total": start})
     return ok(jobs.submit(name, 1))
 

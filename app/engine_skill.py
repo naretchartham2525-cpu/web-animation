@@ -329,6 +329,11 @@ def run_episode(ctx, proj, ep, s, skill):
             "rate_add": int(str(s.get("edge_rate") or "+0%").replace("%", "") or 0),
             "tts_model": s.get("openrouter_tts_model"), "mute": not s.get("voice_on", True),
             "sub_mode": sub_mode(s)}
+    from .pipeline import voice_file_path
+    own = voice_file_path(s)
+    if own:
+        opts.update(voice_file=str(own), mute=False)
+        ctx.log(f"ใช้เสียงพากย์ที่อัปโหลด ({own.name}) แทนเสียง AI")
     rawmp4 = work / "raw.mp4"
     total_shots = max(1, len(raw.get("shots") or []))
 

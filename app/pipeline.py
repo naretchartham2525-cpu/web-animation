@@ -5,6 +5,7 @@ import shutil
 import sys
 import time
 import zlib
+from pathlib import Path
 
 from . import core, llm, video
 
@@ -397,6 +398,17 @@ def ensure_english(ctx, script, s):
 
 
 # ---------------- เสียง ----------------
+def voice_file_path(s):
+    """ไฟล์เสียงพากย์ที่ผู้ใช้อัป (เฉพาะ EP นี้) หรือ None"""
+    vf = s.get("voice_file")
+    if not vf:
+        return None
+    p = core.ROOT / "uploads" / "voice" / Path(str(vf)).name
+    if not p.exists():
+        raise FileNotFoundError(f"ไม่พบไฟล์เสียงที่อัปไว้: {vf}")
+    return p
+
+
 def make_tts(ctx, text, out, s):
     voice = s.get("_voice") or ""
     if s.get("tts_engine") == "openrouter":
@@ -533,11 +545,17 @@ def run_episode(ctx, proj_name, ep):
     set_stage("tts")
     adir = edir / "audio"
     adir.mkdir(exist_ok=True)
-    sig = f"{s.get('voice_on')}|{s['tts_engine']}|{s.get('_voice', '')}"
+    own = voice_file_path(s)
+    sig = f"own:{own.name}" if own else f"{s.get('voice_on')}|{s['tts_engine']}|{s.get('_voice', '')}"
     if state.get("tts_sig") and state["tts_sig"] != sig:
         shutil.rmtree(adir, ignore_errors=True)
         adir.mkdir()
     state["tts_sig"] = sig
+    if own and any(not (adir / f"s{i:02d}.mp3").exists() for i in range(1, len(scenes) + 1)):
+        from . import voiceover
+        ctx.log(f"ใช้เสียงพากย์ที่อัปโหลด ({own.name}) ตัดเป็น {len(scenes)} ท่อนตามฉาก")
+        cuts = voiceover.split(own, [sc["narration"] for sc in scenes], [adir / f"s{i:02d}.mp3" for i in range(1, len(scenes) + 1)])
+        ctx.log("จุดตัด (วินาที): " + ", ".join(f"{a:.1f}" for a, _ in cuts))
     durations = []
     for i, sc in enumerate(scenes, 1):
         ctx.check()

@@ -81,6 +81,29 @@ def patch_subs(R, opts):
     return captured
 
 
+def patch_own_voice(R, opts):
+    """เสียงพากย์ทั้ง EP ของผู้ใช้: ตัดเป็นท่อนตามทุกประโยคที่เอนจินจะพูด แล้วให้เอนจินใช้แทน TTS"""
+    vf = opts.get("voice_file")
+    if not vf:
+        return
+    import hashlib
+    from app import voiceover
+    inner = R.voice_track
+
+    def voice_track(segs, cast, work, ff, mute, log):
+        own = Path(work).parent / (".own_voice_" + hashlib.md5(str(vf).encode()).hexdigest()[:10])
+        keys = []
+        for s in segs:
+            v, pitch, rate = cast.voice(s["who"])
+            tts = R.clean_tts(s["text"])
+            keys.append(hashlib.md5(f"{v}|{pitch}|{rate}|{tts}".encode()).hexdigest()[:16])
+        log(f"voice: own recording, splitting into {len(segs)} lines")
+        cuts = voiceover.split(vf, [s["text"] for s in segs], [own / f"{k}.mp3" for k in keys])
+        log("own voice cuts: " + ", ".join(f"{a:.1f}" for a, _ in cuts))
+        return inner(segs, cast, own, ff, False, log)
+    R.voice_track = voice_track
+
+
 def dump_timeline(captured, out):
     if not captured:
         return
@@ -100,6 +123,7 @@ def main():
     opts = json.loads(a.opts or "{}")
     R = load_engine(a.skill_dir)
     patch_voices(R, opts)
+    patch_own_voice(R, opts)
     captured = patch_subs(R, opts)
     sys.argv = ["render_ep.py", a.episode, "--out", a.out] + (["--mute"] if a.mute or opts.get("mute") else [])
     R.main()
