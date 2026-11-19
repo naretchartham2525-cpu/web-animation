@@ -521,8 +521,10 @@ const VOICE_GROUPS = [
 let EL = {enabled:false, voices:[], models:[], sub:null};
 function elGroup() { return EL.enabled && EL.voices.length ? [["ElevenLabs · เสียเครดิต", EL.voices.map(v => ["eleven:" + v.id, `${v.name}${v.gender ? " · " + (v.gender === "female" ? "หญิง" : v.gender === "male" ? "ชาย" : v.gender) : ""}`])]] : []; }
 let VOICES = [["", "เสียงตามเทมเพลต"]].concat(...VOICE_GROUPS.map(([g, vs]) => vs.map(([v, t]) => [v, `${t} (${g.split(" · ")[1]})`])));
+// ช่องเสียงหลัก: ElevenLabs รวมเป็นตัวเลือกเดียว (เสียงรายตัวละครดู/เปลี่ยนในปุ่ม 👥)
 const voiceOpts = (sel, first) => `<option value="" ${!sel ? "selected" : ""}>${first || VOICES[0][1]}</option>` +
-  VOICE_GROUPS.concat(elGroup()).map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t} · ${g.split(" · ")[1]}</option>`).join("")}</optgroup>`).join("");
+  (EL.enabled ? `<option value="eleven:auto" ${sel === "eleven:auto" || isEl(sel) ? "selected" : ""}>ElevenLabs · เลือกเสียงให้อัตโนมัติ · เสียเครดิต</option>` : "") +
+  VOICE_GROUPS.map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t} · ${g.split(" · ")[1]}</option>`).join("")}</optgroup>`).join("");
 const voiceName = v => (VOICES.find(x => x[0] === v) || elGroup().flatMap(g => g[1]).find(x => x[0] === v) || [, v])[1];
 async function loadEleven() {
   try { EL = await api("GET", "/api/eleven"); } catch (e) { EL = {enabled:false, voices:[], models:[]}; }
@@ -557,6 +559,7 @@ async function openVoices(k) {
   }
   // เติมเสียงที่ระบบเลือกให้อัตโนมัติ (ยังแก้ได้)
   const a = await api("POST", "/api/voice-auto", {text: text || undefined, template: vfTpl(k), project: k === "nx" ? nx.project : undefined,
+    voice: (k === "nx" ? $("#nxVoice").value : effVoice()) || undefined,
     ep: !text && k === "nx" ? nx.lastEp : undefined, voice_map: VC[k].map, eleven_model: VC[k].model || undefined}).catch(() => null);
   vcAuto = a ? a.voice_map : {};
   vcRender();
@@ -700,7 +703,7 @@ function segSet(id, v) { document.querySelectorAll(id + " button").forEach(b => 
 function autoGrow() { const t = $("#idea"); t.style.height = "auto"; t.style.height = Math.min(180, t.scrollHeight) + "px"; }
 function tplVoice() { return tplSel?.options?.voice || ""; }
 function effVoice() { return O.voice || tplVoice(); }
-const usesEl = () => isEl(effVoice()) || Object.values(VC.main.map).some(isEl) || (AUTO.provider === "eleven" && AUTO.credits > 0 && !VF.main.length);
+const usesEl = () => Object.values(VC.main.map).some(isEl) || (AUTO.provider === "eleven" && AUTO.credits > 0 && !VF.main.length);
 function isFree() { return (O.mode === "manual" || O.engine === "free") && !usesEl(); }
 function goLabel() {
   const n = O.mode === "manual" ? countEps($("#idea").value) : 1;
@@ -715,7 +718,7 @@ function renderComposer() {
   $("#oDur").value = Math.min(180, O.dur); $("#durNum").value = O.dur;
   $("#oRate").value = O.rate; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%";
   $("#oFont").value = O.font; $("#oSub").value = O.lang;
-  $("#oVoice").innerHTML = voiceOpts(O.voice, tplSel?.engine ? "เสียงตามสกิล (ฟรี)" : tplSel ? `ตามเทมเพลต${tplVoice() ? " · " + voiceName(tplVoice()).split(" ·")[0] : ""}` : "เสียงหลัก (ฟรี)");
+  $("#oVoice").innerHTML = voiceOpts(O.voice, tplVoice() === "eleven:auto" ? "ตามเทมเพลต · ElevenLabs" : tplSel?.engine ? "เสียงตามสกิล · Edge ฟรี" : tplSel && tplVoice() ? `ตามเทมเพลต · ${voiceName(tplVoice()).split(" ·")[0]}` : "Edge ฟรี · เลือกให้อัตโนมัติ");
   $("#oWm").classList.toggle("on", O.wm);
   $("#pickTpl").innerHTML = tplSel ? `<span class="pick">เทมเพลต <b>${esc(tplSel.name)}</b><button onclick="useTemplate(dq('${q(tplSel.id)}'))" title="เลิกใช้">${ic("x")}</button></span>`
     : `<span class="hint">เลือกเทมเพลตด้านบน หรือสร้างแบบอิสระ</span>`;
@@ -739,7 +742,7 @@ document.querySelectorAll(".stp").forEach(b => b.onclick = () => { O.dur = Math.
 $("#oRate").oninput = e => { O.rate = +e.target.value; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%"; };
 $("#oFont").onchange = e => O.font = e.target.value;
 $("#oSub").onchange = e => { O.lang = e.target.value; renderComposer(); };
-$("#oVoice").onchange = e => { O.voice = e.target.value; renderComposer(); };
+$("#oVoice").onchange = e => { O.voice = e.target.value; renderComposer(); autoPreview(); };
 $("#oWm").onclick = () => { O.wm = !O.wm; renderComposer(); };
 tweakUI($("#twRow"), [], "", twCount);
 function twCount() { const v = tweakVal($("#twRow")); const n = (v.tweaks ? v.tweaks.split(",").length : 0) + (v.tweak_text ? 1 : 0);
@@ -890,7 +893,7 @@ function autoPreview() {
     const text = $("#idea").value.trim();
     if (!text || O.mode !== "manual" || !EL.enabled || DEMO) { if (AUTO.credits) { AUTO = {provider:"", credits:0}; renderComposer(); } return; }
     try {
-      const r = await api("POST", "/api/voice-auto", {text, template: tplSel?.id || "", voice_map: VC.main.map, eleven_model: VC.main.model || undefined});
+      const r = await api("POST", "/api/voice-auto", {text, template: tplSel?.id || "", voice: effVoice() || undefined, voice_map: VC.main.map, eleven_model: VC.main.model || undefined});
       AUTO = {provider: r.provider, credits: r.credits}; renderComposer();
     } catch (e) { AUTO = {provider:"", credits:0}; }
   }, 900);

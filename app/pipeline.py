@@ -87,6 +87,12 @@ def _apply_voice(s, v):
     v = str(v).strip()
     if v.startswith("gemini:"):
         v = ""
+    if v in ("eleven:auto", "edge:auto"):
+        s["voice_provider"] = v.split(":")[0]   # เลือกค่าย แล้วให้ระบบเลือกเสียงรายตัวละครเอง
+        s["_voice_full"] = ""
+        return
+    if v.startswith("edge:"):
+        s["voice_provider"] = "edge"
     s["_voice_full"] = v
     if v.startswith("eleven:"):
         s["_voice"] = v          # ElevenLabs (เสียเครดิต ElevenLabs) · make_tts แยกตาม prefix

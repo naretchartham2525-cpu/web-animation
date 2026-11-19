@@ -360,7 +360,11 @@ def voice_auto():
     pmap = dict(((p or {}).get("options") or {}).get("voice_map") or {})
     pmap.update({k: v for k, v in (b.get("voice_map") or {}).items() if v})
     spk = sheets[0]["speakers"]
-    provider = voicecast.provider_for(skill)
+    from .pipeline import _apply_voice
+    sv = {}
+    if b.get("voice"):
+        _apply_voice(sv, b["voice"])
+    provider = voicecast.provider_for(skill, sv)
     if skill and skill.get("engine") and provider == "edge":
         vm = pmap
     else:
@@ -369,7 +373,7 @@ def voice_auto():
             ctxt = "\n".join(f"[{x['name']}] {x['text']}" for x in sheets[0]["lines"])
             known = voicecast.classify(skill, spk, ctxt)       # ความรู้เรื่องเพศ/วัย เก็บไว้ได้
         mem_before = voicecast.load_mem(sid)
-        vm, provider = voicecast.auto_map(spk, skill, pmap, series, known=known, preview=True)
+        vm, provider = voicecast.auto_map(spk, skill, pmap, series, known=known, preview=True, s=sv)
         voicecast.save_mem(sid, mem_before)          # แค่ดูตัวอย่าง: ยังไม่จำการเลือกเสียง
     model = b.get("eleven_model") or ((p or {}).get("options") or {}).get("eleven_model") or eleven.DEFAULT_MODEL
     rate = eleven.model_info(model)[2]

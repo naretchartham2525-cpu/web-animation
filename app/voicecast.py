@@ -131,10 +131,11 @@ def _pool(provider, el_voices, arch):
     return ["eleven:" + v["id"] for v in vs if score(v) >= 10] or ["eleven:" + v["id"] for v in vs]
 
 
-def provider_for(skill):
+def provider_for(skill, s=None):
+    """ค่ายเสียงอัตโนมัติ: ค่าเริ่มต้น = Edge ฟรี (หลักประหยัดที่สุด) · ElevenLabs เมื่อเลือก "eleven:auto" และมี key"""
     from . import eleven
-    pref = ((skill or {}).get("options") or {}).get("voice_provider") or "auto"
-    return "eleven" if pref != "edge" and eleven.enabled() else "edge"
+    pref = (s or {}).get("voice_provider") or ((skill or {}).get("options") or {}).get("voice_provider") or "edge"
+    return "eleven" if pref == "eleven" and eleven.enabled() else "edge"
 
 
 def _fits(v, arch, el_voices):
@@ -170,10 +171,10 @@ def _from_library(arch, used, mem):
     return None
 
 
-def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, known=None, preview=False):
+def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, known=None, preview=False, s=None):
     """คืน (voice_map ครบทุกผู้พูด, มีการเปลี่ยนความจำเทมเพลตไหม) · ไม่ทับที่ผู้ใช้/เรื่องกำหนดไว้แล้ว"""
     sid = (skill or {}).get("id") or ""
-    provider = provider_for(skill)
+    provider = provider_for(skill, s)
     if provider == "eleven" and el_voices is None:
         from . import eleven
         try:
@@ -250,14 +251,14 @@ def resolve_for_episode(ctx, name, skill, s, speakers, series=None, engine=False
     hero_key = "hero" if engine else "ผู้บรรยาย"
     if main and hero_key not in pmap:
         pmap[hero_key] = main        # เสียงหลักที่เลือกในแถบพิมพ์ = พระเอก/ผู้บรรยาย
-    provider = provider_for(skill)
+    provider = provider_for(skill, s)
     known = None
     if not engine and context:
         known = classify(skill, speakers, context)
     if engine and provider == "edge":
         vm = pmap                    # เอนจินมีการแคสต์เสียง Edge ของตัวเองอยู่แล้ว (ต่างระดับเสียงต่อตัวละคร)
     else:
-        vm, provider = auto_map(speakers, skill, pmap, series, known=known)
+        vm, provider = auto_map(speakers, skill, pmap, series, known=known, s=s)
     new = {k: v for k, v in vm.items() if (proj.get("options") or {}).get("voice_map", {}).get(k) != v}
     if new:
         opts = dict(proj.get("options") or {})
