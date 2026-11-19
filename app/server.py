@@ -381,17 +381,43 @@ def library_delete(iid):
 # ---------------- เครดิต OpenRouter ----------------
 @app.get("/api/credits")
 def credits():
-    import requests as rq
-    key = os.environ.get("OPENROUTER_API_KEY", "")
-    if not key:
+    if not os.environ.get("OPENROUTER_API_KEY"):
         return ok(None)
     try:
-        r = rq.get(llm.BASE + "/key", headers={"Authorization": f"Bearer {key}"}, timeout=10)
-        d = (r.json() or {}).get("data") or {}
-        return ok({k: d.get(k) for k in ("limit", "limit_remaining", "usage", "is_free_tier",
-                                          "free_model_daily_requests")})
+        d = llm.account() or {}
+        return ok({k: d.get(k) for k in ("limit", "limit_remaining", "usage", "usage_daily", "usage_weekly",
+                                          "usage_monthly", "is_free_tier", "free_model_daily_requests")})
     except Exception as e:
         return ok({"error": str(e)})
+
+
+@app.get("/api/usage")
+def usage():
+    """รายละเอียดค่าใช้จ่าย: รายการล่าสุด + สรุปตามประเภท/โมเดล (วันนี้ และทั้งหมดที่บันทึก)"""
+    import datetime as dt
+    rows = llm.read_ledger(3000)
+    today = dt.datetime.now().date()
+
+    def summarize(items):
+        agg = {}
+        for r in items:
+            if r.get("kind", "").startswith("รวมทั้งงาน"):
+                continue
+            k = (r.get("kind"), r.get("model"))
+            a = agg.setdefault(k, {"kind": k[0], "model": k[1], "calls": 0, "cost": 0.0, "unknown": 0, "fail": 0})
+            a["calls"] += 1
+            if not r.get("ok", True):
+                a["fail"] += 1
+            if r.get("cost") is None:
+                a["unknown"] += 1
+            else:
+                a["cost"] += r["cost"]
+        return sorted(agg.values(), key=lambda a: -a["cost"])
+
+    todays = [r for r in rows if dt.datetime.fromtimestamp(r.get("t", 0)).date() == today]
+    jobs_cost = [r for r in rows if r.get("kind", "").startswith("รวมทั้งงาน")]
+    return ok({"recent": rows[-150:][::-1], "today": summarize(todays), "all": summarize(rows),
+               "jobs": jobs_cost[-30:][::-1], "since": rows[0]["t"] if rows else None})
 
 
 # ---------------- AI ช่วยคิดเรื่อง ----------------

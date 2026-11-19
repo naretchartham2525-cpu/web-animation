@@ -6,9 +6,17 @@ import traceback
 import uuid
 from collections import deque
 
-from . import core, pipeline
+from . import core, llm, pipeline
 
 MAX_LOG = 400
+
+
+def _acct_usage():
+    try:
+        a = llm.account()
+        return float(a["usage"]) if a and a.get("usage") is not None else None
+    except Exception:
+        return None
 
 
 class Ctx:
@@ -261,6 +269,7 @@ class JobManager:
             self.current = jid
             ctx = Ctx(self, job)
             job.update(status="running", started=time.time())
+            acct0 = _acct_usage()
             try:
                 for _ in range(job["count"] - job["done"]):
                     ctx.check()
@@ -268,6 +277,7 @@ class JobManager:
                     job["episode"] = ep
                     job["progress"] = 0
                     self._log(job, f"เริ่ม EP {ep}")
+                    llm.set_tag(f"{job['project']} · EP {ep}")
                     pipeline.run_episode(ctx, job["project"], ep)
                     job["done"] += 1
                     job["progress"] = 100
@@ -280,6 +290,12 @@ class JobManager:
                 self._log(job, f"{e}")
                 traceback.print_exc()
             finally:
+                llm.set_tag("")
+                acct1 = _acct_usage()
+                if acct0 is not None and acct1 is not None:
+                    spent = round(max(0.0, acct1 - acct0), 6)
+                    job["acct_cost"] = round(job.get("acct_cost", 0) + spent, 6)
+                    llm.ledger("รวมทั้งงาน (ยอดบัญชี)", "-", spent, None, tag=f"{job['project']} · งาน {jid}")
                 job["finished"] = time.time()
                 job["review"] = None
                 self.current = None

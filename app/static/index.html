@@ -34,7 +34,20 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .nb .cnt{background:var(--ink);color:var(--paper);border-radius:99px;font-size:11.5px;padding:1px 7px;min-width:20px;text-align:center}
 .nb .live{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:pulse 1.2s infinite}
 @keyframes pulse{50%{opacity:.25}}
-.credit{font-size:12.5px;color:var(--muted);padding:0 8px}
+.credit{font-size:12.5px;color:var(--muted);padding:4px 10px;border-radius:99px;cursor:pointer;border:1px solid transparent;transition:.2s}
+.credit:hover{border-color:var(--line);color:var(--ink);background:var(--paper)}
+.credit:empty{display:none}
+.ustat{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:14px}
+.ustat div{background:var(--bg2);border-radius:14px;padding:10px 12px}
+.ustat small{display:block;color:var(--muted);font-size:11.5px}
+.ustat b{font-family:Kanit;font-size:17px}
+.utab{width:100%;border-collapse:collapse;font-size:12.5px}
+.utab th{text-align:left;color:var(--muted);font-weight:500;padding:6px 6px;border-bottom:1px solid var(--line)}
+.utab td{padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
+.utab td.r,.utab th.r{text-align:right;white-space:nowrap}
+.uh{font-family:Kanit;font-size:14px;margin:14px 0 6px}
+#splash .strip i.fill{width:0;animation:none;transition:width linear}
+#splash .msg{font-size:12.5px;color:var(--muted);min-height:18px}
 .head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:26px 0 18px}
 .head h1{font-size:38px;margin:0 0 4px;line-height:1.15}
 .head p{margin:0;color:var(--muted)}
@@ -262,10 +275,10 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
   </defs>
 </svg>
 
-<div id="splash"><div class="in2"><span class="reel"><svg class="i"><use href="#i-reel"/></svg></span><b>สตูดิโอเถื่อน</b><div class="strip"><i></i></div></div></div>
+<div id="splash"><div class="in2"><span class="reel"><svg class="i"><use href="#i-reel"/></svg></span><b>สตูดิโอเถื่อน</b><div class="strip"><i></i></div><div class="msg" id="splMsg"></div></div></div>
 <div class="top"><div class="wrap"><div class="bar-top">
   <div class="brand"><span class="mk"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span>สตูดิโอเถื่อน <small>หนังสั้น AI</small></div>
-  <span class="credit" id="credit"></span>
+  <span class="credit" id="credit" title="ดูรายละเอียดค่าใช้จ่าย" onclick="openUsage()"></span>
   <button class="nb" onclick="openLib()" title="คลังข้อความ"><svg class="i"><use href="#i-book"/></svg><span class="lbl">คลังข้อความ</span></button>
   <button class="nb" onclick="openDrawer()" id="jobsBtn" title="งานของฉัน"><svg class="i"><use href="#i-film"/></svg><span class="lbl">งานของฉัน</span><span class="cnt" id="jobCnt">0</span></button>
   <button class="nb" onclick="openSettings()" title="ตั้งค่าลายน้ำ"><svg class="i"><use href="#i-gear"/></svg></button>
@@ -354,6 +367,10 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
 </div></div>
 
 <!-- ตั้งค่าช่อง -->
+<div class="modal" id="mUsage"><div class="mbox" style="max-width:640px">
+  <h2>ค่าใช้จ่าย AI</h2>
+  <div id="uBody"><div class="small">กำลังโหลด…</div></div>
+</div></div>
 <div class="modal" id="mSet"><div class="mbox" style="max-width:560px">
   <h2>ลายน้ำ</h2>
   <div class="note" style="margin:-4px 0 14px">สไตล์และเสียงมาจากเทมเพลต · สั่งปรับแต่งเฉพาะครั้งได้ที่ปุ่ม “ปรับแต่ง” ในแถบพิมพ์</div>
@@ -782,7 +799,37 @@ async function saveSettings() {
 async function refreshCredit() {
   const c = await api("GET", "/api/credits").catch(() => null);
   const fr = c && c.free_model_daily_requests;
-  $("#credit").textContent = c && !c.error ? [fr && fr.remaining != null ? `AI ฟรีวันนี้เหลือ ${fr.remaining}` : "", c.limit_remaining != null ? `เครดิต $${Number(c.limit_remaining).toFixed(3)}` : ""].filter(Boolean).join(" · ") : "";
+  $("#credit").textContent = c && !c.error ? [fr && fr.remaining != null ? `ฟรีวันนี้เหลือ ${fr.remaining} ครั้ง` : "", c.usage_daily != null ? `ใช้วันนี้ $${fmUsd(c.usage_daily)}` : "", c.limit_remaining != null ? `คงเหลือ $${fmUsd(c.limit_remaining)}` : ""].filter(Boolean).join(" · ") : "";
+}
+const fmUsd = v => v == null ? "-" : Number(v) < 0.01 && Number(v) > 0 ? Number(v).toFixed(4) : Number(v).toFixed(3);
+function units(u) {
+  if (!u) return "";
+  if (u.chars != null) return `${u.chars} ตัวอักษร`;
+  if (u.img != null) return `${u.img} ภาพ`;
+  if (u.in != null || u.out != null) return `${u.in ?? "?"} → ${u.out ?? "?"} โทเคน`;
+  return "";
+}
+async function openUsage() {
+  openM("mUsage"); $("#uBody").innerHTML = '<div class="small">กำลังโหลด…</div>';
+  const [c, u] = await Promise.all([api("GET", "/api/credits").catch(() => null), api("GET", "/api/usage").catch(() => null)]);
+  const fr = c && c.free_model_daily_requests;
+  const st = (k, v) => `<div><small>${k}</small><b>${v}</b></div>`;
+  let h = `<div class="ustat">${[
+    c && c.limit_remaining != null ? st("คงเหลือ", "$" + fmUsd(c.limit_remaining) + (c.limit != null ? `<small>จากวงเงิน $${fmUsd(c.limit)}</small>` : "")) : "",
+    c && c.usage_daily != null ? st("ใช้วันนี้", "$" + fmUsd(c.usage_daily)) : "",
+    c && c.usage_weekly != null ? st("สัปดาห์นี้", "$" + fmUsd(c.usage_weekly)) : "",
+    c && c.usage_monthly != null ? st("เดือนนี้", "$" + fmUsd(c.usage_monthly)) : "",
+    c && c.usage != null ? st("ใช้ทั้งหมด", "$" + fmUsd(c.usage)) : "",
+    fr && fr.remaining != null ? st("โมเดลฟรีวันนี้", `${fr.remaining}<small>เหลือจาก ${fr.limit ?? 50} ครั้ง</small>`) : ""].join("")}</div>`;
+  if (!c) h += `<div class="small">ยังไม่ได้ตั้ง OPENROUTER_API_KEY หรือเชื่อมต่อ OpenRouter ไม่ได้</div>`;
+  h += `<div class="small">ยอดจาก OpenRouter รวมทุกที่ที่ใช้ key นี้ (รวมนอกเว็บนี้ด้วย) · ตารางด้านล่างคือที่เว็บนี้บันทึกไว้</div>`;
+  const sumTab = rows => rows && rows.length ? `<table class="utab"><tr><th>ประเภท</th><th>โมเดล</th><th class="r">ครั้ง</th><th class="r">$</th></tr>${rows.map(a => `<tr><td>${esc(a.kind)}</td><td>${esc(a.model || "")}</td><td class="r">${a.calls}${a.fail ? ` <span style="color:var(--err)">(พัง ${a.fail})</span>` : ""}</td><td class="r">${a.cost ? fmUsd(a.cost) : (a.unknown ? "ไม่แจ้ง" : "ฟรี")}</td></tr>`).join("")}</table>` : '<div class="small">ยังไม่มี</div>';
+  if (u) {
+    h += `<div class="uh">วันนี้แยกตามประเภท</div>` + sumTab(u.today);
+    if (u.jobs && u.jobs.length) h += `<div class="uh">ยอดจริงต่องาน (วัดจากยอดบัญชีก่อน/หลัง รวมค่าเสียง)</div><table class="utab"><tr><th>เวลา</th><th>งาน</th><th class="r">$</th></tr>${u.jobs.map(r => `<tr><td>${new Date(r.t*1000).toLocaleString("th-TH",{dateStyle:"short",timeStyle:"short"})}</td><td>${esc(r.tag)}</td><td class="r">${fmUsd(r.cost)}</td></tr>`).join("")}</table>`;
+    h += `<div class="uh">รายการล่าสุด</div>` + (u.recent.length ? `<table class="utab"><tr><th>เวลา</th><th>งาน</th><th>ประเภท · โมเดล</th><th class="r">$</th></tr>${u.recent.filter(r => !String(r.kind).startsWith("รวมทั้งงาน")).slice(0, 80).map(r => `<tr><td>${new Date(r.t*1000).toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"})}</td><td>${esc(r.tag || "หน้าเว็บ")}</td><td>${esc(r.kind)} · ${esc(r.model || "")}<div class="small">${units(r.units)}${r.note ? " · " + esc(r.note) : ""}</div></td><td class="r">${r.ok === false ? '<span style="color:var(--err)">พัง</span>' : r.cost == null ? "ไม่แจ้ง" : r.cost ? fmUsd(r.cost) : "ฟรี"}</td></tr>`).join("")}</table>` : '<div class="small">ยังไม่มีการเรียก AI ที่บันทึกไว้ (เริ่มบันทึกตั้งแต่เวอร์ชันนี้)</div>');
+  }
+  $("#uBody").innerHTML = h + `<div class="mfoot"><button class="sb" onclick="openUsage()">รีเฟรช</button><button class="sb dark" onclick="closeM('mUsage')">ปิด</button></div>`;
 }
 
 // ================= โหมดตัวอย่าง =================
@@ -816,7 +863,8 @@ function mock(m, path, body) {
   if (p === "/api/library" && m === "GET") return MOCK.lib;
   if (p === "/api/library") { MOCK.lib.unshift({id:"t" + Date.now(), title: body.title || body.text.slice(0, 30), text: body.text}); return {}; }
   if (p.startsWith("/api/library/")) { MOCK.lib = MOCK.lib.filter(x => x.id !== p.split("/")[3]); return true; }
-  if (p === "/api/credits") return {free_model_daily_requests:{remaining:46, limit:50}, limit_remaining:0.012};
+  if (p === "/api/credits") return {free_model_daily_requests:{remaining:46, limit:50}, limit:5, limit_remaining:4.931, usage:0.069, usage_daily:0.041, usage_weekly:0.069, usage_monthly:0.069};
+  if (p === "/api/usage") { const n = Date.now()/1000; return {today:[{kind:"เสียง AI", model:"google/gemini-3.8-flash-tts", calls:14, cost:0, unknown:14, fail:0},{kind:"บท/ข้อความ", model:"openrouter/free", calls:3, cost:0, unknown:0, fail:0},{kind:"ภาพฟรี", model:"pollinations", calls:7, cost:0, unknown:0, fail:0}], jobs:[{t:n-600, tag:"ประธานล้างจาน · งาน a1b2", cost:0.041}], recent:[{t:n-620, tag:"ประธานล้างจาน · EP 1", kind:"เสียง AI", model:"google/gemini-3.8-flash-tts", cost:null, units:{chars:42}, note:"ราคาต่อครั้งไม่แจ้ง ดูยอดรวมงานแทน"},{t:n-700, tag:"ประธานล้างจาน · EP 1", kind:"บท/ข้อความ", model:"openrouter/free", cost:0, units:{in:820,out:310}}]}; }
   if (p === "/api/prompt") return {prompt:"ช่วยเขียนบทพากย์หนังสั้นแอนิเมชัน EP 5 ต่อจากเรื่องเดิม\n\n=== เทมเพลต / สไตล์ ===\n(เนื้อหาเทมเพลต)\n\nตอนที่ผ่านมา:\nEP 1: เมฆรั่ว\nEP 2: สะพานรุ้ง\n…\n\nรูปแบบคำตอบ:\n- แต่ละตอนขึ้นต้นด้วย \"# EP <เลข>: <ชื่อตอน>\"\n- 1 บรรทัด = 1 ฉาก: บทพากย์ภาษาไทย | english image prompt"};
   if (p === "/api/ai/idea") return {topic:"หุ่นยนต์เก่าในเมืองร้างพบเมล็ดพันธุ์สุดท้ายของโลก"};
   if (p === "/api/create") { const name = body.idea.replace(/^#\s*(EP\s*\d+\s*:\s*)?/i, "").split("\n")[0].slice(0, 40); MOCK.jobs.unshift({id:"n" + Date.now(), project:name, count:1, done:0, status:"queued", stage:"รอคิว", progress:0, cost_usd:0, logs:[]}); return {project:{name}, episodes: countEps(body.idea) || 1}; }
@@ -833,7 +881,19 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") { document.q
 let timer;
 $("#grid").innerHTML = Array(4).fill('<div class="card skel"><div class="cover"></div><div class="cfoot"><span></span></div></div>').join("");
 const t0 = Date.now();
-function hideSplash() { setTimeout(() => $("#splash").classList.add("off"), Math.max(0, 700 - (Date.now() - t0))); }
+const LOGIN_SPLASH_MS = 10000;  // หน้าโหลดก่อนใส่รหัสผ่าน (มิลลิวินาที)
+let needLogin = false, splashDone = false;
+function hideSplash() {
+  if (splashDone) return; splashDone = true;
+  const wait = needLogin && !DEMO ? LOGIN_SPLASH_MS : 700;
+  if (wait > 1000) {
+    const bar = $("#splash .strip i"); bar.classList.add("fill"); bar.style.transitionDuration = (wait - 300) + "ms";
+    requestAnimationFrame(() => requestAnimationFrame(() => bar.style.width = "100%"));
+    const msgs = ["กำลังเชื่อมต่อเซิร์ฟเวอร์…", "กำลังโหลดเทมเพลต…", "เตรียมห้องตัดต่อ…", "เกือบพร้อมแล้ว…"];
+    msgs.forEach((m, i) => setTimeout(() => $("#splMsg").textContent = m, i * wait / msgs.length));
+  }
+  setTimeout(() => { $("#splash").classList.add("off"); if (needLogin) setTimeout(() => $("#lgPw").focus(), 100); }, Math.max(0, wait - (Date.now() - t0)));
+}
 async function boot() {
   $("#demoBar").innerHTML = DEMO ? `<div class="demo">${ic("info")}ตัวอย่างหน้าเว็บ: ข้อมูลสมมติ เมื่อรันบน Colab จะใช้ข้อมูลจริงจาก Drive</div>` : "";
   try {
@@ -841,7 +901,7 @@ async function boot() {
     T = t || []; SET = s || {};
     O.q = SET.quality || O.q; O.wm = SET.watermark !== false; O.engine = SET.script_engine === "claude" ? "claude" : "free"; O.vis = SET.visual_source || O.vis;
     O.dur = +(SET.target_seconds || O.dur);
-  } catch (e) { /* รอ login */ }
+  } catch (e) { if (/เข้าสู่ระบบ/.test(e.message)) needLogin = true; }
   renderGrid(); renderComposer(); refreshJobs(); refreshCredit(); hideSplash();
   clearInterval(timer); timer = setInterval(refreshJobs, 2500);
 }

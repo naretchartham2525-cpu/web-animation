@@ -2,7 +2,9 @@
 import json
 import os
 import re
+import threading
 import time
+from pathlib import Path
 
 import requests
 
@@ -11,6 +13,57 @@ BASE = os.environ.get("OPENROUTER_BASE", "https://openrouter.ai/api/v1")
 
 class LLMError(Exception):
     pass
+
+
+# ---------------- บันทึกค่าใช้จ่าย (usage.jsonl ใน AUTOCLIP_ROOT) ----------------
+_tl = threading.local()
+_DEFAULT_TAG = os.environ.get("AUTOCLIP_TAG", "")  # subprocess ของเอนจินได้ tag ของงานจาก env
+
+
+def set_tag(tag):
+    """ผูกการเรียก AI ต่อจากนี้ (ในเธรดนี้ + subprocess ที่เปิดหลังจากนี้) กับงาน/EP"""
+    _tl.tag = tag or ""
+    os.environ["AUTOCLIP_TAG"] = tag or ""
+
+
+def ledger(kind, model, cost=None, units=None, ok=True, note="", tag=None):
+    root = os.environ.get("AUTOCLIP_ROOT")
+    if not root:
+        return
+    rec = {"t": round(time.time(), 1), "tag": tag if tag is not None else getattr(_tl, "tag", _DEFAULT_TAG),
+           "kind": kind, "model": model, "cost": None if cost is None else round(float(cost), 6),
+           "units": units, "ok": ok}
+    if note:
+        rec["note"] = str(note)[:200]
+    try:
+        with open(Path(root) / "usage.jsonl", "a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    except OSError:
+        pass
+
+
+def read_ledger(limit=2000):
+    root = os.environ.get("AUTOCLIP_ROOT")
+    p = Path(root or ".") / "usage.jsonl"
+    if not root or not p.exists():
+        return []
+    lines = p.read_text(encoding="utf-8", errors="replace").splitlines()[-limit:]
+    out = []
+    for ln in lines:
+        try:
+            out.append(json.loads(ln))
+        except ValueError:
+            pass
+    return out
+
+
+def account():
+    """ข้อมูล key จาก OpenRouter: limit, limit_remaining, usage, usage_daily/weekly/monthly"""
+    key = os.environ.get("OPENROUTER_API_KEY", "").strip()
+    if not key:
+        return None
+    r = requests.get(f"{BASE}/key", headers={"Authorization": f"Bearer {key}"}, timeout=10)
+    return (r.json() or {}).get("data") or {}
 
 
 def _headers():
@@ -48,6 +101,7 @@ def chat(model, messages, json_mode=False, temperature=0.8, max_tokens=2500, ret
                 time.sleep(8 * (attempt + 1))
                 continue
             if r.status_code == 402:
+                ledger("บท/ข้อความ", model, None, None, ok=False, note="402 เครดิตไม่พอ")
                 raise LLMError("เครดิต OpenRouter ไม่พอ → เปลี่ยน 'เขียนบท' เป็น ฟรี หรือ เขียนเอง "
                                f"หรือเติมเครดิต (รายละเอียด: {r.text[:200]})")
             if r.status_code == 429 and attempt == retries - 1:
@@ -58,7 +112,10 @@ def chat(model, messages, json_mode=False, temperature=0.8, max_tokens=2500, ret
             if "error" in data:
                 raise LLMError(f"OpenRouter: {data['error']}")
             text = data["choices"][0]["message"].get("content") or ""
-            cost = float((data.get("usage") or {}).get("cost") or 0)
+            u = data.get("usage") or {}
+            cost = float(u.get("cost") or 0)
+            ledger("บท/ข้อความ", data.get("model") or model, cost,
+                   {"in": u.get("prompt_tokens"), "out": u.get("completion_tokens")})
             return text, cost
         except requests.RequestException as e:
             last = str(e)
@@ -91,6 +148,9 @@ def tts(model, text, voice, out_path, retries=3):
             if r.status_code == 200 and r.content:
                 with open(out_path, "wb") as f:
                     f.write(r.content)
+                c = r.headers.get("x-openrouter-cost") or r.headers.get("X-Openrouter-Cost")
+                ledger("เสียง AI", model, float(c) if c else None, {"chars": len(text)},
+                       note="" if c else "ราคาต่อครั้งไม่แจ้ง ดูยอดรวมงานแทน")
                 return
             last = f"HTTP {r.status_code}: {r.text[:300]}"
             if r.status_code not in (429, 500, 502, 503, 504):
@@ -125,6 +185,7 @@ def free_image(prompt, out_path, width, height, seed=1, model="", retries=4):
             if r.status_code == 200 and ctype.startswith("image") and len(r.content) > 2000:
                 with open(out_path, "wb") as f:
                     f.write(r.content)
+                ledger("ภาพฟรี", model or "pollinations", 0, {"img": 1})
                 return
             last = f"HTTP {r.status_code} {ctype} {r.text[:200] if not ctype.startswith('image') else ''}"
         except requests.RequestException as e:
