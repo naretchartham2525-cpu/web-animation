@@ -291,7 +291,7 @@ def chat_prompt(skill, idea, start_ep, count, s, context="", bible=""):
     """คำสั่งสำเร็จรูปให้ผู้ใช้ก๊อปไปถาม Claude ในแชท (ฟรี) แล้ววางบทกลับมา"""
     end = start_ep + count - 1
     line_fmt = (f"บทพากย์ภาษา{s['language']} | คำบรรยายภาพเป็นภาษาอังกฤษ (ใส่ชื่อ/หน้าตาตัวละครแบบเดิมทุกฉาก)"
-                + (" | ซับภาษาอังกฤษ (แปลบทพากย์แบบเป็นธรรมชาติ)" if s.get("sub_lang") in ("en", "both") else ""))
+                + " | ซับภาษาอังกฤษ (แปลบทพากย์แบบเป็นธรรมชาติ สั้น อ่านทันในจอ)")
     eps = f"EP {start_ep}" if count == 1 else f"EP {start_ep} ถึง EP {end} ({count} ตอน)"
     lines = [f"ช่วยเขียนบทพากย์หนังสั้นแอนิเมชัน {eps}" + (" ต่อจากเรื่องเดิม" if start_ep > 1 else "")]
     if skill:
