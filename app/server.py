@@ -12,7 +12,7 @@ from flask import Flask, abort, jsonify, request, send_file, send_from_directory
 from . import core, llm
 from .jobs import JobManager
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 STATIC = Path(__file__).resolve().parent / "static"
 app = Flask(__name__, static_folder=None)
 app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024 * 1024  # อัปโหลดได้ถึง 2GB
@@ -79,6 +79,7 @@ def status():
         "episodes_done": sum(p["done_count"] for p in projects),
         "cost_usd": round(sum(float(p.get("cost_usd") or 0) for p in projects), 4),
         "skills": len(core.list_skills()),
+        "script_engine": core.load_settings().get("script_engine"),
     })
 
 
@@ -91,6 +92,19 @@ def skills():
 @app.post("/api/skills/reload")
 def skills_reload():
     return ok(core.reload_skills())
+
+
+@app.post("/api/skills")
+def skill_save():
+    return ok(core.save_skill(request.get_json(force=True)))
+
+
+@app.get("/skill-cover/<sid>")
+def skill_cover(sid):
+    sk = core.get_skill(sid)
+    if not sk or not sk.get("cover"):
+        abort(404)
+    return send_file(core.SKILLS_DIR / sid / sk["cover"], max_age=3600)
 
 
 @app.get("/api/skills/<sid>")
@@ -199,6 +213,70 @@ def outputs():
     return ok(core.list_outputs())
 
 
+# ---------------- สร้างคลิปจากแถบพิมพ์ (หน้าเดียวจบ) ----------------
+@app.post("/api/create")
+def quick_create():
+    b = request.get_json(force=True)
+    mode = b.get("mode") or "ai"
+    idea = str(b.get("idea") or "").strip()
+    if not idea:
+        raise ValueError("พิมพ์ไอเดียหรือบทก่อน")
+    first = idea.lstrip("#").strip().splitlines()[0]
+    name = core.unique_project_name(b.get("name") or first[:40])
+    opts = {k: v for k, v in (b.get("options") or {}).items() if v not in (None, "")}
+    proj = core.create_project({
+        "name": name, "skill": b.get("template") or "", "episodes_total": 1,
+        "topic": idea if mode == "ai" else "", "script_mode": mode,
+        "manual_text": idea if mode == "manual" else "", "options": opts,
+    })
+    job = jobs.submit(proj["name"], 1)
+    return ok({"project": proj, "job": job})
+
+
+@app.post("/api/projects/<name>/next")
+def project_next(name):
+    """ทำ EP ต่อ: เทมเพลต/สไตล์/ตัวละครเดิม AI คิดแค่บท EP ใหม่"""
+    p = core.get_project(name)
+    if not p:
+        abort(404)
+    if jobs.has_pending(name):
+        raise ValueError("เรื่องนี้มีงานค้างอยู่แล้ว รอให้เสร็จก่อน")
+    core.update_project(name, {"episodes_total": p["done_count"] + 1})
+    return ok(jobs.submit(name, 1))
+
+
+# ---------------- คลังข้อความ ----------------
+@app.get("/api/library")
+def library_list():
+    return ok(core.list_library())
+
+
+@app.post("/api/library")
+def library_save():
+    return ok(core.save_library_item(request.get_json(force=True)))
+
+
+@app.delete("/api/library/<iid>")
+def library_delete(iid):
+    return ok(core.delete_library_item(iid))
+
+
+# ---------------- เครดิต OpenRouter ----------------
+@app.get("/api/credits")
+def credits():
+    import requests as rq
+    key = os.environ.get("OPENROUTER_API_KEY", "")
+    if not key:
+        return ok(None)
+    try:
+        r = rq.get(llm.BASE + "/key", headers={"Authorization": f"Bearer {key}"}, timeout=10)
+        d = (r.json() or {}).get("data") or {}
+        return ok({k: d.get(k) for k in ("limit", "limit_remaining", "usage", "is_free_tier",
+                                          "free_model_daily_requests")})
+    except Exception as e:
+        return ok({"error": str(e)})
+
+
 # ---------------- AI ช่วยคิดเรื่อง ----------------
 @app.post("/api/ai/idea")
 def ai_idea():
@@ -213,7 +291,8 @@ def ai_idea():
         {"role": "user", "content": f"คิดเรื่องใหม่ที่สนุกและไม่ซ้ำ ภาษา{s['language']} "
                                     f"{('แนวทาง: ' + body['hint']) if body.get('hint') else ''}"},
     ]
-    text, cost = llm.chat(s["helper_model"], msgs, json_mode=True, temperature=1.0, max_tokens=1500)
+    from .pipeline import script_model
+    text, cost = llm.chat(script_model(s), msgs, json_mode=True, temperature=1.0, max_tokens=800)
     data = llm.parse_json(text)
     data["cost_usd"] = cost
     return ok(data)

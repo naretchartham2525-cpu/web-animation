@@ -25,7 +25,7 @@ def _headers():
     }
 
 
-def chat(model, messages, json_mode=False, temperature=0.8, max_tokens=8000, retries=3):
+def chat(model, messages, json_mode=False, temperature=0.8, max_tokens=2500, retries=3):
     """คืน (text, cost_usd)"""
     body = {
         "model": model,
@@ -43,10 +43,15 @@ def chat(model, messages, json_mode=False, temperature=0.8, max_tokens=8000, ret
             if r.status_code == 400 and json_mode and "response_format" in body:
                 body.pop("response_format")  # บาง model ไม่รองรับ → ลองใหม่แบบปกติ
                 continue
-            if r.status_code in (429, 500, 502, 503, 504):
+            if r.status_code in (429, 500, 502, 503, 504) and attempt < retries - 1:
                 last = f"HTTP {r.status_code}: {r.text[:300]}"
-                time.sleep(3 * (attempt + 1))
+                time.sleep(8 * (attempt + 1))
                 continue
+            if r.status_code == 402:
+                raise LLMError("เครดิต OpenRouter ไม่พอ → เปลี่ยน 'เขียนบท' เป็น ฟรี หรือ เขียนเอง "
+                               f"หรือเติมเครดิต (รายละเอียด: {r.text[:200]})")
+            if r.status_code == 429 and attempt == retries - 1:
+                raise LLMError("โมเดลฟรีถูกจำกัดการใช้ (ฟรีได้ ~50 ครั้ง/วัน, 20 ครั้ง/นาที) รอสักพักแล้วกดทำต่อ")
             if r.status_code != 200:
                 raise LLMError(f"OpenRouter HTTP {r.status_code}: {r.text[:500]}")
             data = r.json()
@@ -94,3 +99,35 @@ def tts(model, text, voice, out_path, retries=3):
             last = str(e)
         time.sleep(3 * (attempt + 1))
     raise LLMError(f"TTS ไม่สำเร็จ: {last}")
+
+
+# ---------------- ภาพฟรี (Pollinations, ไม่ต้องใช้ key) ----------------
+POLLINATIONS = os.environ.get("POLLINATIONS_BASE", "https://image.pollinations.ai")
+_last_img = [0.0]
+
+
+def free_image(prompt, out_path, width, height, seed=1, model="", retries=4):
+    """ฟรีแบบไม่ใช้ key จำกัด ~1 ภาพ/15 วินาที → เว้นจังหวะให้เอง"""
+    from urllib.parse import quote
+    params = {"width": width, "height": height, "seed": seed, "nologo": "true"}
+    if model:
+        params["model"] = model
+    url = f"{POLLINATIONS}/prompt/{quote(prompt[:900], safe='')}"
+    last = None
+    for attempt in range(retries):
+        wait = float(os.environ.get("POLLINATIONS_GAP", "15.5")) - (time.time() - _last_img[0])
+        if wait > 0:
+            time.sleep(wait)
+        _last_img[0] = time.time()
+        try:
+            r = requests.get(url, params=params, timeout=180)
+            ctype = r.headers.get("content-type", "")
+            if r.status_code == 200 and ctype.startswith("image") and len(r.content) > 2000:
+                with open(out_path, "wb") as f:
+                    f.write(r.content)
+                return
+            last = f"HTTP {r.status_code} {ctype} {r.text[:200] if not ctype.startswith('image') else ''}"
+        except requests.RequestException as e:
+            last = str(e)
+        time.sleep(10 * (attempt + 1))
+    raise LLMError(f"สร้างภาพฟรีไม่สำเร็จ: {last}")

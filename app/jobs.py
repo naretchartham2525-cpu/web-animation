@@ -59,6 +59,10 @@ class Ctx:
                 time.sleep(0.3)
             err = proc.stderr.read() if proc.stderr else ""
             if proc.returncode != 0:
+                if "No module named edge_tts" in err:
+                    raise RuntimeError("ยังไม่ได้ติดตั้งเสียงฟรี (edge-tts) → รันช่อง 2 ใน Colab แล้วกดทำต่อ")
+                if "edge" in label and ("403" in err or "Connect" in err or "WSServerHandshake" in err):
+                    raise RuntimeError("เชื่อมต่อเสียงฟรี Edge ไม่ได้ ลองใหม่อีกครั้ง หรือเปลี่ยนเสียงเป็น Gemini/ปิดเสียง")
                 raise RuntimeError(f"{label} ล้มเหลว: {err.strip()[-800:]}")
         finally:
             self.mgr.proc = None
@@ -173,6 +177,11 @@ class JobManager:
         j = self.jobs.get(job_id)
         return self._public(j) if j else None
 
+    def has_pending(self, project):
+        with self.lock:
+            return any(self.jobs[i]["project"] == project and self.jobs[i]["status"] in ("queued", "running", "review")
+                       for i in self.order)
+
     def busy(self):
         return self.current is not None
 
@@ -198,11 +207,11 @@ class JobManager:
                     ep = core.next_episode(job["project"])
                     job["episode"] = ep
                     job["progress"] = 0
-                    self._log(job, f"🚀 เริ่มตอน {ep}")
+                    self._log(job, f"🚀 เริ่ม EP {ep}")
                     pipeline.run_episode(ctx, job["project"], ep)
                     job["done"] += 1
                     job["progress"] = 100
-                job.update(status="done", stage=f"เสร็จ {job['done']} ตอน")
+                job.update(status="done", stage=f"เสร็จ EP {job['episode']}")
             except pipeline.Stopped:
                 job.update(status="stopped", stage="หยุดแล้ว (ทำต่อได้ ไม่เสียงานที่ทำไปแล้ว)")
                 self._log(job, "⏹️ หยุดงานแล้ว")

@@ -3,11 +3,19 @@ import json
 import re
 import subprocess
 
-RES = {"9:16": (1080, 1920), "16:9": (1920, 1080), "1:1": (1080, 1080), "4:5": (1080, 1350)}
+RATIO = {"9:16": (9, 16), "16:9": (16, 9), "1:1": (1, 1), "4:5": (4, 5)}
+QUALITY = {"sd": 540, "hd": 720, "fhd": 1080}   # ด้านสั้นของจอ
+QUALITY_TH = {"sd": "มาตรฐาน", "hd": "HD", "fhd": "FHD"}
 
 
-def resolution(aspect):
-    return RES.get(aspect, RES["9:16"])
+def resolution(aspect, quality="fhd"):
+    a, b = RATIO.get(aspect, RATIO["9:16"])
+    short = QUALITY.get(quality, 1080)
+    if a <= b:
+        w, h = short, short * b / a
+    else:
+        w, h = short * a / b, short
+    return int(round(w / 2)) * 2, int(round(h / 2)) * 2
 
 
 def probe_duration(path):
@@ -115,8 +123,8 @@ def _ts_srt(t):
     return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
 
 
-def build_subs(items, w, h, s):
-    """items: [(start, speech_dur, text)] → (ass_text, srt_text)"""
+def build_subs(items, w, h, s, watermark="", total=0.0):
+    """items: [(start, speech_dur, text)] → (ass_text, srt_text)  watermark = ข้อความลายน้ำมุมขวาบน"""
     portrait = h > w
     size = int(s.get("subtitle_size") or 0) or (int(w * 0.068) if portrait else int(h * 0.058))
     max_chars = int(s.get("subtitle_max_chars") or 0) or (20 if portrait else 38)
@@ -131,10 +139,15 @@ def build_subs(items, w, h, s):
         "Alignment, MarginL, MarginR, MarginV, Encoding",
         f"Style: Default,{font},{size},&H00FFFFFF,&H000000FF,&H00000000,&H64000000,"
         f"-1,0,0,0,100,100,0,0,1,{max(3, size // 14)},2,2,60,60,{margin_v},1",
+        f"Style: WM,{font},{max(14, int(min(w, h) * 0.035))},&H60FFFFFF,&H000000FF,&H80000000,&H00000000,"
+        f"-1,0,0,0,100,100,0,0,1,{max(1, int(min(w, h) * 0.002))},0,9,30,30,30,1",
         "", "[Events]",
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
     ]
     srt, n = [], 0
+    if watermark and total > 0:
+        wm = watermark.replace("{", "(").replace("}", ")").replace("\\", "/")
+        ass.append(f"Dialogue: 1,{_ts_ass(0)},{_ts_ass(total + 1)},WM,,0,0,0,,{wm}")
     for start, dur, text in items:
         chunks = split_chunks(text, max_chars)
         if not chunks or dur <= 0:
@@ -149,3 +162,13 @@ def build_subs(items, w, h, s):
             srt.append(f"{n}\n{_ts_srt(t)} --> {_ts_srt(t + d)}\n{c}\n")
             t += d
     return "\n".join(ass) + "\n", "\n".join(srt)
+
+
+def silent_audio_cmd(out, dur):
+    return ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-f", "lavfi",
+            "-i", "anullsrc=r=48000:cl=stereo", "-t", f"{dur:.2f}", "-c:a", "libmp3lame", "-b:a", "64k", str(out)]
+
+
+def estimate_speech_seconds(text):
+    """ประมาณเวลาอ่านภาษาไทย (~13 ตัวอักษร/วินาที) ใช้ตอนปิดเสียงพากย์"""
+    return max(2.0, len((text or "").replace(" ", "")) / 13.0)
