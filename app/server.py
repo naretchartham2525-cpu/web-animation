@@ -765,10 +765,21 @@ def settings_post():
     return ok(core.save_settings(request.get_json(force=True)))
 
 
+READY = {"covers_total": 0, "covers_done": 0, "covers_failed": 0, "current": "", "done": False}
+
+
+@app.get("/api/ready")
+def ready():
+    """หน้ารอโหลดถามว่าเว็บพร้อมหรือยัง (ภาพปกเทมเพลตที่ยังไม่มี กำลังสร้างอยู่)"""
+    return ok(READY)
+
+
 def _auto_covers():
-    """เทมเพลตที่ยังไม่มีภาพปก → สร้างภาพตัวอย่างด้วย AI ฟรี ตามลุคของเทมเพลต (ทีละภาพ ตอนไม่มีงาน)"""
-    time.sleep(20)
-    for sk in [s for s in core.list_skills() if not s.get("cover")]:
+    """เทมเพลตที่ยังไม่มีภาพปก → สร้างภาพตัวอย่างด้วย AI ฟรี ตามลุคของเทมเพลต (ทีละภาพ ระหว่างหน้ารอโหลด)"""
+    todo = [s for s in core.list_skills() if not s.get("cover")]
+    READY.update(covers_total=len(todo), covers_done=0, covers_failed=0, done=not todo)
+    for sk in todo:
+        READY["current"] = sk["name"]
         while jobs and jobs.busy():
             time.sleep(30)
         o = sk.get("options") or {}
@@ -781,7 +792,10 @@ def _auto_covers():
             core.reload_skills()
             print("🖼 ภาพปกเทมเพลต:", sk["id"], flush=True)
         except Exception as e:  # noqa: BLE001  ไม่สำเร็จ → ลองใหม่รอบเปิดเครื่องถัดไป
+            READY["covers_failed"] += 1
             print("ภาพปกไม่สำเร็จ:", sk["id"], str(e)[:120], flush=True)
+        READY["covers_done"] += 1
+    READY.update(current="", done=True)
 
 
 def main():
