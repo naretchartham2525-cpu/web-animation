@@ -992,7 +992,7 @@ function renderEngBox(t) {
   box.style.display = "";
   box.innerHTML = t.html_engine
     ? `<div class="eh">${ic("check")}<b>มีเอนจินแล้ว</b><span class="small">ทุกตอนวาดภาพด้วยเอนจินนี้ · ฟรี</span></div>
-       <div class="ebtn"><label class="sb">${ic("clip")}อัปเดตเอนจิน (.zip)<input type="file" accept=".zip" hidden onchange="uploadEngine(this)"></label>
+       <div class="ebtn"><label class="sb">${ic("clip")}อัปเดตเอนจิน (.zip แทนที่ของเดิม)<input type="file" accept=".zip" hidden onchange="uploadEngine(this)"></label>
        <button class="sb" onclick="copyEnginePrompt()">${ic("copy")}คัดลอกคำสั่ง Claude Code</button>
        <button class="sb" style="color:var(--err)" onclick="deleteEngine()">${ic("trash")}เลิกใช้เอนจิน</button></div>`
     : `<div class="eh">${ic("sliders")}<b>ทำให้เคลื่อนไหวแบบตัวอย่าง</b><span class="small">ตอนนี้ใช้ภาพ AI นิ่งขยับ</span></div>
@@ -1027,7 +1027,7 @@ async function uploadEngine(inp) {
 }
 async function deleteEngine() {
   if (!await call(() => api("DELETE", `/api/skills/${enc(editingId)}/engine`))) return;
-  toast("เลิกใช้เอนจินแล้ว (สำรองไว้ใน engine.old)"); await refreshTemplates();
+  toast("เลิกใช้เอนจินแล้ว"); await refreshTemplates();
 }
 async function refreshTemplates() {
   T = await api("GET", "/api/skills"); if (tplSel) tplSel = T.find(x => x.id === tplSel.id) || null;
@@ -1465,7 +1465,7 @@ const fmtMB = b => b >= 1e9 ? (b / 1e9).toFixed(2) + " GB" : b >= 1e6 ? (b / 1e6
 async function openStore() {
   openM("mStore"); $("#stBody").innerHTML = `<div class="small">กำลังตรวจไฟล์…</div>`;
   STORE = await call(() => api("GET", "/api/storage")) || [];
-  const groups = [["story", "เรื่องที่ยังไม่มีคลิปเสร็จ"], ["ep", "ตอนที่ทำไม่สำเร็จ"], ["old", "คลิปเวอร์ชันเก่า"], ["engine_old", "เอนจินเวอร์ชันก่อน"], ["trash", "ถังขยะเก่าของเว็บ"]];
+  const groups = [["story", "เรื่องที่ยังไม่มีคลิปเสร็จ"], ["ep", "ตอนที่ทำไม่สำเร็จ"]];
   $("#stBody").innerHTML = STORE.length ? groups.map(([k, t]) => { const xs = STORE.filter(i => i.kind === k); return xs.length ? `<div class="vlab" style="margin:12px 0 6px">${t}</div>` +
       xs.map(i => `<label class="donel" style="cursor:pointer"><input type="checkbox" value="${esc(i.id)}" onchange="stSum()"><span>${esc(i.label)}</span><span class="small">${fmtMB(i.size)} · ${new Date(i.mtime * 1000).toLocaleDateString("th-TH")}</span></label>`).join("") : ""; }).join("")
     : `<div class="small" style="padding:20px 0;text-align:center">${ic("check")} ไม่มีไฟล์ค้าง ระบบสะอาดแล้ว</div>`;

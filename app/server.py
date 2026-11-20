@@ -876,6 +876,7 @@ def main():
     ap.add_argument("--host", default="127.0.0.1")
     a = ap.parse_args()
     core.ensure_dirs()
+    core.purge_legacy_trash()
     core.reload_skills()
     jobs = JobManager()
     threading.Thread(target=_auto_covers, daemon=True).start()

@@ -122,9 +122,7 @@ def install_zip(skill, fileobj):
                 with z.open(info) as src, open(out, "wb") as dst:
                     shutil.copyfileobj(src, dst)
         old = sdir / "engine"
-        if old.exists():
-            shutil.rmtree(sdir / "engine.old", ignore_errors=True)
-            old.rename(sdir / "engine.old")   # เก็บเวอร์ชันก่อนไว้ 1 ชุด
+        shutil.rmtree(old, ignore_errors=True)   # อัปโหลดใหม่ = แทนที่ของเดิม (ไม่เก็บสำรอง)
         new.rename(old)
     finally:
         tmp.unlink(missing_ok=True)
@@ -137,8 +135,7 @@ def install_zip(skill, fileobj):
 def remove(skill):
     d = engine_dir(skill)
     if d and d.exists():
-        shutil.rmtree(d.parent / "engine.old", ignore_errors=True)
-        d.rename(d.parent / "engine.old")
+        shutil.rmtree(d, ignore_errors=True)
     core.reload_skills()
 
 
