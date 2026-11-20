@@ -135,7 +135,8 @@ def skill_media(sid):
 
 @app.get("/skill-sample/<sid>")
 def skill_sample(sid):
-    f = core.SKILLS_DIR / sid / ("card.mp4" if request.args.get("card") else "sample.mp4")
+    d = core.SKILLS_DIR / sid
+    f = d / "card.mp4" if request.args.get("card") and (d / "card.mp4").exists() else d / "sample.mp4"
     if not core.get_skill(sid) or not f.exists():
         abort(404)
     return send_file(f, max_age=300, conditional=True)
@@ -929,6 +930,7 @@ def main():
     core.reload_skills()
     jobs = JobManager()
     threading.Thread(target=_auto_covers, daemon=True).start()
+    threading.Thread(target=core.make_card_clips, daemon=True).start()
     print(f"AutoClip {VERSION} | root={core.ROOT} | http://{a.host}:{a.port}", flush=True)
     app.run(host=a.host, port=a.port, threaded=True, use_reloader=False)
 

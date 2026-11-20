@@ -197,7 +197,7 @@ def _skill_from(p):
         "cover": cover,
         "cover_v": int((p / cover).stat().st_mtime) if cover and cover != "sample" else 0,   # เปลี่ยนรูปการ์ด → URL ใหม่ (ไม่ติดแคชเก่า)
         "sample": p.is_dir() and (p / "sample.mp4").exists(),   # คลิปตัวอย่างที่ผู้ใช้ใส่เอง (หน้าเพิ่ม/แก้เทมเพลต)
-        "card_v": int((p / "card.mp4").stat().st_mtime) if p.is_dir() and (p / "card.mp4").exists() else 0,   # คลิปเล่นวนบนการ์ด
+        "card_v": next((int(f.stat().st_mtime) for f in (p / "card.mp4", p / "sample.mp4") if p.is_dir() and f.exists()), 0),   # คลิปเล่นวนบนการ์ด (ยังไม่มีคลิปย่อ → ใช้คลิปตัวอย่าง)
         "options": opts,
         "file": str(f.relative_to(ROOT)),
         "chars": len(body),
@@ -328,6 +328,23 @@ def save_skill_media(sid, fileobj):
         raise ValueError("ใส่ได้เฉพาะรูป (.jpg .png .webp) หรือคลิป (.mp4 .mov .webm .mkv)")
     reload_skills()
     return get_skill(sid)
+
+
+def make_card_clips():
+    """เทมเพลตที่มีคลิปตัวอย่างแต่ยังไม่มีคลิปย่อสำหรับการ์ด (อัปไว้ก่อนมีฟีเจอร์นี้) → ทำให้ครบ"""
+    done = 0
+    for d in SKILLS_DIR.iterdir():
+        if d.is_dir() and (d / "sample.mp4").exists() and not (d / "card.mp4").exists():
+            out = WORK_DIR / f"card-{d.name}-out.mp4"
+            WORK_DIR.mkdir(parents=True, exist_ok=True)
+            ok_, _ = _ff(["-i", str(d / "sample.mp4"), "-t", "6", "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "30",
+                          "-vf", "scale=w='min(360,iw)':h=-2,fps=24", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(out)], 600)
+            if ok_ and out.exists():
+                shutil.move(str(out), str(d / "card.mp4"))
+                done += 1
+    if done:
+        reload_skills()
+    return done
 
 
 # ---------------- คลังข้อความ ----------------
