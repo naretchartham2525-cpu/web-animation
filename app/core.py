@@ -429,7 +429,7 @@ def storage_report(busy=lambda n: False):
                 if not e.get("final"):
                     add("ep", ep_dir(p["name"], e["ep"]), f"{p['name']} · EP {e['ep']}", "ตอนที่ทำไม่สำเร็จ")
             for o in sorted(d.glob("_old_ep*")):
-                add("old", o, f"{p['name']} · EP {int(o.name[7:9] or 0)} · เวอร์ชันเก่า", "คลิปเวอร์ชันก่อนทำใหม่ทับ")
+                add("old", o, f"{p['name']} · EP {int(o.name[7:9] or 0)}", "คลิป")
     return items
 
 
@@ -559,6 +559,7 @@ def list_projects():
             continue
         eps = list_episodes(p["name"])
         p["done_count"] = sum(1 for e in eps if e.get("final"))
+        p["failed_eps"] = [e["ep"] for e in eps if not e.get("final")]
         p["input_count"] = len(list_inputs(p["name"]))
         out.append(p)
     return out
@@ -624,7 +625,19 @@ def list_outputs():
                 out.append({
                     "project": p["name"], "ep": e["ep"], "title": e["title"],
                     "path": e["final"], "srt": e.get("srt"), "srt_en": e.get("srt_en"), "thumb": e.get("thumb"), "duration": e.get("duration"),
-                    "mtime": f.stat().st_mtime, "size": f.stat().st_size, "old": old_versions(p["name"], e["ep"]),
+                    "mtime": f.stat().st_mtime, "size": f.stat().st_size,
                 })
+        d = project_dir(p["name"])
+        for o in d.glob("_old_ep*"):   # คลิปที่ทำซ้ำของตอนเดิม → โชว์เป็นคลิปปกติ (ผู้ใช้รู้เองว่าอันไหนก่อนหลัง)
+            f = o / "final.mp4"
+            if not f.exists():
+                continue
+            sc = read_json(o / "script.json", {}) or {}
+            out.append({"project": p["name"], "ep": int(o.name[7:9] or 0), "title": sc.get("title") or "",
+                        "path": f"{o.name}/final.mp4", "srt": f"{o.name}/subs.srt" if (o / "subs.srt").exists() else None,
+                        "srt_en": f"{o.name}/subs_en.srt" if (o / "subs_en.srt").exists() else None,
+                        "thumb": f"{o.name}/thumb.jpg" if (o / "thumb.jpg").exists() else None,
+                        "duration": (read_json(o / "state.json", {}) or {}).get("duration"),
+                        "mtime": f.stat().st_mtime, "size": f.stat().st_size, "copy": str(o.relative_to(ROOT))})
     out.sort(key=lambda x: x["mtime"], reverse=True)
     return out
