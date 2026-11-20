@@ -426,7 +426,7 @@ html[data-mode=dark] .card:hover{box-shadow:0 16px 30px -18px rgba(0,0,0,.8)}
 .use,html[data-mode=dark] .use{background:var(--paper);color:var(--ink);border:1px solid var(--gline);border-radius:99px;padding:7px 16px;font-weight:600;box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 2px 6px -2px rgba(0,0,0,.25);transition:transform .15s,box-shadow .15s}
 .use:hover,.card:hover .use{transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 7px 14px -6px rgba(0,0,0,.4)}
 .use:active{transform:translateY(1px);box-shadow:0 1px 2px rgba(0,0,0,.25)}
-.card.sel .use,html[data-mode=dark] .card.sel .use{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.card.sel .use,html[data-mode=dark] .card.sel .use{background:var(--ink);color:var(--bg);border-color:var(--ink);transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 8px 16px -6px rgba(0,0,0,.5)}
 /* ปุ่ม Create: ไล่สีไหล */
 .go,html[data-mode=dark] .go{background:var(--grad);background-size:200% 200%;animation:gflow 6s ease infinite;color:#fff;border:none;border-radius:99px;box-shadow:0 10px 24px -10px color-mix(in srgb,var(--acc) 80%,transparent)}
 .go:hover,html[data-mode=dark] .go:hover{background:var(--grad);background-size:200% 200%;transform:translateY(-1px);box-shadow:0 14px 28px -10px color-mix(in srgb,var(--g1) 70%,transparent)}
@@ -995,7 +995,7 @@ function cardHtml(t) {
         <div class="meta">${t.engine || t.html_engine ? `<span class="tagx engtag">${ic("sliders")}มีเอนจิน</span>` : ""}${o.duration ? `<span class="tagx">${ic("clock")}${esc(fmtSec(+o.duration))}</span>` : ""}${o.voice ? `<span class="tagx">${ic("mic")}${esc(voiceName(o.voice).split(" ·")[0])}</span>` : ""}</div>
         <div class="ttl">${esc(t.name)}</div></div>
       <div class="cfoot"><div class="d" title="${esc(t.description)}">${esc(t.description || "")}</div>
-        <button class="use" onclick="useTemplate(dq('${q(t.id)}'))">${sel ? ic("check") + "Selected" : "Use"}</button></div>
+        <button class="use" aria-pressed="${sel}" onclick="useTemplate(dq('${q(t.id)}'))">Use</button></div>
     </div>`;
 }
 function renderGrid() {
