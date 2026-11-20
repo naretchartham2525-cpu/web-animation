@@ -120,7 +120,6 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .tagx svg{width:12px;height:12px}
 .cfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 12px}
 .cfoot .d{font-size:12.5px;color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;min-width:0}
-.cover .ring svg{pointer-events:auto;cursor:pointer}
 .use{background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:7px 14px;font-family:Kanit;font-weight:500;cursor:pointer;white-space:nowrap;display:inline-flex;gap:5px;align-items:center}
 .use svg{width:15px;height:15px}
 .empty{color:var(--muted);text-align:center;padding:50px 10px;grid-column:1/-1}
@@ -149,12 +148,6 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 /* ---- 26 · เอฟเฟกต์ตอนวางเมาส์ ---- */
 .cover .bgi{position:absolute;inset:0;background:inherit;background-size:cover;background-position:center;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
 .card:hover .cover .bgi{transform:scale(1.07)}
-.cover .ring{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
-.cover .ring svg{width:64px;height:64px;fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round;opacity:.85}
-.cover .ring circle{stroke-dasharray:170;stroke-dashoffset:170;transition:stroke-dashoffset .6s ease}
-.cover .ring path{fill:rgba(255,255,255,.9);stroke:none;transform-origin:32px 32px;transition:transform .35s ease}
-.card:hover .cover .ring circle{stroke-dashoffset:0}
-.card:hover .cover .ring path{transform:scale(1.15)}
 .clip .th svg{transition:transform .3s}
 .clip:hover .th svg{transform:scale(1.18)}
 .clip .th{transition:filter .3s}
@@ -990,11 +983,9 @@ function renderPacks() {
 }
 function cardHtml(t) {
     const o = t.options || {}, sel = tplSel?.id === t.id;
-    const clip = OUTS.find(x => x.skill === t.id && !x.copy);   // คลิปล่าสุดที่ทำด้วยเทมเพลตนี้ → กดดูได้ · ยังไม่มี = รูปตัวอย่างเฉยๆ
     return `<div class="card ${sel ? "sel" : ""}">
       <div class="cover" onclick="viewTemplate(dq('${q(t.id)}'))">
         <div class="bgi" ${coverAttrs(t)}></div>
-        ${clip ? `<div class="ring" title="ดูคลิปตัวอย่าง" onclick="event.stopPropagation(); playClip(dq('${q(clip.project)}'),${clip.ep},dq('${q(clip.path)}'))"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" transform="rotate(-90 32 32)"/><path d="M27 22v20l16-10z"/></svg></div>` : ""}
         <div class="meta">${t.engine || t.html_engine ? `<span class="tagx engtag">${ic("sliders")}มีเอนจิน</span>` : ""}${o.duration ? `<span class="tagx">${ic("clock")}${esc(fmtSec(+o.duration))}</span>` : ""}${o.voice ? `<span class="tagx">${ic("mic")}${esc(voiceName(o.voice).split(" ·")[0])}</span>` : ""}</div>
         <div class="ttl">${esc(t.name)}</div></div>
       <div class="cfoot"><div class="d" title="${esc(t.description)}">${esc(t.description || "")}</div>
@@ -1398,8 +1389,6 @@ async function refreshJobs() {
   const [jobs, outs] = await Promise.all([api("GET", "/api/jobs").catch(() => null), api("GET", "/api/outputs").catch(() => null)]);
   if (!jobs) return;
   JOBS = jobs; OUTS = outs || [];
-  const clipSig = [...new Set(OUTS.filter(o => !o.copy).map(o => o.skill + ":" + o.path))].join("|");
-  if (clipSig !== refreshJobs.sig) { refreshJobs.sig = clipSig; renderGrid(); }   // มีคลิปใหม่ → การ์ดเทมเพลตนั้นกดดูได้
   const active = jobs.filter(j => ["running","queued","review"].includes(j.status));
   $("#jobCnt").textContent = active.length; $("#clipCnt").textContent = OUTS.length;
   notifyDone(jobs);

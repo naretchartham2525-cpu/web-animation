@@ -606,7 +606,7 @@ def list_outputs():
             if e.get("final"):
                 f = project_dir(p["name"]) / e["final"]
                 out.append({
-                    "project": p["name"], "skill": p.get("skill", ""), "ep": e["ep"], "title": e["title"],
+                    "project": p["name"], "ep": e["ep"], "title": e["title"],
                     "path": e["final"], "srt": e.get("srt"), "srt_en": e.get("srt_en"), "thumb": e.get("thumb"), "duration": e.get("duration"),
                     "mtime": f.stat().st_mtime, "size": f.stat().st_size,
                 })
@@ -616,7 +616,7 @@ def list_outputs():
             if not f.exists():
                 continue
             sc = read_json(o / "script.json", {}) or {}
-            out.append({"project": p["name"], "skill": p.get("skill", ""), "ep": int(o.name[7:9] or 0), "title": sc.get("title") or "",
+            out.append({"project": p["name"], "ep": int(o.name[7:9] or 0), "title": sc.get("title") or "",
                         "path": f"{o.name}/final.mp4", "srt": f"{o.name}/subs.srt" if (o / "subs.srt").exists() else None,
                         "srt_en": f"{o.name}/subs_en.srt" if (o / "subs_en.srt").exists() else None,
                         "thumb": f"{o.name}/thumb.jpg" if (o / "thumb.jpg").exists() else None,
