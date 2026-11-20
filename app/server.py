@@ -735,6 +735,64 @@ def episode_delete(name, ep):
     return ok()
 
 
+@app.post("/api/projects/<name>/rename")
+def project_rename(name):
+    """เปลี่ยนชื่อเรื่อง (ชื่อโฟลเดอร์ใน Drive + project.json)"""
+    new = core.safe_name((request.get_json(force=True) or {}).get("name"))
+    if not new:
+        raise ValueError("ชื่อเรื่องว่าง")
+    if jobs.has_pending(name):
+        raise ValueError("เรื่องนี้มีงานค้างอยู่ รอให้เสร็จก่อนค่อยเปลี่ยนชื่อ")
+    d = core.project_dir(name)
+    if not (d / "project.json").exists():
+        abort(404)
+    nd = core.project_dir(new)
+    if nd != d:
+        if nd.exists():
+            raise ValueError(f"มีเรื่องชื่อ “{new}” อยู่แล้ว")
+        d.rename(nd)
+    p = core.read_json(nd / "project.json", {})
+    p["name"] = new
+    core.write_json(nd / "project.json", p)
+    return ok({"name": new})
+
+
+@app.route("/api/projects/<name>/episodes/<int:ep>/caption", methods=["GET", "POST"])
+def ep_caption(name, ep):
+    """แคปชั่นโพสต์ TikTok/Reels ของตอนนี้ (AI ฟรี) · เก็บไว้ใน caption.txt · POST = คิดใหม่"""
+    d = core.ep_dir(name, ep)
+    f = d / "caption.txt"
+    if request.method == "GET" and f.exists():
+        return ok({"caption": f.read_text(encoding="utf-8")})
+    sc = core.read_json(d / "script.json", {}) or {}
+    lines = " ".join((x.get("narration") or "") for x in sc.get("scenes") or [])[:3000]
+    if not lines.strip():
+        raise ValueError("ตอนนี้ไม่มีบท คิดแคปชั่นไม่ได้")
+    s = core.load_settings()
+    msgs = [{"role": "system", "content":
+             "คุณคือแอดมินช่อง TikTok/Reels หนังสั้นแอนิเมชันไทย เขียนแคปชั่นโพสต์ที่คนอยากกดดูและกดติดตาม "
+             "รูปแบบ: บรรทัดแรกเป็นประโยคเปิดที่ชวนสงสัย (ไม่สปอยล์ตอนจบ) · บรรทัดที่สองสั้นๆ ชวนติดตามตอนต่อไป · "
+             "บรรทัดสุดท้ายแฮชแท็ก 5-8 อัน (ไทยผสมอังกฤษ เกี่ยวกับเรื่อง + #หนังสั้น #การ์ตูน #fyp) · "
+             "ภาษาเป็นกันเอง ไม่ยาวเกิน 300 ตัวอักษร ไม่ใช้อีโมจิเกิน 2 ตัว ตอบเฉพาะแคปชั่น"},
+            {"role": "user", "content": f"เรื่อง: {name} · EP {ep}: {sc.get('title') or ''}\nบท: {lines}"}]
+    from .pipeline import script_model
+    llm.set_tag("แคปชั่น")
+    text, _ = llm.chat(script_model(s), msgs, temperature=0.9, max_tokens=500)
+    text = text.strip().strip('"').strip()
+    f.write_text(text, encoding="utf-8")
+    return ok({"caption": text})
+
+
+@app.post("/api/skills/import")
+def skill_import():
+    """เพิ่มเทมเพลตจากไฟล์สกิล (.zip ที่มี SKILL.md · หรือ .md/.txt)"""
+    f = request.files.get("file")
+    if not f:
+        abort(400)
+    from . import engine_html
+    return ok(engine_html.import_skill(f))
+
+
 @app.delete("/api/projects/<name>")
 def project_delete(name):
     """ลบทั้งเรื่อง → ย้ายไป projects/_trash (กู้คืนได้จาก Drive)"""

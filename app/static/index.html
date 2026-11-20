@@ -76,6 +76,26 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .btn{border:none;border-radius:99px;padding:11px 18px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-family:Kanit;font-weight:500;font-size:15.5px;white-space:nowrap}
 .btn.dark{background:var(--ink);color:var(--paper)}
 .btn.dark:hover{background:#3b332b}
+.tdrop{display:flex;flex-direction:column;align-items:center;gap:4px;padding:22px;border:var(--bw,1px) dashed var(--k,var(--line));border-radius:12px;cursor:pointer;text-align:center;margin-bottom:12px}
+.tdrop:hover,.tdrop.over{background:var(--acc-soft)}
+.tdrop svg{width:26px;height:26px}
+.tor{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12.5px;margin:0 0 10px}
+.tor::before,.tor::after{content:"";flex:1;height:1px;background:var(--line)}
+.vbox{max-width:860px!important;padding:20px 22px!important}
+.vhead{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px}
+.vname{width:100%;border:var(--bw,1px) solid transparent;background:none;font-size:22px;font-weight:700;letter-spacing:-.4px;padding:2px 6px;margin-left:-7px;border-radius:8px;color:var(--ink);outline:none}
+.vname:hover{border-color:var(--line)}.vname:focus{border-color:var(--k,var(--ink));background:var(--paper)}
+.vgrid{display:grid;grid-template-columns:minmax(0,340px) 1fr;gap:22px;align-items:start}
+.vgrid #vBody video,.vgrid #vBody>div{width:100%;max-height:68vh;border-radius:12px;background:#000;display:block}
+.vside{display:flex;flex-direction:column;gap:10px;min-width:0}
+.vrow{display:flex;gap:8px;flex-wrap:wrap}
+.vrow .big{flex:1;justify-content:center;height:42px;font-size:14px;font-weight:600}
+.vlab{font-size:12px;color:var(--muted);font-weight:600;margin-top:6px}
+.vcap{min-height:130px;font-size:13.5px;line-height:1.6;resize:vertical}
+.vdanger{display:flex;gap:14px;margin-top:10px;padding-top:12px;border-top:1px solid var(--line)}
+.vdanger button{border:none;background:none;color:var(--err);font-size:12.5px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:0}
+.vdanger svg{width:14px;height:14px}
+@media (max-width:760px){.vgrid{grid-template-columns:1fr}.vgrid #vBody video{max-height:55vh}}
 .engbox{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:4px 0 12px;background:var(--soft)}
 .engbox .eh{display:flex;align-items:center;gap:8px;margin-bottom:6px}.engbox .eh .small{margin-left:auto}
 .engbox ol{margin:4px 0 10px;padding-left:20px;line-height:1.7}
@@ -482,7 +502,7 @@ html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
   <div id="demoBar"></div>
   <div class="head">
     <div><h1>เทมเพลต</h1><p>เลือกสไตล์ แล้ววางบทหรือพิมพ์ไอเดียในแถบด้านล่าง</p></div>
-    <button class="btn dark" onclick="editTemplate()"><svg class="i"><use href="#i-plus"/></svg>สร้างเทมเพลต</button>
+    <button class="btn dark" onclick="editTemplate()"><svg class="i"><use href="#i-plus"/></svg>เพิ่มเทมเพลต</button>
   </div>
   <div class="search"><svg class="i"><use href="#i-search"/></svg><input id="q" placeholder="ค้นหาเทมเพลต"></div>
   <div class="packs" id="packs"></div>
@@ -545,12 +565,11 @@ html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
 
 <!-- เทมเพลต -->
 <div class="modal" id="mTpl"><div class="mbox">
-  <h2 id="tplTitle">สร้างเทมเพลต</h2>
+  <h2 id="tplTitle">เพิ่มเทมเพลต</h2>
+  <label class="tdrop" id="tDrop"><input type="file" accept=".zip,.skill,.md,.txt" hidden onchange="importSkill(this)">
+    <svg class="i"><use href="#i-clip"/></svg><b>เลือกไฟล์สกิล</b><span class="small">.zip ทั้งโฟลเดอร์ (มี SKILL.md) หรือ .md · ลากมาวางได้</span></label>
+  <div class="tor" id="tOr"><span>หรือวางเนื้อหาสกิลเอง</span></div>
   <label class="f"><span>ชื่อเทมเพลต</span><input class="in" id="tName" placeholder="เช่น อนิเมะผจญภัย"></label>
-  <div class="two">
-    <label class="f"><span>เสียงพากย์ของเทมเพลต (ใช้ทุก EP)</span><select class="in" id="tVoice"></select></label>
-    <label class="f"><span>ซับของเทมเพลต (ใช้ทุก EP)</span><select class="in" id="tSub"><option value="th">ซับไทย</option><option value="en">ซับอังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label>
-  </div>
   <div id="tStyleBox">
     <span class="swl" id="tStyleOn" onclick="this.classList.toggle('on'); tStyleUI()" style="margin:0 0 10px -5px"><span class="sw"><i></i></span>เพิ่มองค์ประกอบภาพของระบบ (ปิด = ใช้ตามสกิล/บทอย่างเดียว)</span>
     <div id="tStyleWrap" style="display:none">
@@ -661,10 +680,23 @@ html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
 </div></div>
 
 <!-- ดูคลิป -->
-<div class="modal" id="mVid"><div class="mbox" style="max-width:480px">
-  <h2 id="vTitle" style="font-size:19px"></h2>
-  <div id="vBody"></div>
-  <div class="mfoot" id="vActs" style="justify-content:center"></div>
+<div class="modal" id="mVid"><div class="mbox vbox">
+  <div class="vhead">
+    <div style="flex:1;min-width:0"><input id="vName" class="vname" aria-label="ชื่อเรื่อง" title="แก้ชื่อเรื่อง แล้วกด Enter" onkeydown="if(event.key==='Enter')this.blur()" onblur="renameStory()"><div class="small" id="vSub"></div></div>
+    <button class="ib" aria-label="ปิด" onclick="closeM('mVid')"><svg class="i"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="vgrid">
+    <div id="vBody"></div>
+    <div class="vside">
+      <div class="vrow" id="vMain"></div>
+      <div class="vlab">แคปชั่นสำหรับโพสต์</div>
+      <textarea class="in vcap" id="vCap" placeholder="กำลังคิดแคปชั่น…"></textarea>
+      <div class="vrow"><button class="sb" onclick="copyText($('#vCap').value)"><svg class="i"><use href="#i-copy"/></svg>คัดลอก</button><button class="sb" id="vCapRe" onclick="loadCaption(true)"><svg class="i"><use href="#i-spark"/></svg>คิดใหม่</button></div>
+      <div class="vlab">ไฟล์และบท</div>
+      <div class="vrow" id="vActs"></div>
+      <div class="vdanger" id="vDanger"></div>
+    </div>
+  </div>
 </div></div>
 
 <div id="mLogin"><form id="lgForm" autocomplete="on">
@@ -847,7 +879,7 @@ function renderGrid() {
       groups[c].slice(0, 5).map(cardHtml).join("")).join("");
     return;
   }
-  $("#grid").innerHTML = list.map(cardHtml).join("") || `<div class="empty">${T.length ? "ไม่พบเทมเพลตที่ค้นหา" : "ยังไม่มีเทมเพลต กด “สร้างเทมเพลต” แล้ววางสกิลของคุณ"}</div>`;
+  $("#grid").innerHTML = list.map(cardHtml).join("") || `<div class="empty">${T.length ? "ไม่พบเทมเพลตที่ค้นหา" : "ยังไม่มีเทมเพลต กด “เพิ่มเทมเพลต” แล้วเลือกไฟล์สกิลของคุณ"}</div>`;
 }
 $("#q").oninput = renderGrid;
 function useTemplate(id) {
@@ -882,8 +914,7 @@ $("#tStyle").oninput = () => tStyleUI();
 function tplForm(t) {
   const o = (t && t.options) || {};
   $("#tName").value = t ? t.name : ""; $("#tContent").value = t ? t.content || "" : "";
-  $("#tVoice").innerHTML = voiceOpts(o.voice || "", "เสียงหลักของระบบ");
-  $("#tSub").value = o.sub_lang || "th";
+  $("#tDrop").style.display = $("#tOr").style.display = t ? "none" : "";   // เพิ่มใหม่: เลือกไฟล์สกิลได้ · เสียง/ซับเลือกตอนใช้งาน
   const eng = !!(t && t.engine);
   $("#tStyleBox").style.display = eng ? "none" : "";
   renderEngBox(t);
@@ -908,6 +939,16 @@ function renderEngBox(t) {
        <li>ได้ <b>engine.zip</b> + บท EP 1 → อัปโหลด zip ที่นี่</li><li>วางบท EP 1 ในแถบสร้าง กด Create · ตอนต่อไปกดทำต่อได้อัตโนมัติ</li></ol>
        <div class="ebtn"><button class="sb dark" onclick="copyEnginePrompt()">${ic("copy")}คัดลอกคำสั่ง Claude Code</button>
        <label class="sb">${ic("clip")}อัปโหลด engine.zip<input type="file" accept=".zip" hidden onchange="uploadEngine(this)"></label></div>`;
+}
+async function importSkill(inp) {
+  const f = inp.files ? inp.files[0] : inp; if (inp.value !== undefined) inp.value = ""; if (!f) return;
+  toast("กำลังเพิ่มเทมเพลต…");
+  const fd = new FormData(); fd.append("file", f);
+  const r = await fetch("/api/skills/import", {method: "POST", body: fd, credentials: "same-origin"});
+  const j = await r.json().catch(() => ({ok: false, error: "HTTP " + r.status}));
+  if (!j.ok) return toast(j.error || "เพิ่มเทมเพลตไม่สำเร็จ", true);
+  closeM("mTpl"); toast(`เพิ่มเทมเพลต “${j.data.name}” แล้ว`);
+  T = await api("GET", "/api/skills"); CAT = ""; renderGrid();
 }
 async function copyEnginePrompt() {
   const r = await call(() => api("POST", `/api/skills/${enc(editingId)}/engine-prompt`, {idea: $("#idea").value.trim(), options: {duration: O.dur}}));
@@ -938,14 +979,14 @@ async function viewTemplate(id) {
   tplForm(t); openM("mTpl");
 }
 function editTemplate() {
-  editingId = null; editingTpl = null; $("#tplTitle").textContent = "สร้างเทมเพลต";
+  editingId = null; editingTpl = null; $("#tplTitle").textContent = "เพิ่มเทมเพลต";
   tplForm(null); openM("mTpl");
 }
 async function saveTemplate() {
   const old = (editingTpl && editingTpl.options) || {};
   const styleOn = $("#tStyleOn").classList.contains("on");
   const body = {id: editingId || undefined, is_new: !editingId, name: $("#tName").value.trim(), description: editingTpl?.description || "", content: $("#tContent").value,
-    options: {...old, voice: $("#tVoice").value, image_style: styleOn ? $("#tStyle").value.trim() : "", sub_lang: $("#tSub").value}};
+    options: {...old, image_style: styleOn ? $("#tStyle").value.trim() : ""}};
   if (await call(() => api("POST", "/api/skills", body))) { closeM("mTpl"); toast("บันทึกเทมเพลตแล้ว"); T = await api("GET", "/api/skills"); if (tplSel) tplSel = T.find(x => x.id === tplSel.id) || null; renderGrid(); renderComposer(); }
 }
 
@@ -1143,7 +1184,9 @@ const hasFiles = e => [...(e.dataTransfer?.types || [])].includes("Files");
 addEventListener("dragenter", e => { if (!hasFiles(e)) return; e.preventDefault(); dragN++; $("#dropZone").classList.add("on"); });
 addEventListener("dragover", e => { if (hasFiles(e)) e.preventDefault(); });
 addEventListener("dragleave", e => { if (!hasFiles(e)) return; if (--dragN <= 0) { dragN = 0; $("#dropZone").classList.remove("on"); } });
-addEventListener("drop", e => { if (!hasFiles(e)) return; e.preventDefault(); dragN = 0; $("#dropZone").classList.remove("on"); if ($("#mLogin").classList.contains("on")) return; loadFiles([...e.dataTransfer.files]); });
+addEventListener("drop", e => { if (!hasFiles(e)) return; e.preventDefault(); dragN = 0; $("#dropZone").classList.remove("on"); if ($("#mLogin").classList.contains("on")) return;
+  if ($("#mTpl").classList.contains("on") && !editingId) return importSkill(e.dataTransfer.files[0]);   // หน้าเพิ่มเทมเพลต: ไฟล์ที่วาง = สกิล
+  loadFiles([...e.dataTransfer.files]); });
 
 function showComposer() { if ($("#composer").classList.contains("min")) toggleComposer(); }
 $("#idea").onkeydown = e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) create(); };
@@ -1298,28 +1341,48 @@ function playClip(project, ep) {
   const o = OUTS.find(x => x.project === project && x.ep === ep); if (!o) return;
   vCur = o; vMuted = false;
   const src = `/media/${enc(project)}/${o.path}`;
-  $("#vTitle").textContent = `${project} · EP ${ep}${epTitle(o.title) ? " · " + epTitle(o.title) : ""}`;
+  $("#vName").value = project; $("#vSub").textContent = `EP ${ep}${epTitle(o.title) ? " · " + epTitle(o.title) : ""} · ${fmtDur(o.duration)}`;
+  $("#vCap").value = ""; loadCaption(false);
   $("#vBody").innerHTML = DEMO ? `<div style="aspect-ratio:9/16;max-height:62vh;margin:auto;border-radius:16px;background:linear-gradient(160deg,${TONES[hashN(project) % TONES.length]});display:grid;place-items:center;color:#fff">${ic("play")}</div>` : `<video id="vid" src="${src}" controls autoplay playsinline></video>`;
   const v = $("#vid");
   if (v) v.onvolumechange = () => { if (vMuted !== v.muted) { vMuted = v.muted; vidActs(); } };   // ปุ่มเสียงของตัวเล่น ↔ ปุ่มเสียงของเรา ให้ตรงกันเสมอ
   vidActs(); openM("mVid");
+}
+async function loadCaption(regen) {
+  const o = vCur; if (!o || DEMO) return;
+  const b = $("#vCapRe"); b.disabled = true; if (regen) $("#vCap").value = "";
+  $("#vCap").placeholder = "กำลังคิดแคปชั่น… (AI ฟรี)";
+  try {
+    const r = await api(regen ? "POST" : "GET", `/api/projects/${enc(o.project)}/episodes/${o.ep}/caption`);
+    if (vCur === o) $("#vCap").value = r.caption;
+  } catch (e) { $("#vCap").placeholder = "คิดแคปชั่นไม่สำเร็จ: " + e.message; }
+  b.disabled = false;
+}
+async function renameStory() {
+  const o = vCur, nn = $("#vName").value.trim();
+  if (!o || !nn || nn === o.project) { if (o) $("#vName").value = o.project; return; }
+  const r = await call(() => api("POST", `/api/projects/${enc(o.project)}/rename`, {name: nn}));
+  if (!r) { $("#vName").value = o.project; return; }
+  toast(`เปลี่ยนชื่อเป็น “${r.name}” แล้ว`);
+  OUTS.forEach(x => { if (x.project === o.project) x.project = r.name; });
+  $("#vName").value = r.name; refreshJobs();
+  const v = $("#vid"), t = v ? v.currentTime : 0;
+  playClip(r.name, o.ep); const v2 = $("#vid"); if (v2) v2.currentTime = t;
 }
 // ชื่อตอนที่ขึ้นต้นด้วย "EP1 ..." อยู่แล้ว → ตัดออก ไม่ให้ซ้ำกับ "EP 1"
 const epTitle = t => String(t || "").replace(/^\s*EP\s*\d+\s*[:：.\-·]?\s*/i, "").trim();
 function toggleMute() { vMuted = !vMuted; const v = $("#vid"); if (v) v.muted = vMuted; vidActs(); }
 function vidActs() {
   const o = vCur, src = `/media/${enc(o.project)}/${o.path}`;
+  $("#vMain").innerHTML = `
+    <a class="sb dark big" href="${src}?dl=1${vMuted ? "&mute=1" : ""}">${ic("down")}ดาวน์โหลด${vMuted ? " (ไม่มีเสียง)" : ""}</a>
+    ${isLatest(o) ? `<button class="sb acc big" onclick="nextEp(dq('${q(o.project)}'))">${ic("plus")}ทำ EP ${o.ep + 1} ต่อ</button>` : ""}`;
   $("#vActs").innerHTML = `
-    <button class="sb" onclick="toggleMute()">${vMuted ? ic("mute") + "เสียงปิด" : ic("vol") + "เสียงเปิด"}</button>
-    <a class="sb dark" href="${src}?dl=1${vMuted ? "&mute=1" : ""}">${ic("down")}ดาวน์โหลด${vMuted ? " (ไม่มีเสียง)" : ""}</a>
+    <button class="sb" onclick="openReview(dq('${q(o.project)}'),${o.ep})">${ic("pen")}บทพากย์</button>
     ${o.srt ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt}?dl=1">${ic("down")}ซับไทย</a>` : ""}
     ${o.srt_en ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt_en}?dl=1">${ic("down")}ซับ EN</a>` : ""}
-    <button class="sb" onclick="voiceSheetEp(dq('${q(o.project)}'), ${o.ep})">${ic("mic")}บทพากย์</button>
-    <button class="sb" onclick="openReview(dq('${q(o.project)}'),${o.ep})">${ic("pen")}บท</button>
-    ${isLatest(o) ? `<button class="sb acc" onclick="nextEp(dq('${q(o.project)}'))">${ic("plus")}ทำ EP ${o.ep + 1} ต่อ</button>` : ""}
-    <span style="flex-basis:100%;height:0"></span>
-    <button class="sb red" onclick="delClip(dq('${q(o.project)}'),${o.ep})">${ic("trash")}ลบคลิปนี้</button>
-    <button class="sb red" onclick="delProject(dq('${q(o.project)}'))">${ic("trash")}ลบทั้งเรื่อง</button>`;
+    <button class="sb" onclick="toggleMute()">${vMuted ? ic("mute") + "เสียงปิด" : ic("vol") + "เสียงเปิด"}</button>`;
+  $("#vDanger").innerHTML = `<button onclick="delClip(dq('${q(o.project)}'),${o.ep})">${ic("trash")}ลบคลิปนี้</button><button onclick="delProject(dq('${q(o.project)}'))">${ic("trash")}ลบทั้งเรื่อง</button>`;
 }
 async function stopJob(id) { if (!ask("หยุดงานนี้? (ของที่ทำแล้วไม่หาย กดทำต่อได้)")) return; await call(() => api("POST", `/api/jobs/${id}/stop`)); refreshJobs(); }
 async function resumeJob(id) { if (await call(() => api("POST", `/api/jobs/${id}/resume`))) { toast("เข้าคิวแล้ว"); refreshJobs(); } }

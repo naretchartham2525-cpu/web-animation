@@ -140,3 +140,55 @@ def remove(skill):
         shutil.rmtree(d.parent / "engine.old", ignore_errors=True)
         d.rename(d.parent / "engine.old")
     core.reload_skills()
+
+
+def import_skill(fileobj):
+    """เพิ่มเทมเพลตจากไฟล์: .md/.txt = เนื้อหาสกิล · .zip = โฟลเดอร์สกิลทั้งชุด (ต้องมี SKILL.md)"""
+    name = Path(fileobj.filename or "skill").name
+    tmp = core.SKILLS_DIR / f".import-{int(__import__('time').time())}"
+    tmp.mkdir(parents=True, exist_ok=True)
+    try:
+        src = tmp / name
+        fileobj.save(src)
+        if src.stat().st_size > MAX_ZIP:
+            raise ValueError("ไฟล์ใหญ่เกิน 80 MB")
+        if src.suffix.lower() in (".md", ".txt"):
+            text = src.read_text(encoding="utf-8", errors="replace")
+            meta, body = core._parse_frontmatter(text)
+            title = meta.get("name") or Path(name).stem
+            sk = core.save_skill({"name": title, "description": meta.get("description", ""), "content": body.strip() or text, "is_new": True})
+            return {"id": sk["id"], "name": sk["name"]}
+        if src.suffix.lower() not in (".zip", ".skill"):
+            raise ValueError("รองรับไฟล์ .zip .skill .md .txt")
+        with zipfile.ZipFile(src) as z:
+            names = [n for n in z.namelist() if not n.endswith("/") and "__MACOSX" not in n and not n.split("/")[-1].startswith("._")]
+            mk = sorted((n for n in names if n.split("/")[-1].upper() == "SKILL.MD"), key=lambda n: n.count("/"))
+            if not mk:
+                raise ValueError("ใน zip ไม่มี SKILL.md")
+            base = mk[0][: -len("SKILL.md")]
+            meta, _ = core._parse_frontmatter(z.read(mk[0]).decode("utf-8", "replace"))
+            sid = core.skill_slug(meta.get("name") or base.strip("/").split("/")[-1] or Path(name).stem)
+            dest = core.SKILLS_DIR / sid
+            if dest.exists():
+                sid = f"{sid}-{int(__import__('time').time()) % 100000}"
+                dest = core.SKILLS_DIR / sid
+            total = 0
+            for n in names:
+                if not n.startswith(base):
+                    continue
+                rel = Path(n[len(base):])
+                if rel.is_absolute() or ".." in rel.parts:
+                    raise ValueError(f"ชื่อไฟล์ใน zip ไม่ปลอดภัย: {n}")
+                info = z.getinfo(n)
+                total += info.file_size
+                if total > 300 * 1024 * 1024:
+                    raise ValueError("ไฟล์ใน zip รวมกันใหญ่เกินไป")
+                out = dest / rel
+                out.parent.mkdir(parents=True, exist_ok=True)
+                with z.open(info) as a, open(out, "wb") as b:
+                    shutil.copyfileobj(a, b)
+        core.reload_skills()
+        sk = core.get_skill(sid)
+        return {"id": sid, "name": sk["name"] if sk else sid}
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
