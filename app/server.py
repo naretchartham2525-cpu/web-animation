@@ -45,13 +45,6 @@ def _auth():
 
 
 # ---------------- หน้าเว็บ ----------------
-@app.get("/mascot/<path:f>")
-def mascot(f):
-    r = send_from_directory(STATIC / "mascot", f)
-    r.headers["Cache-Control"] = "public, max-age=86400"
-    return r
-
-
 @app.get("/")
 def index():
     return send_from_directory(STATIC, "index.html")
@@ -869,27 +862,41 @@ def ready():
 
 
 def _auto_covers():
-    """เทมเพลตที่ยังไม่มีภาพปก → สร้างภาพตัวอย่างด้วย AI ฟรี ตามลุคของเทมเพลต (ทีละภาพ ระหว่างหน้ารอโหลด)"""
+    """เทมเพลตที่ยังไม่มีภาพปก → สร้างภาพตัวอย่างด้วย AI ฟรี ตามลุคของเทมเพลต (ทีละภาพ ระหว่างหน้ารอโหลด)
+    ภาพไหนไม่สำเร็จ (เว็บฟรีติดคิว/ล่ม) → วนกลับมาทำใหม่อีก 2 รอบในการเปิดเครื่องครั้งเดียวกัน"""
     todo = [s for s in core.list_skills() if not s.get("cover")]
     READY.update(covers_total=len(todo), covers_done=0, covers_failed=0, done=not todo)
-    for sk in todo:
-        READY["current"] = sk["name"]
-        while jobs and jobs.busy():
-            time.sleep(30)
-        o = sk.get("options") or {}
-        look = str(o.get("look") or (o.get("image_style") if o.get("image_style") not in (None, "", "none") else "") or "").strip()
-        prompt = (f"{look}. " if look else f"{sk['name']}, {sk.get('description', '')}. ") + \
-            "Key art poster for a short vertical film, one striking subject, strong composition, no text, no letters, no watermark"
-        try:
-            llm.set_tag("ภาพปกเทมเพลต")
-            llm.free_image(prompt, str(Path(sk["dir"]) / "cover.jpg"), 768, 1024, seed=hash(sk["id"]) % 10000, retries=2)
-            core.reload_skills()
-            print("🖼 ภาพปกเทมเพลต:", sk["id"], flush=True)
-        except Exception as e:  # noqa: BLE001  ไม่สำเร็จ → ลองใหม่รอบเปิดเครื่องถัดไป
-            READY["covers_failed"] += 1
-            print("ภาพปกไม่สำเร็จ:", sk["id"], str(e)[:120], flush=True)
-        READY["covers_done"] += 1
-    READY.update(current="", done=True)
+    for rnd in range(3):
+        failed = []
+        for sk in todo:
+            READY["current"] = sk["name"]
+            while jobs and jobs.busy():
+                time.sleep(30)
+            o = sk.get("options") or {}
+            look = str(o.get("look") or (o.get("image_style") if o.get("image_style") not in (None, "", "none") else "") or "").strip()
+            prompt = (f"{look}. " if look else f"{sk['name']}, {sk.get('description', '')}. ") + \
+                "Key art poster for a short vertical film, one striking subject, strong composition, no text, no letters, no watermark"
+            try:
+                llm.set_tag("ภาพปกเทมเพลต")
+                llm.free_image(prompt, str(Path(sk["dir"]) / "cover.jpg"), 768, 1024, seed=hash(sk["id"]) % 10000 + rnd, retries=2)
+                core.reload_skills()
+                print("🖼 ภาพปกเทมเพลต:", sk["id"], flush=True)
+                if rnd:
+                    READY["covers_failed"] -= 1
+            except Exception as e:  # noqa: BLE001
+                failed.append(sk)
+                if not rnd:
+                    READY["covers_failed"] += 1
+                print(f"ภาพปกไม่สำเร็จ (รอบ {rnd + 1}):", sk["id"], str(e)[:120], flush=True)
+            if not rnd:
+                READY["covers_done"] += 1
+        if rnd == 0:
+            READY.update(current="", done=True)       # รอบแรกจบ = หน้ารอโหลดเข้าเว็บได้ ที่เหลือทำต่อเบื้องหลัง
+        if not failed:
+            break
+        todo = failed
+        time.sleep(60)
+    READY["current"] = ""
 
 
 def main():
