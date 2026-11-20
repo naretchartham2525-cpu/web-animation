@@ -92,9 +92,30 @@ def skill_cover(sid):
     if not sk or not sk.get("cover"):
         abort(404)
     if sk["cover"] == "sample":
-        t = core.sample_cover(sid)
-        return send_file(t, max_age=60) if t else abort(404)
-    return send_file(core.SKILLS_DIR / sid / sk["cover"], max_age=3600)
+        src, age = core.sample_cover(sid), 60
+    else:
+        src, age = core.SKILLS_DIR / sid / sk["cover"], 3600
+    if not src:
+        abort(404)
+    w = request.args.get("w", type=int)
+    if w:                                   # ภาพย่อสำหรับการ์ด: เล็ก โหลดเร็ว เก็บแคชบนเครื่อง (ไม่อ่าน Drive ซ้ำ)
+        src = _thumb(Path(src), max(120, min(w, 800)))
+    return send_file(src, max_age=age)
+
+
+def _thumb(src, w):
+    try:
+        st = src.stat()
+        out = core.WORK_DIR / "thumbs" / f"{hashlib.md5(str(src).encode()).hexdigest()[:12]}-{int(st.st_mtime)}-{w}.jpg"
+        if not out.exists():
+            from PIL import Image
+            out.parent.mkdir(parents=True, exist_ok=True)
+            im = Image.open(src).convert("RGB")
+            im.thumbnail((w, w * 2))
+            im.save(out, "JPEG", quality=82, optimize=True, progressive=True)
+        return out
+    except Exception:  # noqa: BLE001  ย่อไม่ได้ → ส่งภาพเต็ม
+        return src
 
 
 @app.post("/api/skills/<sid>/engine")
