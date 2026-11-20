@@ -150,6 +150,10 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .job .reel svg{width:15px;height:15px;color:var(--run)}
 .go .reel svg{width:18px;height:18px}
 /* ---- 26 · เอฟเฟกต์ตอนวางเมาส์ ---- */
+.cover .cvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;opacity:0;transition:opacity .4s}
+.cover .cvid.on{opacity:1}
+.cover .ttl,.cover .meta{z-index:2}
+.cover .vshade{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.55))}
 .cover .bgi{position:absolute;inset:0;background:inherit;background-size:cover;background-position:center;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
 .card:hover .cover .bgi{transform:scale(1.07)}
 .clip .th svg{transition:transform .3s}
@@ -978,7 +982,12 @@ const coverIO = "IntersectionObserver" in window ? new IntersectionObserver(es =
   if (!e.isIntersecting) return; const el = e.target, u = el.dataset.bg; coverIO.unobserve(el); delete el.dataset.bg;
   const im = new Image(); im.onload = () => { COVER_OK.add(u); el.style.backgroundImage = `${SHADE},url('${u}')`; }; im.src = u;
 }), {rootMargin: "600px 0px"}) : null;
-function lazyCovers() { document.querySelectorAll("#grid .bgi[data-bg]").forEach(el => coverIO ? coverIO.observe(el) : (el.style.backgroundImage = `${SHADE},url('${el.dataset.bg}')`)); }
+const vidIO = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => {   // คลิปบนการ์ด: เล่นเฉพาะตอนเห็น
+  const v = e.target;
+  if (e.isIntersecting) { if (!v.src) { v.src = v.dataset.src; v.addEventListener("playing", () => v.classList.add("on"), {once: true}); } v.play().catch(() => {}); } else v.pause();
+}), {rootMargin: "100px 0px"}) : null;
+function lazyCovers() {
+  document.querySelectorAll("#grid video.cvid").forEach(v => vidIO ? vidIO.observe(v) : (v.src = v.dataset.src, v.autoplay = true)); document.querySelectorAll("#grid .bgi[data-bg]").forEach(el => coverIO ? coverIO.observe(el) : (el.style.backgroundImage = `${SHADE},url('${el.dataset.bg}')`)); }
 let CAT = "";   // "" ทั้งหมด · "mine" ของฉัน · ชื่อหมวด
 const catsOf = t => [...(t.pack ? [] : ["mine"]), ...(t.category ? [t.category] : t.pack ? ["อื่นๆ"] : [])];   // ของฉัน + หมวดของมัน (อยู่ได้ทั้งสองที่)
 function renderPacks() {
@@ -991,7 +1000,7 @@ function cardHtml(t) {
     const o = t.options || {}, sel = tplSel?.id === t.id;
     return `<div class="card ${sel ? "sel" : ""}">
       <div class="cover" onclick="viewTemplate(dq('${q(t.id)}'))">
-        <div class="bgi" ${coverAttrs(t)}></div>
+        <div class="bgi" ${coverAttrs(t)}></div>${t.card_v && !DEMO ? `<video class="cvid" muted loop playsinline preload="none" data-src="/skill-sample/${enc(t.id)}?card=1&v=${t.card_v}"></video><div class="vshade"></div>` : ""}
         <div class="meta">${t.engine || t.html_engine ? `<span class="tagx engtag">${ic("sliders")}มีเอนจิน</span>` : ""}${o.duration ? `<span class="tagx">${ic("clock")}${esc(fmtSec(+o.duration))}</span>` : ""}${o.voice ? `<span class="tagx">${ic("mic")}${esc(voiceName(o.voice).split(" ·")[0])}</span>` : ""}</div>
         <div class="ttl">${esc(t.name)}</div></div>
       <div class="cfoot"><div class="d" title="${esc(t.description)}">${esc(t.description || "")}</div>
@@ -1157,7 +1166,13 @@ async function saveTemplate() {
     if (PEND.media) await upForm(`/api/skills/${enc(id)}/media`, PEND.media, p => busy(p < 100 ? `กำลังอัป${isVid(PEND.media) ? "คลิป" : "รูป"} ${p}%` : "กำลังทำรูปการ์ด…"));
   } catch (e) { btn.disabled = false; btn.innerHTML = btnHtml; return toast(e.message, true); }
   btn.disabled = false; btn.innerHTML = btnHtml;
+  const waitVid = PEND.media && isVid(PEND.media);
   closeM("mTpl"); PEND = {skill: null, media: null};
+  if (waitVid) (async () => {   // คลิปแปลงเบื้องหลัง → เสร็จเมื่อไรการ์ดเริ่มเล่นเอง
+    for (let i = 0; i < 60; i++) { await new Promise(r => setTimeout(r, 4000));
+      const t = await api("GET", "/api/skills/" + enc(id)).catch(() => null);
+      if (t && t.card_v) { T = await api("GET", "/api/skills"); renderGrid(); return; } }
+  })();
   T = await api("GET", "/api/skills"); if (tplSel) tplSel = T.find(x => x.id === tplSel.id) || null;
   [...COVER_OK].filter(u => u.includes(`/skill-cover/${enc(id)}?`)).forEach(u => COVER_OK.delete(u));
   renderGrid(); renderComposer();

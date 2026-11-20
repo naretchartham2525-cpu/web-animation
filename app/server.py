@@ -135,7 +135,7 @@ def skill_media(sid):
 
 @app.get("/skill-sample/<sid>")
 def skill_sample(sid):
-    f = core.SKILLS_DIR / sid / "sample.mp4"
+    f = core.SKILLS_DIR / sid / ("card.mp4" if request.args.get("card") else "sample.mp4")
     if not core.get_skill(sid) or not f.exists():
         abort(404)
     return send_file(f, max_age=300, conditional=True)

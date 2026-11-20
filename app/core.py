@@ -197,6 +197,7 @@ def _skill_from(p):
         "cover": cover,
         "cover_v": int((p / cover).stat().st_mtime) if cover and cover != "sample" else 0,   # เปลี่ยนรูปการ์ด → URL ใหม่ (ไม่ติดแคชเก่า)
         "sample": p.is_dir() and (p / "sample.mp4").exists(),   # คลิปตัวอย่างที่ผู้ใช้ใส่เอง (หน้าเพิ่ม/แก้เทมเพลต)
+        "card_v": int((p / "card.mp4").stat().st_mtime) if p.is_dir() and (p / "card.mp4").exists() else 0,   # คลิปเล่นวนบนการ์ด
         "options": opts,
         "file": str(f.relative_to(ROOT)),
         "chars": len(body),
@@ -289,9 +290,9 @@ def save_skill_media(sid, fileobj):
     if not d.is_dir():
         raise ValueError("ไม่พบเทมเพลต")
     ext = Path(fileobj.filename or "").suffix.lower()
-    if ext in IMAGE_EXT:
-        for c in d.glob("cover.*"):
-            c.unlink()
+    if ext in IMAGE_EXT:                      # เปลี่ยนเป็นรูป → การ์ดเป็นภาพนิ่ง (เลิกเล่นคลิปบนการ์ด · คลิปตัวอย่างเดิมไม่ใช้แล้ว)
+        for c in [*d.glob("cover.*"), d / "card.mp4", d / "sample.mp4"]:
+            c.unlink(missing_ok=True)
         fileobj.save(d / f"cover{ext}")
     elif ext in VIDEO_EXT:
         WORK_DIR.mkdir(parents=True, exist_ok=True)
@@ -313,9 +314,14 @@ def save_skill_media(sid, fileobj):
             ok2, _ = _ff(["-i", str(tmp), "-map", "0:v:0", "-map", "0:a:0?", "-c:v", "libx264", "-preset", "veryfast", "-crf", "26",
                           "-vf", "scale=w='min(720,iw)':h=-2", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "96k",
                           "-movflags", "+faststart", str(out)], 900)
+            card = WORK_DIR / f"card-{sid}-out.mp4"   # คลิปสั้นเล็กๆ ไว้เล่นวนบนการ์ด (ไม่มีเสียง · 6 วิ · กว้าง 360)
+            ok3, _ = _ff(["-i", str(tmp), "-t", "6", "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "30",
+                          "-vf", "scale=w='min(360,iw)':h=-2,fps=24", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(card)], 600)
             if ok2 and out.exists():
                 shutil.move(str(out), str(d / "sample.mp4"))
-                reload_skills()
+            if ok3 and card.exists():
+                shutil.move(str(card), str(d / "card.mp4"))
+            reload_skills()
             tmp.unlink(missing_ok=True)
         threading.Thread(target=convert, daemon=True).start()
     else:
