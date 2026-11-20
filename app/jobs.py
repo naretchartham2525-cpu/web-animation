@@ -308,7 +308,6 @@ class JobManager:
                     self._log(job, f"เริ่ม EP {ep}")
                     llm.set_tag(f"{job['project']} · EP {ep}")
                     pipeline.run_episode(ctx, job["project"], ep)
-                    core.drop_old_versions(job["project"], ep)   # ทำใหม่สำเร็จ → เวอร์ชันเก่าของตอนนี้ไม่ต้องเก็บ
                     job["done"] += 1
                     job["progress"] = 100
                 job.update(status="done", stage=f"เสร็จ EP {job['episode']}")

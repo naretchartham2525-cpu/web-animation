@@ -723,6 +723,7 @@ html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
       <div class="vrow"><button class="sb" onclick="copyText($('#vCap').value)"><svg class="i"><use href="#i-copy"/></svg>คัดลอก</button><button class="sb" id="vCapRe" onclick="loadCaption(true)"><svg class="i"><use href="#i-spark"/></svg>คิดใหม่</button></div>
       <div class="vlab">ไฟล์และบท</div>
       <div class="vrow" id="vActs"></div>
+      <div id="vOld"></div>
       <div class="vdanger" id="vDanger"></div>
     </div>
   </div>
@@ -1418,6 +1419,12 @@ function playClip(project, ep) {
   if (v) v.onvolumechange = () => { if (vMuted !== v.muted) { vMuted = v.muted; vidActs(); } };   // ปุ่มเสียงของตัวเล่น ↔ ปุ่มเสียงของเรา ให้ตรงกันเสมอ
   vidActs(); openM("mVid");
 }
+function playOld(path) { const v = $("#vid"); if (v) { v.src = `/media/${enc(vCur.project)}/${path}`; v.play().catch(() => {}); toast("กำลังเล่นเวอร์ชันเก่า · เปิดคลิปใหม่เพื่อกลับเวอร์ชันล่าสุด"); } }
+async function delOld(id) {
+  if (!ask("ลบเวอร์ชันเก่านี้ถาวร?")) return;
+  const r = await call(() => api("POST", "/api/storage/delete", {ids: [id]})); if (!r) return;
+  vCur.old = (vCur.old || []).filter(v => v.id !== id); vidActs(); toast("ลบเวอร์ชันเก่าแล้ว");
+}
 async function loadCaption(regen) {
   const o = vCur; if (!o || DEMO) return;
   const b = $("#vCapRe"); b.disabled = true; if (regen) $("#vCap").value = "";
@@ -1453,6 +1460,11 @@ function vidActs() {
     ${o.srt ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt}?dl=1">${ic("down")}ซับไทย</a>` : ""}
     ${o.srt_en ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt_en}?dl=1">${ic("down")}ซับ EN</a>` : ""}
     <button class="sb" onclick="toggleMute()">${vMuted ? ic("mute") + "เสียงปิด" : ic("vol") + "เสียงเปิด"}</button>`;
+  const old = o.old || [];
+  $("#vOld").innerHTML = old.length ? `<div class="vlab">เวอร์ชันเก่าของตอนนี้ (${old.length})</div>` + old.map(v => `<div class="donel" style="cursor:default">
+      <span>${new Date(v.mtime * 1000).toLocaleString("th-TH", {dateStyle: "medium", timeStyle: "short"})}</span><span class="small">${fmtMB(v.size)}</span>
+      ${v.path ? `<button class="sb" onclick="playOld(dq('${q(v.path)}'))">${ic("play")}ดู</button><a class="sb" href="/media/${enc(o.project)}/${v.path}?dl=1">${ic("down")}</a>` : `<span class="small">ไม่มีวิดีโอ</span>`}
+      <button class="sb red" onclick="delOld(dq('${q(v.id)}'))">${ic("trash")}</button></div>`).join("") : "";
   $("#vDanger").innerHTML = `<button onclick="delClip(dq('${q(o.project)}'),${o.ep})">${ic("trash")}ลบคลิปนี้</button><button onclick="delProject(dq('${q(o.project)}'))">${ic("trash")}ลบทั้งเรื่อง</button>`;
 }
 async function stopJob(id) { if (!ask("หยุดงานนี้? (ของที่ทำแล้วไม่หาย กดทำต่อได้)")) return; await call(() => api("POST", `/api/jobs/${id}/stop`)); refreshJobs(); }
@@ -1465,7 +1477,7 @@ const fmtMB = b => b >= 1e9 ? (b / 1e9).toFixed(2) + " GB" : b >= 1e6 ? (b / 1e6
 async function openStore() {
   openM("mStore"); $("#stBody").innerHTML = `<div class="small">กำลังตรวจไฟล์…</div>`;
   STORE = await call(() => api("GET", "/api/storage")) || [];
-  const groups = [["story", "เรื่องที่ยังไม่มีคลิปเสร็จ"], ["ep", "ตอนที่ทำไม่สำเร็จ"]];
+  const groups = [["story", "เรื่องที่ยังไม่มีคลิปเสร็จ"], ["ep", "ตอนที่ทำไม่สำเร็จ"], ["old", "คลิปเวอร์ชันเก่า"]];
   $("#stBody").innerHTML = STORE.length ? groups.map(([k, t]) => { const xs = STORE.filter(i => i.kind === k); return xs.length ? `<div class="vlab" style="margin:12px 0 6px">${t}</div>` +
       xs.map(i => `<label class="donel" style="cursor:pointer"><input type="checkbox" value="${esc(i.id)}" onchange="stSum()"><span>${esc(i.label)}</span><span class="small">${fmtMB(i.size)} · ${new Date(i.mtime * 1000).toLocaleDateString("th-TH")}</span></label>`).join("") : ""; }).join("")
     : `<div class="small" style="padding:20px 0;text-align:center">${ic("check")} ไม่มีไฟล์ค้าง ระบบสะอาดแล้ว</div>`;

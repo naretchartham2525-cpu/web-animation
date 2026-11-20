@@ -332,11 +332,6 @@ def _size(p):
     return sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
 
 
-def drop_old_versions(name, ep):
-    for o in project_dir(name).glob(f"_old_ep{int(ep):02d}_*"):
-        shutil.rmtree(o, ignore_errors=True)
-
-
 def purge_legacy_trash():
     """ของที่ผู้ใช้สั่งลบไปแล้วตอนระบบยังย้ายไปถังขยะ (_trash) → ลบจริงตามที่สั่ง"""
     for t in [PROJECTS_DIR / "_trash", *PROJECTS_DIR.glob("*/_trash")]:
@@ -361,12 +356,14 @@ def storage_report(busy=lambda n: False):
             if busy(p["name"]):
                 continue
             eps = list_episodes(p["name"])
-            if not any(e.get("final") for e in eps):
+            if not any(e.get("final") for e in eps) and not any(d.glob("_old_ep*")):
                 add("story", d, p["name"], "เรื่องที่ยังไม่มีคลิปเสร็จ (ทำแล้วพังหรือยังไม่ได้ทำ)")
                 continue
             for e in eps:
                 if not e.get("final"):
                     add("ep", ep_dir(p["name"], e["ep"]), f"{p['name']} · EP {e['ep']}", "ตอนที่ทำไม่สำเร็จ")
+            for o in sorted(d.glob("_old_ep*")):
+                add("old", o, f"{p['name']} · EP {int(o.name[7:9] or 0)} · เวอร์ชันเก่า", "คลิปเวอร์ชันก่อนทำใหม่ทับ")
     return items
 
 
@@ -386,8 +383,6 @@ def storage_delete(ids, busy=lambda n: False):
             shutil.rmtree(p, ignore_errors=True)
         else:
             p.unlink(missing_ok=True)
-        if it["kind"] == "ep":   # ลบตอนที่พัง = ลบเวอร์ชันเก่าของตอนนั้นด้วย
-            drop_old_versions(it["label"].rsplit(" · EP ", 1)[0], it["label"].rsplit(" · EP ", 1)[1])
         done.append(i)
         if it["kind"] == "story":
             stories.append(it["label"])
@@ -546,6 +541,17 @@ def next_episode(name):
     return n
 
 
+def old_versions(name, ep):
+    """คลิปเวอร์ชันเก่าของตอนนี้ (เก็บไว้ตอนสั่งทำใหม่ทับ) · ผู้ใช้ดู/ลบเองในคลังคลิป"""
+    d = project_dir(name)
+    out = []
+    for o in sorted(d.glob(f"_old_ep{int(ep):02d}_*"), reverse=True):
+        f = o / "final.mp4"
+        out.append({"id": str(o.relative_to(ROOT)), "path": f"{o.name}/final.mp4" if f.exists() else "",
+                    "mtime": o.stat().st_mtime, "size": _size(o)})
+    return out
+
+
 def list_outputs():
     out = []
     for p in list_projects():
@@ -555,7 +561,7 @@ def list_outputs():
                 out.append({
                     "project": p["name"], "ep": e["ep"], "title": e["title"],
                     "path": e["final"], "srt": e.get("srt"), "srt_en": e.get("srt_en"), "thumb": e.get("thumb"), "duration": e.get("duration"),
-                    "mtime": f.stat().st_mtime, "size": f.stat().st_size,
+                    "mtime": f.stat().st_mtime, "size": f.stat().st_size, "old": old_versions(p["name"], e["ep"]),
                 })
     out.sort(key=lambda x: x["mtime"], reverse=True)
     return out

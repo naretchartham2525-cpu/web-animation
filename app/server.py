@@ -729,9 +729,7 @@ def episode_delete(name, ep):
     d = core.ep_dir(name, ep)
     if not d.exists():
         abort(404)
-    shutil.rmtree(d, ignore_errors=True)
-    for o in core.project_dir(name).glob(f"_old_ep{ep:02d}_*"):
-        shutil.rmtree(o, ignore_errors=True)
+    shutil.rmtree(d, ignore_errors=True)   # เวอร์ชันเก่าของตอนนี้ไม่ลบ (ผู้ใช้ดู/ลบเองในคลังคลิป)
     return ok()
 
 
