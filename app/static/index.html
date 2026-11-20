@@ -448,8 +448,9 @@ html[data-mode=dark] .card:hover{box-shadow:0 16px 30px -18px rgba(0,0,0,.8)}
 #splash,html[data-mode=dark] #splash{background:var(--bg)}
 #splash .in2{gap:0}
 #splash .sbar,html[data-mode=dark] #splash .sbar{width:220px;height:4px;border:none;border-radius:9px;background:color-mix(in srgb,var(--ink) 12%,transparent);box-shadow:none;overflow:hidden}
-#splash .sbar i{display:block;height:100%;width:3%;transition:width .4s ease;background:var(--grad);background-size:200% 100%;animation:gflow 2.5s linear infinite;border-radius:9px}
-#splash .msg,#splash .sdet{display:none}
+#splash .sbar i{display:block;height:100%;width:3%;transition:width .4s ease;background:var(--ink);border-radius:9px}
+#splash .msg{margin-top:14px;font-size:13px;color:var(--ink);min-height:18px;text-align:center}
+#splash .sdet{margin-top:3px;font-size:12px;color:var(--muted);min-height:16px;max-width:300px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (prefers-reduced-motion: reduce){#splash *{animation:none!important}}
 
 /* ===== เลื่อนแล้วเล่าเรื่อง (scrollytelling) + ไอคอนเคลื่อนไหว + เมนูธีมกระจก ===== */
@@ -1785,17 +1786,31 @@ function splashSet(pct, msg, det) {
   if (msg !== undefined) $("#splMsg").textContent = msg;
   if (det !== undefined) $("#splDet").textContent = det;
 }
-function preload(urls, ms) {   // โหลดภาพการ์ดแถวแรกให้เสร็จก่อนเข้าเว็บ (ไม่เกิน ms)
-  return Promise.race([Promise.all(urls.map(u => new Promise(r => { const im = new Image(); im.onload = im.onerror = r; im.src = u; }))),
-                       new Promise(r => setTimeout(r, ms))]);
+function preload(urls, ms, onEach) {   // โหลดภาพให้ครบ (ไม่เกิน ms ต่อภาพ) · onEach(จำนวนที่เสร็จ)
+  let n = 0;
+  return Promise.all(urls.map(u => Promise.race([new Promise(r => { const im = new Image(); im.onload = () => { COVER_OK.add(u); r(); }; im.onerror = r; im.src = u; }),
+                                                 new Promise(r => setTimeout(r, ms))]).then(() => onEach && onEach(++n))));
 }
-async function loadingScreen() {   // แถบโหลดอย่างเดียว: ได้รายการเทมเพลต + ภาพการ์ดแถวแรก → เข้าเว็บเลย (ภาพปกที่ยังทำไม่เสร็จ ทำต่อเบื้องหลัง)
+async function loadingScreen() {   // รอจนการ์ดทุกใบมีภาพครบ แล้วค่อยเข้าเว็บ · บอกว่ากำลังเตรียมอะไร
   const sp = $("#splash"); sp.classList.remove("pre", "off");
-  splashSet(35);
-  const first = DEMO ? [] : T.filter(t => t.cover).slice(0, 10).map(t => coverUrl(t, 360));
-  if (first.length) { await preload(first, 4000); first.forEach(u => COVER_OK.add(u)); renderGrid(); }
-  splashSet(100);
-  await new Promise(r => setTimeout(r, 380));
+  splashSet(10, "กำลังโหลดรายการเทมเพลต…", `${T.length} เทมเพลต`);
+  if (!DEMO) {
+    for (;;) {                                       // 1) รอระบบทำภาพปกที่ยังไม่มีให้เสร็จ
+      const r = await api("GET", "/api/ready").catch(() => null);
+      if (!r || r.done) break;
+      const tot = r.covers_total || 1;
+      splashSet(10 + 40 * r.covers_done / tot, `กำลังทำภาพปกเทมเพลต ${r.covers_done}/${r.covers_total}`, r.current || "");
+      await new Promise(res => setTimeout(res, 1500));
+    }
+    T = await api("GET", "/api/skills").catch(() => T);
+    const urls = T.filter(t => t.cover).map(t => coverUrl(t, 360));   // 2) โหลดภาพการ์ดทุกใบ
+    splashSet(50, `กำลังโหลดภาพการ์ด 0/${urls.length}`, "");
+    await preload(urls, 20000, n => splashSet(50 + 48 * n / urls.length, `กำลังโหลดภาพการ์ด ${n}/${urls.length}`, ""));
+    const miss = T.filter(t => !t.cover).length;
+    renderGrid();
+    splashSet(100, "พร้อมแล้ว", miss ? `ภาพปก ${miss} อันทำไม่สำเร็จ ระบบจะลองใหม่เบื้องหลัง` : "");
+  } else splashSet(100, "พร้อมแล้ว", "");
+  await new Promise(r => setTimeout(r, 450));
   sp.classList.add("off");
   if (!DEMO) watchCovers();
 }
