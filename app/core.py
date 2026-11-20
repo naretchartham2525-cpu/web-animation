@@ -326,20 +326,77 @@ def ep_dir(name, ep):
     return project_dir(name) / f"ep{int(ep):02d}"
 
 
-def trash_project(name):
-    d = project_dir(name)
-    trash = PROJECTS_DIR / "_trash"
-    trash.mkdir(exist_ok=True)
-    shutil.move(str(d), str(trash / f"{d.name}_{int(time.time())}"))
+def _size(p):
+    if p.is_file():
+        return p.stat().st_size
+    return sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
 
 
-def unique_project_name(name, busy=lambda n: False):
-    """ชื่อเรื่องใหม่ไม่ให้ทับของเดิม · ถ้าชื่อเดิมเป็นเรื่องที่ไม่มีคลิปเสร็จเลย (ทำแล้วพัง) และไม่มีงานค้าง
-    → ย้ายเรื่องเก่าไปถังขยะแล้วใช้ชื่อเดิม (ไม่เกิดชื่อซ้ำแบบ "(2)")"""
+def storage_report(busy=lambda n: False):
+    """ไฟล์ค้าง/ของที่ไม่ได้ใช้ ให้ผู้ใช้เลือกลบเอง (ระบบไม่ลบเอง)"""
+    items = []
+    add = lambda kind, path, label, note="": items.append(
+        {"id": str(path.relative_to(ROOT)), "kind": kind, "label": label, "note": note,
+         "size": _size(path), "mtime": path.stat().st_mtime})
+    if PROJECTS_DIR.exists():
+        for d in sorted(PROJECTS_DIR.iterdir()):
+            if not d.is_dir():
+                continue
+            if d.name == "_trash":
+                for t in d.iterdir():
+                    add("trash", t, t.name, "ในถังขยะเก่าของเว็บ")
+                continue
+            p = read_json(d / "project.json")
+            if not p:
+                continue
+            if busy(p["name"]):
+                continue
+            eps = list_episodes(p["name"])
+            if not any(e.get("final") for e in eps):
+                add("story", d, p["name"], "เรื่องที่ยังไม่มีคลิปเสร็จ (ทำแล้วพังหรือยังไม่ได้ทำ)")
+                continue
+            for e in eps:
+                if not e.get("final"):
+                    add("ep", ep_dir(p["name"], e["ep"]), f"{p['name']} · EP {e['ep']}", "ตอนที่ทำไม่สำเร็จ")
+            for o in sorted(d.glob("_old_ep*")):
+                add("old", o, f"{p['name']} · EP {int(o.name[7:9] or 0)} (เวอร์ชันเก่า)", "คลิปเวอร์ชันก่อนทำใหม่ทับ")
+            if (d / "_trash").exists():
+                for t in (d / "_trash").iterdir():
+                    add("trash", t, f"{p['name']} · {t.name}", "ในถังขยะเก่าของเว็บ")
+    if SKILLS_DIR.exists():
+        for d in SKILLS_DIR.iterdir():
+            if (d / "engine.old").is_dir():
+                add("engine_old", d / "engine.old", f"{d.name} · เอนจินเวอร์ชันก่อน", "เก็บไว้ตอนอัปเดตเอนจิน")
+    return items
+
+
+def storage_delete(ids, busy=lambda n: False):
+    """ลบถาวรตามที่ผู้ใช้เลือก (เฉพาะรายการที่อยู่ใน storage_report เท่านั้น)"""
+    allowed = {i["id"]: i for i in storage_report(busy)}
+    done, freed, stories = [], 0, []
+    for i in ids:
+        it = allowed.get(i)
+        if not it:
+            continue
+        p = (ROOT / i).resolve()
+        if ROOT.resolve() not in p.parents:
+            continue
+        freed += it["size"]
+        if p.is_dir():
+            shutil.rmtree(p, ignore_errors=True)
+        else:
+            p.unlink(missing_ok=True)
+        done.append(i)
+        if it["kind"] == "story":
+            stories.append(it["label"])
+    for t in [PROJECTS_DIR / "_trash", *PROJECTS_DIR.glob("*/_trash")]:
+        if t.is_dir() and not any(t.iterdir()):
+            t.rmdir()
+    return {"deleted": done, "freed": freed, "stories": stories}
+
+
+def unique_project_name(name):
     base = safe_name(name) or "เรื่องใหม่"
-    if (project_dir(base) / "project.json").exists() and not busy(base) \
-            and not any(e.get("final") for e in list_episodes(base)):
-        trash_project(base)
     n, cand = 2, base
     while (project_dir(cand) / "project.json").exists():
         cand = f"{base} ({n})"

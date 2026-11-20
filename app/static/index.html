@@ -613,6 +613,15 @@ html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
   <div class="mfoot"><button class="sb" onclick="closeM('mLib')">ปิด</button></div>
 </div></div>
 
+<!-- ไฟล์ค้าง -->
+<div class="modal" id="mStore"><div class="mbox" style="max-width:640px">
+  <h2>ไฟล์ค้างและพื้นที่</h2>
+  <div class="note" style="margin:-4px 0 12px">ระบบไม่ลบเอง เลือกสิ่งที่ไม่ใช้แล้วกดลบ · <b>ลบแล้วหายถาวร</b> (เทมเพลตและบทต้นฉบับไม่ถูกลบ ทำใหม่ได้เสมอ)</div>
+  <div id="stBody"></div>
+  <div class="mfoot"><label class="small" style="margin-right:auto;display:inline-flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="stAll" onchange="document.querySelectorAll('#stBody input').forEach(c => c.checked = this.checked); stSum()">เลือกทั้งหมด</label>
+    <button class="sb red" id="stDel" onclick="storeDelete()"><svg class="i"><use href="#i-trash"/></svg>ลบที่เลือก</button></div>
+</div></div>
+
 <!-- คลังคลิป -->
 <div class="modal" id="mClips"><div class="mbox" style="max-width:980px">
   <div class="clh"><h2 style="margin:0">คลังคลิป</h2><div class="search" style="margin:0;height:38px;max-width:260px;flex:1"><svg class="i"><use href="#i-search"/></svg><input id="clQ" placeholder="ค้นหาเรื่อง" oninput="renderClips()"></div>
@@ -633,6 +642,7 @@ html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
 <div class="modal" id="mSet"><div class="mbox" style="max-width:560px">
   <h2>ตั้งค่า</h2>
   <div class="setrow" onclick="closeM('mSet'); openLib()"><svg class="i"><use href="#i-book"/></svg><div><b>คลังข้อความ</b><div class="small">บทหรือไอเดียที่เก็บไว้ใช้ซ้ำ</div></div><svg class="i" style="margin-left:auto;transform:rotate(-90deg)"><use href="#i-chevron"/></svg></div>
+  <div class="setrow" style="margin-top:8px" onclick="hideM('mSet'); openStore()"><svg class="i"><use href="#i-trash"/></svg><div><b>ไฟล์ค้างและพื้นที่</b><div class="small">ดูไฟล์ที่พัง/ไม่ได้ใช้ แล้วเลือกลบเอง</div></div><svg class="i" style="margin-left:auto;transform:rotate(-90deg)"><use href="#i-chevron"/></svg></div>
   <div class="sec" style="margin:16px 0 8px;font-size:15px">โหมด</div>
   <div class="modesw" id="sMode"></div>
   <div class="sec" style="margin:4px 0 8px;font-size:15px">สีหลักของเว็บ</div>
@@ -1449,12 +1459,34 @@ async function stopJob(id) { if (!ask("หยุดงานนี้? (ขอ�
 async function resumeJob(id) { if (await call(() => api("POST", `/api/jobs/${id}/resume`))) { toast("เข้าคิวแล้ว"); refreshJobs(); } }
 async function delJob(id) { if (!ask("ลบงานนี้ออกจากรายการ? (ถ้ากำลังทำจะหยุดก่อน · คลิปที่เสร็จแล้วไม่หาย)")) return; if (await call(() => api("DELETE", `/api/jobs/${id}`))) { toast("ลบงานแล้ว"); refreshJobs(); } }
 async function clearJobs() { const n = await call(() => api("POST", "/api/jobs/clear")); if (n !== undefined) { toast(`ลบงานเก่า ${n ?? 0} รายการ`); refreshJobs(); } }
-async function delClip(project, ep) { if (!ask(`ลบคลิป ${project} EP ${ep}? (ย้ายไปถังขยะใน Drive กู้คืนได้)`)) return; if (await call(() => api("DELETE", `/api/projects/${enc(project)}/episodes/${ep}`))) { closeM("mVid"); toast("ลบคลิปแล้ว"); refreshJobs(); } }
+async function delClip(project, ep) { if (!ask(`ลบคลิป ${project} EP ${ep}? (ลบถาวร · เทมเพลตและบทต้นฉบับยังอยู่ ทำใหม่ได้)`)) return; if (await call(() => api("DELETE", `/api/projects/${enc(project)}/episodes/${ep}`))) { closeM("mVid"); toast("ลบคลิปแล้ว"); refreshJobs(); } }
+let STORE = [];
+const fmtMB = b => b >= 1e9 ? (b / 1e9).toFixed(2) + " GB" : b >= 1e6 ? (b / 1e6).toFixed(1) + " MB" : Math.max(1, Math.round(b / 1e3)) + " KB";
+async function openStore() {
+  openM("mStore"); $("#stBody").innerHTML = `<div class="small">กำลังตรวจไฟล์…</div>`;
+  STORE = await call(() => api("GET", "/api/storage")) || [];
+  const groups = [["story", "เรื่องที่ยังไม่มีคลิปเสร็จ"], ["ep", "ตอนที่ทำไม่สำเร็จ"], ["old", "คลิปเวอร์ชันเก่า"], ["engine_old", "เอนจินเวอร์ชันก่อน"], ["trash", "ถังขยะเก่าของเว็บ"]];
+  $("#stBody").innerHTML = STORE.length ? groups.map(([k, t]) => { const xs = STORE.filter(i => i.kind === k); return xs.length ? `<div class="vlab" style="margin:12px 0 6px">${t}</div>` +
+      xs.map(i => `<label class="donel" style="cursor:pointer"><input type="checkbox" value="${esc(i.id)}" onchange="stSum()"><span>${esc(i.label)}</span><span class="small">${fmtMB(i.size)} · ${new Date(i.mtime * 1000).toLocaleDateString("th-TH")}</span></label>`).join("") : ""; }).join("")
+    : `<div class="small" style="padding:20px 0;text-align:center">${ic("check")} ไม่มีไฟล์ค้าง ระบบสะอาดแล้ว</div>`;
+  $("#stAll").checked = false; stSum();
+}
+function stSum() {
+  const ids = [...document.querySelectorAll("#stBody input:checked")].map(c => c.value);
+  const sz = STORE.filter(i => ids.includes(i.id)).reduce((a, i) => a + i.size, 0);
+  $("#stDel").disabled = !ids.length; $("#stDel").innerHTML = `${ic("trash")}ลบที่เลือก${ids.length ? ` (${ids.length} · ${fmtMB(sz)})` : ""}`;
+}
+async function storeDelete() {
+  const ids = [...document.querySelectorAll("#stBody input:checked")].map(c => c.value); if (!ids.length) return;
+  if (!ask(`ลบถาวร ${ids.length} รายการ? กู้คืนไม่ได้`)) return;
+  const r = await call(() => api("POST", "/api/storage/delete", {ids})); if (!r) return;
+  toast(`ลบแล้ว ${r.deleted.length} รายการ · ได้พื้นที่คืน ${fmtMB(r.freed)}`); openStore(); refreshJobs();
+}
 async function delEmpty(name) {
-  if (!ask(`ลบเรื่อง “${name}”? (ย้ายไปถังขยะใน Drive กู้คืนได้)`)) return;
+  if (!ask(`ลบเรื่อง “${name}”? (ลบถาวร · เทมเพลตและบทต้นฉบับยังอยู่ ทำใหม่ได้)`)) return;
   if (await call(() => api("DELETE", `/api/projects/${enc(name)}`))) { PROJS = PROJS.filter(p => p.name !== name); renderClips(); toast("ลบแล้ว"); }
 }
-async function delProject(project) { if (!ask(`ลบทั้งเรื่อง “${project}” ทุก EP? (ย้ายไปถังขยะใน Drive กู้คืนได้)`)) return; if (await call(() => api("DELETE", `/api/projects/${enc(project)}`))) { closeM("mVid"); toast("ลบทั้งเรื่องแล้ว"); refreshJobs(); } }
+async function delProject(project) { if (!ask(`ลบทั้งเรื่อง “${project}” ทุก EP? (ลบถาวร · เทมเพลตและบทต้นฉบับยังอยู่ ทำใหม่ได้)`)) return; if (await call(() => api("DELETE", `/api/projects/${enc(project)}`))) { closeM("mVid"); toast("ลบทั้งเรื่องแล้ว"); refreshJobs(); } }
 async function stopAll() { if (!ask("หยุดงานทั้งหมด?")) return; await call(() => api("POST", "/api/jobs/stop_all")); refreshJobs(); }
 
 // ================= ทำ EP ต่อ =================

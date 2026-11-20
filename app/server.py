@@ -492,7 +492,7 @@ def quick_create():
             raise ValueError("ยังไม่มีบท EP (epNN.json) ในข้อความที่วาง")
         if not parsed["series"]:
             raise ValueError("เรื่องใหม่ต้องมี series.json (ไบเบิลซีรีส์) มาด้วย")
-        name = core.unique_project_name(b.get("name") or engine_skill.series_title(parsed, "ซีรีส์ใหม่")[:40], jobs.has_pending)
+        name = core.unique_project_name(b.get("name") or engine_skill.series_title(parsed, "ซีรีส์ใหม่")[:40])
         proj = core.create_project({"name": name, "skill": tpl, "episodes_total": len(parsed["episodes"]),
                                     "topic": "", "script_mode": "engine", "options": opts})
         n = engine_skill.save_paste(proj["name"], parsed, 1)
@@ -505,7 +505,7 @@ def quick_create():
         first = eps[0]["title"]
     else:
         first = idea.lstrip("#").strip().splitlines()[0]
-    name = core.unique_project_name(b.get("name") or first[:40], jobs.has_pending)
+    name = core.unique_project_name(b.get("name") or first[:40])
     proj = core.create_project({
         "name": name, "skill": tpl, "episodes_total": max(1, len(eps)),
         "topic": idea if mode == "ai" else "", "script_mode": mode, "options": opts,
@@ -723,16 +723,30 @@ def jobs_clear():
 
 @app.delete("/api/projects/<name>/episodes/<int:ep>")
 def episode_delete(name, ep):
-    """ลบคลิป 1 EP → ย้ายไปถังขยะในโปรเจกต์ (กู้คืนได้จาก Drive)"""
+    """ลบคลิป 1 EP ถาวร (บทต้นฉบับ/เทมเพลตยังอยู่ ทำใหม่ได้)"""
     if jobs.has_pending(name):
         raise ValueError("เรื่องนี้มีงานค้างอยู่ หยุดหรือลบงานก่อน")
     d = core.ep_dir(name, ep)
     if not d.exists():
         abort(404)
-    trash = core.project_dir(name) / "_trash"
-    trash.mkdir(exist_ok=True)
-    shutil.move(str(d), str(trash / f"ep{ep:02d}_{int(time.time())}"))
+    shutil.rmtree(d, ignore_errors=True)
+    for o in core.project_dir(name).glob(f"_old_ep{ep:02d}_*"):
+        shutil.rmtree(o, ignore_errors=True)
     return ok()
+
+
+@app.get("/api/storage")
+def storage():
+    """ไฟล์ค้าง/ไม่ได้ใช้ ให้เลือกลบเอง"""
+    return ok(core.storage_report(jobs.has_pending))
+
+
+@app.post("/api/storage/delete")
+def storage_delete():
+    r = core.storage_delete((request.get_json(force=True) or {}).get("ids") or [], jobs.has_pending)
+    for n in r["stories"]:
+        jobs.forget_project(n)
+    return ok(r)
 
 
 @app.post("/api/projects/<name>/rename")
@@ -795,15 +809,14 @@ def skill_import():
 
 @app.delete("/api/projects/<name>")
 def project_delete(name):
-    """ลบทั้งเรื่อง → ย้ายไป projects/_trash (กู้คืนได้จาก Drive)"""
+    """ลบทั้งเรื่องถาวร (ไฟล์ใน Drive + งานในรายการ)"""
     if jobs.has_pending(name):
         raise ValueError("เรื่องนี้มีงานค้างอยู่ หยุดหรือลบงานก่อน")
     d = core.project_dir(name)
     if not (d / "project.json").exists():
         abort(404)
-    trash = core.PROJECTS_DIR / "_trash"
-    trash.mkdir(exist_ok=True)
-    shutil.move(str(d), str(trash / f"{d.name}_{int(time.time())}"))
+    shutil.rmtree(d, ignore_errors=True)
+    jobs.forget_project(name)
     return ok()
 
 

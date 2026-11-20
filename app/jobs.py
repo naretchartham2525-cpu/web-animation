@@ -226,6 +226,16 @@ class JobManager:
         self._save(force=True)
         return True
 
+    def forget_project(self, project):
+        """เรื่องถูกลบ → เอางานที่จบแล้วของเรื่องนั้นออกจากรายการ (กันกดทำต่อแล้วสร้างเรื่องเดิมขึ้นมาใหม่)"""
+        with self.lock:
+            ids = [i for i in self.order if self.jobs[i]["project"] == project
+                   and self.jobs[i]["status"] not in ("queued", "running", "review")]
+            for i in ids:
+                self.jobs.pop(i, None)
+                self.order.remove(i)
+        self._save(force=True)
+
     def clear_finished(self):
         with self.lock:
             ids = [i for i in self.order if self.jobs[i]["status"] in ("done", "stopped", "error", "interrupted")]
