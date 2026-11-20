@@ -100,6 +100,13 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .mback svg{transform:rotate(90deg);width:16px;height:16px}
 .mback:hover{transform:translate(-1px,-1px);box-shadow:2px 2px 0 var(--k,var(--ink))}
 .clip .th.failed{display:grid;place-items:center;background:repeating-linear-gradient(135deg,var(--soft) 0 10px,var(--paper) 10px 20px);color:var(--muted);font-size:12.5px;cursor:default}
+.sima{display:flex;align-items:center;gap:14px;border:var(--bw,1px) solid var(--k,var(--line));border-radius:14px;padding:10px 14px 0 10px;margin-bottom:14px;background:var(--paper);box-shadow:4px 4px 0 var(--k,var(--ink));overflow:hidden}
+.sima img{width:96px;height:96px;object-fit:contain;object-position:bottom;flex-shrink:0;align-self:flex-end}
+.sima b{font-size:15px}
+.sima[data-st=success] b{color:var(--ok)}.sima[data-st=error] b{color:var(--err)}
+html[data-mode=dark] .sima{box-shadow:4px 4px 0 var(--acc)}
+.toast .tface{width:34px;height:34px;object-fit:cover;object-position:top;border-radius:8px;border:1.5px solid currentColor;vertical-align:middle;margin-right:8px;background:#fff}
+@media (prefers-reduced-motion: reduce){.sima img[src$="idle.webp"],#splash .smascot img{content:url(/mascot/portrait.webp)}}
 .engbox{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:4px 0 12px;background:var(--soft)}
 .engbox .eh{display:flex;align-items:center;gap:8px;margin-bottom:6px}.engbox .eh .small{margin-left:auto}
 .engbox ol{margin:4px 0 10px;padding-left:20px;line-height:1.7}
@@ -409,6 +416,9 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
 #lgBtn{background:var(--acc);color:var(--acc-ink);border-radius:8px}
 #splash{background:var(--bg)}
 #splash .in2{gap:0}
+#splash .smascot{width:150px;height:150px;border-radius:16px;border:var(--bw) solid var(--k);box-shadow:5px 5px 0 var(--k);background:var(--paper);overflow:hidden;display:grid;place-items:end center}
+#splash .smascot img{width:100%;height:100%;object-fit:cover;object-position:center top}
+html[data-mode=dark] #splash .smascot{box-shadow:5px 5px 0 var(--acc)}
 #splash .slogo{width:64px;height:64px;border-radius:14px;background:var(--acc);color:var(--acc-ink);border:var(--bw) solid var(--k);box-shadow:4px 4px 0 var(--k);display:grid;place-items:center;animation:sbob 1.6s ease-in-out infinite}
 #splash .slogo svg{width:26px;height:26px;fill:currentColor;stroke:none;margin-left:3px}
 @keyframes sbob{50%{transform:translate(-2px,-3px);box-shadow:6px 7px 0 var(--k)}}
@@ -501,7 +511,7 @@ html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
 
 <div id="dropZone"><div><svg class="i"><use href="#i-clip"/></svg><br>วางไฟล์บทที่นี่<small>บท: .txt .md .json .py · เสียงพากย์ของคุณ: .mp3 .wav .m4a</small></div></div>
 <div id="splash" class="pre"><div class="in2">
-  <span class="slogo"><svg class="i"><use href="#i-play"/></svg></span>
+  <span class="smascot"><img src="/mascot/idle.webp" alt="สุมาอี้กำลังเตรียมเว็บ"></span>
   <b class="sname">Thuean Studio</b>
   <div class="sbar"><i id="splBar"></i></div>
   <div class="msg" id="splMsg">กำลังเชื่อมต่อ…</div>
@@ -578,6 +588,7 @@ html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
 
 <!-- งานของฉัน -->
 <div class="drawer" id="drawer">
+  <template id="mascotTpl"></template>
   <div class="dh"><h3>กำลังทำ</h3><div style="display:flex;gap:6px"><button class="sb" onclick="clearJobs()" title="ลบงานที่จบแล้ว/ผิดพลาด/หยุด ออกจากรายการ"><svg class="i"><use href="#i-trash"/></svg>ล้างงานเก่า</button><button class="sb red" onclick="stopAll()"><svg class="i"><use href="#i-stop"/></svg>หยุดทั้งหมด</button><button class="x" onclick="closeDrawer()"><svg class="i"><use href="#i-x"/></svg></button></div></div>
   <div class="db" id="drawerBody"></div>
 </div>
@@ -755,7 +766,7 @@ const dq = decodeURIComponent;
 const ic = n => `<svg class="i"><use href="#i-${n}"/></svg>`;
 let DEMO = new URLSearchParams(location.search).has("demo") || location.protocol === "file:";
 const ask = m => DEMO ? true : confirm(m);
-function toast(m, err) { const t = $("#toast"); t.textContent = m; t.className = "toast" + (err ? " err" : ""); t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", 3800); }
+function toast(m, err, face) { const t = $("#toast"); t.textContent = m; if (face) t.insertAdjacentHTML("afterbegin", `<img class="tface" src="/mascot/${face}.webp" alt="">`); t.className = "toast" + (err ? " err" : ""); t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", 3800); }
 // หน้าต่างซ้อนกัน (เช่น คลังคลิป → คลิป → บท): ปุ่ม Back กลับหน้าก่อน · ✕ ปิดทั้งหมดกลับหน้าหลัก
 let MST = [], HOLD = false;
 const anyOpen = () => !!document.querySelector(".modal.on");
@@ -1348,7 +1359,8 @@ async function refreshJobs() {
   if (active.length) $("#jobsBtn").insertAdjacentHTML("afterbegin", '<span class="live"></span>');
   if (!$("#drawer").classList.contains("on")) return;
   const live = jobs.filter(j => j.status !== "done").slice(0, 10), done = jobs.filter(j => j.status === "done").slice(0, 6);
-  $("#drawerBody").innerHTML = (live.length ? live.map(jobCard).join("") : `<div class="small">ไม่มีงานที่กำลังทำ วางบทแล้วกดสร้าง</div>`) +
+  const sk = simaState(jobs), runJ = jobs.find(j => j.status === "running");
+  $("#drawerBody").innerHTML = simaHtml(sk, runJ ? `${runJ.project} · ${runJ.stage || ""}` : "") + (live.length ? live.map(jobCard).join("") : `<div class="small">ไม่มีงานที่กำลังทำ วางบทแล้วกดสร้าง</div>`) +
     (done.length ? `<div class="sec">เสร็จแล้ว</div>` + done.map(doneLine).join("") +
       `<button class="sb" style="width:100%;justify-content:center;margin-top:4px" onclick="closeDrawer(); openClips()">${ic("film")}เปิดคลังคลิป (${OUTS.length})</button>` : "");
   document.querySelectorAll(".logs").forEach(l => l.scrollTop = l.scrollHeight);
@@ -1368,6 +1380,28 @@ function jobCard(j) {
     <div class="acts">${a.join("")}</div>
     ${openLog[j.id] ? `<div class="logs">${esc((j.logs || []).join("\n"))}</div>` : ""}</div>`;
 }
+// ===== มาสคอตสุมาอี้: เปลี่ยนท่าตามสถานะงานจริง =====
+const SIMA = {
+  idle:     {img: "portrait", label: "พร้อมรับคำสั่ง"},
+  scripting:{img: "scroll",   label: "กำลังวางกลยุทธ์..."},
+  voice:    {img: "fan",      label: "กำลังสร้างเสียง..."},
+  render:   {img: "idle",     label: "กำลังประมวลผลวิดีโอ..."},
+  review:   {img: "scroll",   label: "รอท่านตรวจแผน (บท)"},
+  success:  {img: "thumbs",   label: "ภารกิจสำเร็จ"},
+  error:    {img: "shock",    label: "เกิดข้อผิดพลาด"},
+};
+function simaState(jobs) {   // สถานะจากงานจริงในคิว
+  const run = jobs.find(j => j.status === "running"), rv = jobs.find(j => j.status === "review");
+  if (run) { const st = run.stage || ""; return /บท/.test(st) ? "scripting" : /เสียง|พากย์/.test(st) ? "voice" : "render"; }
+  if (rv) return "review";
+  if (jobs.some(j => j.status === "queued")) return "render";
+  const last = jobs[0]; if (last && Date.now() / 1000 - (last.finished || 0) < 600) return last.status === "done" ? "success" : last.status === "error" ? "error" : "idle";
+  return "idle";
+}
+function simaHtml(k, sub) {
+  const m = SIMA[k] || SIMA.idle;
+  return `<div class="sima" data-st="${k}"><img src="/mascot/${m.img}.webp" alt="สุมาอี้: ${esc(m.label)}"><div><b>${esc(m.label)}</b>${sub ? `<div class="small">${esc(sub)}</div>` : ""}</div></div>`;
+}
 const isLatest = o => !o.copy && !OUTS.some(x => x.project === o.project && x.ep > o.ep);
 const clipKey = o => o.path;
 const jobEp = j => j.review?.ep || j.episode || "";
@@ -1381,7 +1415,11 @@ function openDone(project) {   // เปิดคลิปล่าสุดข�
 let seenSt = null;   // แจ้งเมื่องานเพิ่งเสร็จ (ไม่แจ้งงานเก่าตอนเปิดเว็บ)
 function notifyDone(jobs) {
   const now = Object.fromEntries(jobs.map(j => [j.id, j.status]));
-  if (seenSt) jobs.forEach(j => { if (j.status === "done" && seenSt[j.id] && seenSt[j.id] !== "done") toast(`เสร็จแล้ว: ${j.project}${jobEp(j) ? " · EP " + jobEp(j) : ""} · ดูในคลังคลิป`); });
+  if (seenSt) jobs.forEach(j => {
+    if (!seenSt[j.id] || seenSt[j.id] === j.status) return;
+    if (j.status === "done") toast(`ภารกิจสำเร็จ: ${j.project}${jobEp(j) ? " · EP " + jobEp(j) : ""} · ดูในคลังคลิป`, false, "thumbs");
+    if (j.status === "error") toast(`เกิดข้อผิดพลาด: ${j.project} · เปิด "กำลังทำ" ดูรายละเอียด`, true, "shock");
+  });
   seenSt = now;
 }
 let PROJS = [];   // เรื่องที่ยังไม่มีคลิปเสร็จ (เช่น ทำแล้วพัง) → โชว์ท้ายคลังให้ลบได้ กันชื่อซ้ำ "(2)"

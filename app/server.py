@@ -45,6 +45,13 @@ def _auth():
 
 
 # ---------------- หน้าเว็บ ----------------
+@app.get("/mascot/<path:f>")
+def mascot(f):
+    r = send_from_directory(STATIC / "mascot", f)
+    r.headers["Cache-Control"] = "public, max-age=86400"
+    return r
+
+
 @app.get("/")
 def index():
     return send_from_directory(STATIC, "index.html")
