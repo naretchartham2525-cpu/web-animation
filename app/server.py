@@ -726,7 +726,13 @@ def episode_delete(name, ep):
     d = core.ep_dir(name, ep)
     if not d.exists():
         abort(404)
-    core.trash_move(d, "ep", f"{name} · EP {ep}")   # ไปถังขยะ (กู้คืนได้) · เวอร์ชันเก่าไม่ยุ่ง
+    others = [e for e in [*core.project_dir(name).glob("ep[0-9]*"), *core.project_dir(name).glob("_old_ep*")]
+              if e.is_dir() and e != d and any(f.is_file() for f in e.rglob("*"))]
+    if not others:                                  # ผู้ใช้ลบตอนสุดท้ายของเรื่อง → ย้ายทั้งเรื่องไปถังขยะพร้อมกัน (ไม่เหลือโฟลเดอร์ค้าง)
+        core.trash_move(core.project_dir(name), "story", name)
+        jobs.forget_project(name)
+        return ok({"story": True})
+    core.trash_move(d, "ep", f"{name} · EP {ep}")   # ไปถังขยะ (กู้คืนได้)
     return ok()
 
 
