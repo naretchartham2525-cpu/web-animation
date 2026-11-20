@@ -1,7 +1,8 @@
 ---
 name: Flow-field Wind Lines
-description: แสงและเส้น · เหมาะกับ Storms, monsoons and other weather, Ocean currents and river floods, Any flow measured against a threshold
+description: เหมาะกับ Storms, monsoons and other weather, Ocean currents and river floods, Any flow measured against a threshold
 tags: [opuscar, Light & Lines]
+category: แสงและเส้น
 pack: opuscar
 look: "An invisible field — wind, current, traffic, any flow — made visible as thousands of thin ink streamlines engraved on warm paper, with darker strokes running along them at the local speed. The lines are computed from data or a physical model, never drawn by hand;"
 ---

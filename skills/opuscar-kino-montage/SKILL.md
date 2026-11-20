@@ -1,7 +1,8 @@
 ---
 name: Constructivist Montage
-description: สารคดีและตัดต่อ · เหมาะกับ Industry histories, Milestones, Collective effort
+description: เหมาะกับ Industry histories, Milestones, Collective effort
 tags: [opuscar, Edit & Documentary]
+category: สารคดีและตัดต่อ
 pack: opuscar
 look: "Real archive footage, photographs and documents, printed as one ink-and-paper poster with a single red, and cut on a machine beat. Diagonal bands carry the type; windows cut along the axis hold the film; people are scissored out of photographs and stacked into structures;"
 ---

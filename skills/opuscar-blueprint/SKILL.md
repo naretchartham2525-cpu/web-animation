@@ -1,7 +1,8 @@
 ---
 name: Blueprint
-description: แผนภาพเส้น · เหมาะกับ Engineering, Hardware launches, Tech explainers
+description: เหมาะกับ Engineering, Hardware launches, Tech explainers
 tags: [opuscar, Line Diagrams]
+category: แผนภาพเส้น
 pack: opuscar
 look: "Engineering drawings that come alive on a sheet of cyanotype paper: white technical line work on Prussian blue, drawn in drafting order, with annotations that move."
 ---

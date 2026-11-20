@@ -1,7 +1,8 @@
 ---
 name: Halftone Dossier
-description: งานพิมพ์ · เหมาะกับ Humour, Pet content, Social shorts
+description: เหมาะกับ Humour, Pet content, Social shorts
 tags: [opuscar, Print & Printmaking]
+category: งานพิมพ์
 pack: opuscar
 look: "A retro print case file: cream archive paper, overprinted halftone dots in a few flat inks, huge heavy headlines with misregistered shadows, rubber stamps that slam, and thick-outlined characters. The film is a file that is read out one exhibit at a time."
 ---

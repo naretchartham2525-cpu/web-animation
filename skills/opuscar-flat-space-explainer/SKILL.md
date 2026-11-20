@@ -1,7 +1,8 @@
 ---
 name: Scale Zoom Explainer
-description: กราฟิกและตัวอักษร · เหมาะกับ Science explainers, Scale and size, Classroom
+description: เหมาะกับ Science explainers, Scale and size, Classroom
 tags: [opuscar, Graphic & Type]
+category: กราฟิกและตัวอักษร
 pack: opuscar
 look: "Solid flat shapes on a deep night-blue ground, each with one shade step and hard-edged ring 'glows', drawn to true scale inside each frame, guided by a small character who is the camera's own lens."
 ---

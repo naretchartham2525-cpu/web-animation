@@ -1,7 +1,8 @@
 ---
 name: Bauhaus Shapes
-description: กราฟิกและตัวอักษร · เหมาะกับ Finance and economics explainers, Mechanisms and principles, Titles and chapter cards
+description: เหมาะกับ Finance and economics explainers, Mechanisms and principles, Titles and chapter cards
 tags: [opuscar, Graphic & Type]
+category: กราฟิกและตัวอักษร
 pack: opuscar
 look: "An explainer told only with circles, squares, triangles, arcs and straight lines, set in opaque colour on a light, matte paper. Every shape is a quantity drawn to scale (area is the amount), the shapes are the characters, and type only names them."
 ---

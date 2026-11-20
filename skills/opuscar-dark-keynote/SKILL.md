@@ -1,7 +1,8 @@
 ---
 name: Dark Tech Keynote
-description: หน้าจอและอินเทอร์เฟซ · เหมาะกับ Product launches, SaaS, Keynotes
+description: เหมาะกับ Product launches, SaaS, Keynotes
 tags: [opuscar, Screens & Interfaces]
+category: หน้าจอและอินเทอร์เฟซ
 pack: opuscar
 look: "A software launch film where the interface itself is the star: near-black gradient, hairline grid, soft light, one brand accent, and UI that moves with snap-grid precision. Light reveals, one giant number, and a sound design that is as ordered as the pixels."
 ---

@@ -1,7 +1,8 @@
 ---
 name: Urban Sketch · Pen & Wash
-description: ภาพวาด · เหมาะกับ City & travel, Architecture, Lifestyle brands
+description: เหมาะกับ City & travel, Architecture, Lifestyle brands
 tags: [opuscar, Painting & Illustration]
+category: ภาพวาด
 pack: opuscar
 look: "A sketchbook page drawn on location: fine sepia fineliner lines that wobble, overshoot and never quite close, with loose transparent watercolour dropped on top. The colour sits slightly off the lines, spills over them, and dissolves into cream cold-press paper at the page edge."
 ---

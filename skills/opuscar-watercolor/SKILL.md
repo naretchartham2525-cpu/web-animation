@@ -1,7 +1,8 @@
 ---
 name: Watercolor Brush
-description: ภาพวาด · เหมาะกับ Nature documentary, Travel, Science explainers
+description: เหมาะกับ Nature documentary, Travel, Science explainers
 tags: [opuscar, Painting & Illustration]
+category: ภาพวาด
 pack: opuscar
 look: "A hand-painted journal page that paints itself: translucent brush strokes with dry-brush flying white on warm cotton paper, hand-written notes beside what is painted, nothing drawn with a vector line."
 ---

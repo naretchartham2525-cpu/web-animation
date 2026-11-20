@@ -1,7 +1,8 @@
 ---
 name: Isometric Infographic
-description: แผนภาพเส้น · เหมาะกับ Process explainers, Supply chains, Annual reports
+description: เหมาะกับ Process explainers, Supply chains, Annual reports
 tags: [opuscar, Line Diagrams]
+category: แผนภาพเส้น
 pack: opuscar
 look: "A system diagram comes alive: an isometric diorama of flat three-tone blocks, thin ink labels and Isotype numbers, where things open up to show their insides and the numbers are drawn, not stated."
 ---

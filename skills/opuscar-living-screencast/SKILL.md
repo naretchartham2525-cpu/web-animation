@@ -1,7 +1,8 @@
 ---
 name: Mascot Screencast
-description: หน้าจอและอินเทอร์เฟซ · เหมาะกับ Product tutorials, Feature launches, Onboarding
+description: เหมาะกับ Product tutorials, Feature launches, Onboarding
 tags: [opuscar, Screens & Interfaces]
+category: หน้าจอและอินเทอร์เฟซ
 pack: opuscar
 look: "A product walkthrough that looks like a real screen recording, where a low-resolution mascot lives inside a high-resolution interface and acts out what the software is doing."
 ---

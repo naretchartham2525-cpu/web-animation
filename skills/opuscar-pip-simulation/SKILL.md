@@ -1,7 +1,8 @@
 ---
 name: Blob Simulation
-description: ข้อมูลและแผนที่ · เหมาะกับ Evolution and natural selection, Game theory and agent-based models, Epidemics, queues and markets
+description: เหมาะกับ Evolution and natural selection, Game theory and agent-based models, Epidemics, queues and markets
 tags: [opuscar, Data & Maps]
+category: ข้อมูลและแผนที่
 pack: opuscar
 look: "A crowd of small flocked characters, the Pips, runs a real simulation on a warm paper lab board: evolution, games, epidemics, queues, markets. The rules are written in code, the outcome is computed, and the result is shown with the Pips themselves: they are the data points, and at the end they line up into the chart."
 ---

@@ -1,7 +1,8 @@
 ---
 name: Silkscreen Travel Poster
-description: งานพิมพ์ · เหมาะกับ Destination guides, Tourism, Event posters
+description: เหมาะกับ Destination guides, Tourism, Event posters
 tags: [opuscar, Print & Printmaking]
+category: งานพิมพ์
 pack: opuscar
 look: "Opaque, hard-edged flat inks pulled one colour at a time through a screen: 4–6 inks per poster, stepped colour bands instead of gradients, thin paper-white gaps where the registration slips. Information is revealed the way the print is made: one layer, one beat."
 ---

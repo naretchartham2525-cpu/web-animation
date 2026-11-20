@@ -1,7 +1,8 @@
 ---
 name: Paper-cut Lightbox
-description: งานฝีมือดั้งเดิม · เหมาะกับ Journeys and travel, Farewells and anniversaries, Places and their stories
+description: เหมาะกับ Journeys and travel, Farewells and anniversaries, Places and their stories
 tags: [opuscar, Traditional Crafts]
+category: งานฝีมือดั้งเดิม
 pack: opuscar
 look: "A layered paper-cut shadow box (纸雕灯) lit from behind: 6–9 sheets of cut card stacked in a shallow box, a warm light glowing through the paper, windows and moons burning through holes, soft shadows falling from each layer onto the next. The camera is a macro lens inside a lamp:"
 ---

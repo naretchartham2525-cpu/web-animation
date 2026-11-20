@@ -1,7 +1,8 @@
 ---
 name: Whiteboard Explainer
-description: สเก็ตช์และกระดาน · เหมาะกับ Explainers, Online courses, Science
+description: เหมาะกับ Explainers, Online courses, Science
 tags: [opuscar, Sketch & Board]
+category: สเก็ตช์และกระดาน
 pack: opuscar
 look: "An explainer drawn live on one glossy dry-erase board: single-line handwriting that is actually written stroke by stroke, floating markers with no hand, magnets that can move, an eraser that can rewind, and a camera that travels across the board instead of cutting."
 ---

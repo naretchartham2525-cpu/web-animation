@@ -1,7 +1,8 @@
 ---
 name: 1920s Silent Film
-description: ฟิล์มและเทป · เหมาะกับ Comedy, Retro brands, Silent storytelling
+description: เหมาะกับ Comedy, Retro brands, Silent storytelling
 tags: [opuscar, Film & Tape]
+category: ฟิล์มและเทป
 pack: opuscar
 look: "An engraved-illustration silent film projected in a picture house: ink line and silver wash, a 4:3 print that flickers and weaves between velvet curtains, intertitles instead of voices, and a cinema pianist who plays every beat."
 ---

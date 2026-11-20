@@ -1,7 +1,8 @@
 ---
 name: Circuit Board
-description: แสงและเส้น · เหมาะกับ Energy, Supply chains, Devices
+description: เหมาะกับ Energy, Supply chains, Devices
 tags: [opuscar, Light & Lines]
+category: แสงและเส้น
 pack: opuscar
 look: "The subject is drawn as a printed circuit board seen from straight above: the world is copper under green solder mask, routes are traces, places are pads, words are white silkscreen, and what flows (power, water, signals, goods) is light running along the copper."
 ---

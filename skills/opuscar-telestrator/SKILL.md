@@ -1,7 +1,8 @@
 ---
 name: Sports Telestrator
-description: สารคดีและตัดต่อ · เหมาะกับ Sports analysis, Match recaps, Coaching
+description: เหมาะกับ Sports analysis, Match recaps, Coaching
 tags: [opuscar, Edit & Documentary]
+category: สารคดีและตัดต่อ
 pack: opuscar
 look: "The TV football analysis segment: play the clip at full speed, rewind, freeze it, and draw on the broadcast picture — rings under players' feet, marker arrows for the ball, a red patch for the space nobody covered — then play on, switch angles, count the frames, and flatten the pitch into a board."
 ---

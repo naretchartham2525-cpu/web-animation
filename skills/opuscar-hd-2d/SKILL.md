@@ -1,7 +1,8 @@
 ---
 name: 2.5D Pixel Art
-description: เกม · เหมาะกับ Game trailers, Fantasy, Story films
+description: เหมาะกับ Game trailers, Fantasy, Story films
 tags: [opuscar, Games]
+category: เกม
 pack: opuscar
 look: "Hand-made pixel sprites standing like paper cut-outs inside a lit, fogged, fully 3D diorama, shot from a high three-quarter angle through a tilt-shift lens: a toy world where every lamp throws a real shadow."
 ---

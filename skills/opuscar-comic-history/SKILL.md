@@ -1,7 +1,8 @@
 ---
 name: Comic History Cartoon
-description: การ์ตูน · เหมาะกับ Territorial changes in history, Light explainers on geopolitics, Market share and turf-war stories
+description: เหมาะกับ Territorial changes in history, Light explainers on geopolitics, Market share and turf-war stories
 tags: [opuscar, Cartoons]
+category: การ์ตูน
 pack: opuscar
 look: "Countries are paper puppets joined with brass split pins, standing on a map printed on paper; whoever takes a piece of land cuts a scrap of paper and slaps it onto the map. The whole film is one comic page on a table, a panel per moment, and the camera travels between the panels."
 ---

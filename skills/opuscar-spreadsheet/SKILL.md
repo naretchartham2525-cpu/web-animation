@@ -1,7 +1,8 @@
 ---
 name: Spreadsheet Film
-description: หน้าจอและอินเทอร์เฟซ · เหมาะกับ Data literacy, Finance & costs, Analytics explainers
+description: เหมาะกับ Data literacy, Finance & costs, Analytics explainers
 tags: [opuscar, Screens & Interfaces]
+category: หน้าจอและอินเทอร์เฟซ
 pack: opuscar
 look: "A whole film inside one spreadsheet window. Cells are the pixels, conditional formatting paints the pictures, the formula bar speaks the lines, and the camera is the sheet's own zoom and scroll. Every picture is made of numbers, and the picture turns out to be the answer."
 ---

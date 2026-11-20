@@ -1,7 +1,8 @@
 ---
 name: Rhythm Game Show
-description: เกม · เหมาะกับ Tech timelines, Year in review, Variety shows
+description: เหมาะกับ Tech timelines, Year in review, Variety shows
 tags: [opuscar, Games]
+category: เกม
 pack: opuscar
 look: "A rhythm-game variety show in flat vector: toy-like mascots with thick ink outlines on candy-coloured stripes and sunbursts, every hit landing on a fixed tempo grid, call-and-response patterns, and a judgement word when each round is won."
 ---

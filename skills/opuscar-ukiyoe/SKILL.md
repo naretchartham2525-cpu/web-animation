@@ -1,7 +1,8 @@
 ---
 name: Ukiyo-e
-description: งานฝีมือดั้งเดิม · เหมาะกับ Travel, Japanese culture, Poetry
+description: เหมาะกับ Travel, Japanese culture, Poetry
 tags: [opuscar, Traditional Crafts]
+category: งานฝีมือดั้งเดิม
 pack: opuscar
 look: "Edo-period woodblock prints brought to life: flat colour blocks, carved ink lines, bokashi skies, paper you can feel, and a camera that moves over the print like an unrolling handscroll."
 ---

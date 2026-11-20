@@ -1,7 +1,8 @@
 ---
 name: Paper Pop-up Book
-description: 3D และโมเดลจิ๋ว · เหมาะกับ Children's books, Game trailers, Story films
+description: เหมาะกับ Children's books, Game trailers, Story films
 tags: [opuscar, 3D & Miniature]
+category: 3D และโมเดลจิ๋ว
 pack: opuscar
 look: "A pop-up book on a real desk becomes a stage: flat cut-paper actors with white borders perform in front of paper sets that spring up from the page, under real lamp light and a real macro lens."
 ---

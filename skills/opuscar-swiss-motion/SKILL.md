@@ -1,7 +1,8 @@
 ---
 name: Swiss Motion Graphics
-description: กราฟิกและตัวอักษร · เหมาะกับ Brand identity, Events, Design education
+description: เหมาะกับ Brand identity, Events, Design education
 tags: [opuscar, Graphic & Type]
+category: กราฟิกและตัวอักษร
 pack: opuscar
 look: "International Typographic Style in motion: a modular grid, one typeface, one signal colour, and movement as exact as a printing press."
 ---

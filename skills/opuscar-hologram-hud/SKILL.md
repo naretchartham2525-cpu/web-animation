@@ -1,7 +1,8 @@
 ---
 name: Sci-fi Hologram HUD
-description: หน้าจอและอินเทอร์เฟซ · เหมาะกับ Spec walkthroughs, Launch videos, Trade shows
+description: เหมาะกับ Spec walkthroughs, Launch videos, Trade shows
 tags: [opuscar, Screens & Interfaces]
+category: หน้าจอและอินเทอร์เฟซ
 pack: opuscar
 look: "An object is scanned into a glowing wireframe. Target boxes lock onto its parts; each opens in a local exploded view, a leader pulls out, and its number rolls from garbage glyphs into the real value. It may light up, once, into a solid hologram."
 ---

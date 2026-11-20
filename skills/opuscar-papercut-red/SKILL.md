@@ -1,7 +1,8 @@
 ---
 name: Red Paper-cut
-description: งานฝีมือดั้งเดิม · เหมาะกับ Lunar New Year, Festive greetings, Folk tales
+description: เหมาะกับ Lunar New Year, Festive greetings, Folk tales
 tags: [opuscar, Traditional Crafts]
+category: งานฝีมือดั้งเดิม
 pack: opuscar
 look: "Chinese window-flower paper-cuts brought to life: jointed red cut-outs on paper grounds, where the cut is the drawing and the holes are where the light gets in."
 ---

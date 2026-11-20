@@ -1,7 +1,8 @@
 ---
 name: Scratch Film
-description: ฟิล์มและเทป · เหมาะกับ Things that happen in the dark, One mark to a whole system, Small adventures told in light and shadow
+description: เหมาะกับ Things that happen in the dark, One mark to a whole system, Small adventures told in light and shadow
 tags: [opuscar, Film & Tape]
+category: ฟิล์มและเทป
 pack: opuscar
 look: "Direct animation: every picture looks scratched through black emulsion with a needle and tinted with transparent dye, redrawn by hand fifteen times a second and projected. Black is the ground; everything bright is a cut."
 ---

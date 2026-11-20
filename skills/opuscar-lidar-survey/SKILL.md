@@ -1,7 +1,8 @@
 ---
 name: LiDAR Survey
-description: เครื่องมือและหลักฐาน · เหมาะกับ Heritage, Environment, Site surveys
+description: เหมาะกับ Heritage, Environment, Site surveys
 tags: [opuscar, Instruments & Evidence]
+category: เครื่องมือและหลักฐาน
 pack: opuscar
 look: "Real airborne laser points of a real place, floating in the dark as a measured cloud; a scan line or a cutting plane passes through them and the points condense into a solid, raking-lit surface, which is then measured with hairline instruments. One designed camera move carries the whole film:"
 ---

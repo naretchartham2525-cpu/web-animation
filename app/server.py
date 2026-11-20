@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import os
 import shutil
+import threading
 import time
 from pathlib import Path
 
@@ -764,6 +765,25 @@ def settings_post():
     return ok(core.save_settings(request.get_json(force=True)))
 
 
+def _auto_covers():
+    """เทมเพลตที่ยังไม่มีภาพปก → สร้างภาพตัวอย่างด้วย AI ฟรี ตามลุคของเทมเพลต (ทีละภาพ ตอนไม่มีงาน)"""
+    time.sleep(20)
+    for sk in [s for s in core.list_skills() if not s.get("cover")]:
+        while jobs and jobs.busy():
+            time.sleep(30)
+        o = sk.get("options") or {}
+        look = str(o.get("look") or (o.get("image_style") if o.get("image_style") not in (None, "", "none") else "") or "").strip()
+        prompt = (f"{look}. " if look else f"{sk['name']}, {sk.get('description', '')}. ") + \
+            "Key art poster for a short vertical film, one striking subject, strong composition, no text, no letters, no watermark"
+        try:
+            llm.set_tag("ภาพปกเทมเพลต")
+            llm.free_image(prompt, str(Path(sk["dir"]) / "cover.jpg"), 768, 1024, seed=hash(sk["id"]) % 10000, retries=2)
+            core.reload_skills()
+            print("🖼 ภาพปกเทมเพลต:", sk["id"], flush=True)
+        except Exception as e:  # noqa: BLE001  ไม่สำเร็จ → ลองใหม่รอบเปิดเครื่องถัดไป
+            print("ภาพปกไม่สำเร็จ:", sk["id"], str(e)[:120], flush=True)
+
+
 def main():
     global jobs
     ap = argparse.ArgumentParser()
@@ -773,6 +793,7 @@ def main():
     core.ensure_dirs()
     core.reload_skills()
     jobs = JobManager()
+    threading.Thread(target=_auto_covers, daemon=True).start()
     print(f"AutoClip {VERSION} | root={core.ROOT} | http://{a.host}:{a.port}", flush=True)
     app.run(host=a.host, port=a.port, threaded=True, use_reloader=False)
 

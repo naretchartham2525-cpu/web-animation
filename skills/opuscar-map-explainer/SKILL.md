@@ -1,7 +1,8 @@
 ---
 name: 3D Map Explainer
-description: ข้อมูลและแผนที่ · เหมาะกับ News and geopolitics, Energy, trade and shipping, Rivers, borders and terrain
+description: เหมาะกับ News and geopolitics, Energy, trade and shipping, Rivers, borders and terrain
 tags: [opuscar, Data & Maps]
+category: ข้อมูลและแผนที่
 pack: opuscar
 look: "Real elevation and real imagery built into a three-dimensional map with the vertical exaggerated, lit by one warm, low sun; a sea coloured by its real depth; and over it a layer of data that glows, flows and lights up along true geography: routes, lanes, measurements, pillars."
 ---

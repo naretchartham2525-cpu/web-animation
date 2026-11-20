@@ -1,7 +1,8 @@
 ---
 name: Glass Product Render
-description: 3D และโมเดลจิ๋ว · เหมาะกับ Product launches, Consumer tech, Beauty
+description: เหมาะกับ Product launches, Consumer tech, Beauty
 tags: [opuscar, 3D & Miniature]
+category: 3D และโมเดลจิ๋ว
 pack: opuscar
 look: "Launch-film product rendering in transparent and frosted glass: a dark-field studio, strip-light sweeps, dispersion, caustics, light travelling inside the object, slow exploded views that snap shut on a downbeat."
 ---

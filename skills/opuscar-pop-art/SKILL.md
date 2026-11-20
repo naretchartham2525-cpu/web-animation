@@ -1,7 +1,8 @@
 ---
 name: Pop Art
-description: งานพิมพ์ · เหมาะกับ Everyday-object explainers, Brand and product posters, Small data stories
+description: เหมาะกับ Everyday-object explainers, Brand and product posters, Small data stories
 tags: [opuscar, Print & Printmaking]
+category: งานพิมพ์
 pack: opuscar
 look: "Sixties screen-print and pop-art poster language used to tell something: Ben-Day dots fixed to the paper, heavy black key lines, flat red, yellow and blue, plates that never quite register. Every frame is one whole printed poster;"
 ---

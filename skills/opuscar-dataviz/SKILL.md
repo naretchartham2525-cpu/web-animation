@@ -1,7 +1,8 @@
 ---
 name: Data Storytelling
-description: ข้อมูลและแผนที่ · เหมาะกับ Data journalism, Reports, Climate & science
+description: เหมาะกับ Data journalism, Reports, Climate & science
 tags: [opuscar, Data & Maps]
+category: ข้อมูลและแผนที่
 pack: opuscar
 look: "A chart that tells a story: real data, drawn mark by mark on cream paper by a red–blue pencil, with handwritten notes pinned to the numbers. The chart itself is the camera, the rhythm and the plot."
 ---

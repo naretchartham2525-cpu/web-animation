@@ -1,7 +1,8 @@
 ---
 name: Assembly-Line Diagram
-description: แผนภาพเส้น · เหมาะกับ How a process works, Biology and medicine, Supply chains and pipelines
+description: เหมาะกับ How a process works, Biology and medicine, Supply chains and pipelines
 tags: [opuscar, Line Diagrams]
+category: แผนภาพเส้น
 pack: opuscar
 look: "A process explained as a factory cut open in elevation: a silhouette (a body, a machine, a building, a city) is sliced like a doll's house into rooms on floors, each room a work station with a machine, a numbered plaque and tiny workers;"
 ---

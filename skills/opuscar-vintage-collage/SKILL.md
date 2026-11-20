@@ -1,7 +1,8 @@
 ---
 name: Vintage Engraving Collage
-description: งานพิมพ์ · เหมาะกับ The history of an object, Magazine-style explainers on ideas and society, Archive and collecting stories
+description: เหมาะกับ The history of an object, Magazine-style explainers on ideas and society, Archive and collecting stories
 tags: [opuscar, Print & Printmaking]
+category: งานพิมพ์
 pack: opuscar
 look: "A magazine collage made on a paper table: public-domain engravings, stamps, old photographs and printed ephemera are cut out with a white paper margin and laid over torn sheets of flat colour, and the pieces move like cut-out animation, on twos, with paper thickness and real shadows."
 ---

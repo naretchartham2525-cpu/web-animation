@@ -1,7 +1,8 @@
 ---
 name: Crayon Picture Book
-description: ภาพวาด · เหมาะกับ Picture books, Bedtime stories, Kids' learning
+description: เหมาะกับ Picture books, Bedtime stories, Kids' learning
 tags: [opuscar, Painting & Illustration]
+category: ภาพวาด
 pack: opuscar
 look: "A picture-book page drawn live in wax crayon on toothy paper, with a watercolour wash that reveals what the crayon was hiding."
 ---

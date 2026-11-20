@@ -1,7 +1,8 @@
 ---
 name: Thermal Camera
-description: เครื่องมือและหลักฐาน · เหมาะกับ Building and energy inspection, Wildlife at night, Machines and electrics
+description: เหมาะกับ Building and energy inspection, Wildlife at night, Machines and electrics
 tags: [opuscar, Instruments & Evidence]
+category: เครื่องมือและหลักฐาน
 pack: opuscar
 look: "The film is seen through a radiometric thermal camera: a low-resolution, slightly noisy picture in an iron palette where brightness means temperature, with the camera's own instruments on screen (colour scale, spot meters, area boxes, isotherm, hot-spot tracker)."
 ---

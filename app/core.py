@@ -20,6 +20,7 @@ AUDIO_EXT = {".mp3", ".wav", ".m4a", ".aac", ".ogg"}
 
 DEFAULT_SETTINGS = {
     "ui_accent": "#4F46E5",                       # สีหลักของหน้าเว็บ (ตั้งในหน้า ตั้งค่า)
+    "ui_mode": "light",                           # light | dark | auto
     # --- AI เขียนบท (OpenRouter) ---
     "script_engine": "free",                      # free | claude | paid  (โหมดเขียนเองเลือกที่แถบพิมพ์)
     "claude_model": "anthropic/claude-haiku-5.5", # Claude เขียนบท (ถูกมาก ~$0.001/EP)
@@ -195,6 +196,7 @@ def _skill_from(p):
         "dir": str(p) if p.is_dir() else "",
         "tags": _parse_list(meta.get("tags")),
         "pack": meta.get("pack", ""),
+        "category": meta.get("category", ""),   # หมวดของการ์ด (ว่าง = ของฉัน)
         "html_engine": p.is_dir() and (p / "engine" / "index.html").exists(),   # เอนจินจากคลิปแรก (Claude Code)   # ชุดเทมเพลตที่นำเข้า (เช่น opuscar) → แสดงหลังเทมเพลตของผู้ใช้
         "cover": cover,
         "options": opts,
@@ -257,8 +259,9 @@ def save_skill(data):
     old = {}
     if (d / "SKILL.md").exists():   # แก้จากเว็บ: เก็บ tags/pack เดิมไว้ (เช่น เทมเพลตชุดที่นำเข้า)
         old, _ = _parse_frontmatter((d / "SKILL.md").read_text(encoding="utf-8", errors="replace"))
-    if old.get("pack"):
-        fm.append(f"pack: {clean(old['pack'])}")
+    for k in ("pack", "category"):
+        if old.get(k):
+            fm.append(f"{k}: {clean(old[k])}")
     tags = data.get("tags") or _parse_list(old.get("tags"))
     if isinstance(tags, str):
         tags = _parse_list(tags)

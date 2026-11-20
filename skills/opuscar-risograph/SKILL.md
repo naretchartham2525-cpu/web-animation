@@ -1,7 +1,8 @@
 ---
 name: Risograph Print
-description: งานพิมพ์ · เหมาะกับ Indie brands, Zines, Lifestyle
+description: เหมาะกับ Indie brands, Zines, Lifestyle
 tags: [opuscar, Print & Printmaking]
+category: งานพิมพ์
 pack: opuscar
 look: "Animation that looks printed, frame by frame, on a stencil duplicator: two or three translucent spot inks overprinted on warm paper, halftone dots, ink grain, and plates that never quite line up."
 ---

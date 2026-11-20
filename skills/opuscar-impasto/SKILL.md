@@ -1,7 +1,8 @@
 ---
 name: Impasto Oil Painting
-description: ภาพวาด · เหมาะกับ Music videos, Art & culture, Emotional ads
+description: เหมาะกับ Music videos, Art & culture, Emotional ads
 tags: [opuscar, Painting & Illustration]
+category: ภาพวาด
 pack: opuscar
 look: "Thick oil paint laid with a palette knife: big, flat, sharp-edged planes of colour, raked by light so every ridge of paint shows. Clarity first: value structure before texture, hard edges at the focus, calm planes everywhere else."
 ---

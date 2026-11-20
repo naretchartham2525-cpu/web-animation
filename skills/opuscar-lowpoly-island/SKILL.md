@@ -1,7 +1,8 @@
 ---
 name: Low-poly Isometric Island
-description: 3D และโมเดลจิ๋ว · เหมาะกับ Game trailers, World building, Calm content
+description: เหมาะกับ Game trailers, World building, Calm content
 tags: [opuscar, 3D & Miniature]
+category: 3D และโมเดลจิ๋ว
 pack: opuscar
 look: "A tiny faceted world seen through an orthographic isometric lens: everything is a geometric block, and everything that appears arrives with a bounce and a note."
 ---

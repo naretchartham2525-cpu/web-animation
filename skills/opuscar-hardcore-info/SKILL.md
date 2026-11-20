@@ -1,7 +1,8 @@
 ---
 name: Line-Art Cutaway
-description: แผนภาพเส้น · เหมาะกับ Hardware explainers, Product engineering, Science education
+description: เหมาะกับ Hardware explainers, Product engineering, Science education
 tags: [opuscar, Line Diagrams]
+category: แผนภาพเส้น
 pack: opuscar
 look: "A real-sized object, modelled in 3D and traced live into a black-line technical drawing on warm white paper: it turns, comes apart, is cut open and is flown into, while numbered leaders, dimension lines and section hatching stay attached to its parts."
 ---

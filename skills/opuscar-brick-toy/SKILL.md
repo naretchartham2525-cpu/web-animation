@@ -1,7 +1,8 @@
 ---
 name: Brick Toy
-description: 3D และโมเดลจิ๋ว · เหมาะกับ Toys & kids, Product builds, Space
+description: เหมาะกับ Toys & kids, Product builds, Space
 tags: [opuscar, 3D & Miniature]
+category: 3D และโมเดลจิ๋ว
 pack: opuscar
 look: "Stop-motion toy-brick films shot like macro photography on a real desk: a world built from interlocking plastic bricks with round studs, animated a pose at a time."
 ---

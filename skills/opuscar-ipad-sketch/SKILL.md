@@ -1,7 +1,8 @@
 ---
 name: Tablet Sketch Explainer
-description: สเก็ตช์และกระดาน · เหมาะกับ Food & drink explainers, Craft and how-to, Lifestyle science
+description: เหมาะกับ Food & drink explainers, Craft and how-to, Lifestyle science
 tags: [opuscar, Sketch & Board]
+category: สเก็ตช์และกระดาน
 pack: opuscar
 look: "The whole frame is a cream drawing canvas on a tablet, seen while someone draws and explains: grainy pencil lines go down first, flat colour blocks come after, shifted off the line and not quite filled, and the canvas itself is pinched, panned and turned between ideas."
 ---

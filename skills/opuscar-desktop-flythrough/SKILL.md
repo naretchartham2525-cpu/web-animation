@@ -1,7 +1,8 @@
 ---
 name: Tabletop App Flythrough
-description: หน้าจอและอินเทอร์เฟซ · เหมาะกับ App explainers, Workflows, Products
+description: เหมาะกับ App explainers, Workflows, Products
 tags: [opuscar, Screens & Interfaces]
+category: หน้าจอและอินเทอร์เฟซ
 pack: opuscar
 look: "App screens and tools lie on a sunlit desk as printed paper cards; small pixel characters, popped up into voxel toys, carry the work from card to card, while one unbroken camera flies after them, whips between stops and finally pulls back over the whole desk."
 ---

@@ -1,7 +1,8 @@
 ---
 name: Projection-Mapped Model
-description: ข้อมูลและแผนที่ · เหมาะกับ Urban planning, Exhibitions, City data
+description: เหมาะกับ Urban planning, Exhibitions, City data
 tags: [opuscar, Data & Maps]
+category: ข้อมูลและแผนที่
 pack: opuscar
 look: "A pure white massing model of a real place stands on a plinth in a dark room, and a projector paints data onto it as light: one layer at a time, falling on the surfaces that face it, spilling a little past the plate. The model never changes; only the light on it does."
 ---

@@ -1,7 +1,8 @@
 ---
 name: Color-Coded Mechanism
-description: แผนภาพเส้น · เหมาะกับ How machines work, Product and engineering explainers, Science teaching
+description: เหมาะกับ How machines work, Product and engineering explainers, Science teaching
 tags: [opuscar, Line Diagrams]
+category: แผนภาพเส้น
 pack: opuscar
 look: "A real mechanism built in 3D and coloured like an anatomy plate: a pale ground, one flat colour per subsystem, the part being explained in a single accent. The machine runs truthfully (true ratios, true rates, true physics), and the camera cuts it open, explodes it by system and follows the force through it."
 ---

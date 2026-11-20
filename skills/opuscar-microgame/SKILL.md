@@ -1,7 +1,8 @@
 ---
 name: Microgame Frenzy
-description: เกม · เหมาะกับ Game trailers, Onboarding, Social shorts
+description: เหมาะกับ Game trailers, Onboarding, Social shorts
 tags: [opuscar, Games]
+category: เกม
 pack: opuscar
 look: "A rapid-fire party-game film: one command word, a few seconds, one action. Every microgame is drawn in a completely different art style, and the film keeps getting faster."
 ---

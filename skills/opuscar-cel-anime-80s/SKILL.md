@@ -1,7 +1,8 @@
 ---
 name: 80s Cel Anime
-description: การ์ตูน · เหมาะกับ Music videos, Game trailers, Nostalgia
+description: เหมาะกับ Music videos, Game trailers, Nostalgia
 tags: [opuscar, Cartoons]
+category: การ์ตูน
 pack: opuscar
 look: "Hand-painted cel animation from the golden age of Japanese OVAs, re-created in code: flat two-tone cels over airbrushed backgrounds, backlit neon, limited-animation timing, played back as a late-80s videotape on a CRT television."
 ---

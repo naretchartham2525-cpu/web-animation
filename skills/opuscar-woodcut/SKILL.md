@@ -1,7 +1,8 @@
 ---
 name: Woodcut Print
-description: งานพิมพ์ · เหมาะกับ Folk tales, Craft brands, Book trailers
+description: เหมาะกับ Folk tales, Craft brands, Book trailers
 tags: [opuscar, Print & Printmaking]
+category: งานพิมพ์
 pack: opuscar
 look: "A relief print that carves itself: every frame is a black wood block, and light only exists where a knife has cut it away. One colour at most, and only for the thing that burns."
 ---

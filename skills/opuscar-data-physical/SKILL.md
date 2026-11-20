@@ -1,7 +1,8 @@
 ---
 name: Data Physicalization
-description: ข้อมูลและแผนที่ · เหมาะกับ Annual reports, Investor decks, Energy data
+description: เหมาะกับ Annual reports, Investor decks, Energy data
 tags: [opuscar, Data & Maps]
+category: ข้อมูลและแผนที่
 pack: opuscar
 look: "Real statistics built as real objects: every unit is a countable piece of material (a plate, a block, a coin, a bar) stacked to exact scale on a crafted base, shot like a product in a studio — soft key, long shadows, shallow depth of field, physically based materials."
 ---

@@ -1,7 +1,8 @@
 ---
 name: 1-bit Dither
-description: หน้าจอและอินเทอร์เฟซ · เหมาะกับ History told through a chain of media, Printing, scanning and signals, Night scenes and space
+description: เหมาะกับ History told through a chain of media, Printing, scanning and signals, Night scenes and space
 tags: [opuscar, Screens & Interfaces]
+category: หน้าจอและอินเทอร์เฟซ
 pack: opuscar
 look: "A real 3D world shown with exactly two inks: every grey becomes a pattern of dots that is fixed to the surfaces, outlines come from depth and normal breaks, and printed things (fax prints, newspapers, labels) carry their own physical dots. The camera moves freely through it; the pattern never swims."
 ---

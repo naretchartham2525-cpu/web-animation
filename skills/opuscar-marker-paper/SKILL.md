@@ -1,7 +1,8 @@
 ---
 name: Marker on Paper
-description: สเก็ตช์และกระดาน · เหมาะกับ Worked problems, Science explainers, Lessons
+description: เหมาะกับ Worked problems, Science explainers, Lessons
 tags: [opuscar, Sketch & Board]
+category: สเก็ตช์และกระดาน
 pack: opuscar
 look: "A pad of matte white paper and one bullet-tip permanent marker in black, with a red and a blue marker for meaning only: blue is what we know, red is what we want. A problem is drawn, reasoned out and answered one sheet at a time, stroke by stroke, with no hand and no pen in sight."
 ---

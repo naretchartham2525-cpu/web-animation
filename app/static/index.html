@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Thuean Studio</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script>try{const a=localStorage.getItem("ts-accent");if(a)document.documentElement.style.setProperty("--acc",a)}catch(e){}</script>
+<script>try{const d=document.documentElement,a=localStorage.getItem("ts-accent"),m=localStorage.getItem("ts-mode")||"light";if(a)d.style.setProperty("--acc",a);d.dataset.mode=m==="auto"?(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):m}catch(e){}</script>
 <style>
 :root{
   --bg:#f3ede4;--bg2:#ece3d6;--paper:#fffdf9;--ink:#2a241e;--muted:#7d7266;--line:#e3d9cb;--soft:#f6f0e7;
@@ -143,8 +143,11 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .cover .ring path{fill:rgba(255,255,255,.9);stroke:none;transform-origin:32px 32px;transition:transform .35s ease}
 .card:hover .cover .ring circle{stroke-dashoffset:0}
 .card:hover .cover .ring path{transform:scale(1.15)}
-.use .arr{display:inline-block;width:0;overflow:hidden;transition:width .25s ease,margin .25s;opacity:.9}
-.card:hover .use .arr{width:14px;margin-left:2px}
+.gsec{grid-column:1/-1;display:flex;align-items:baseline;gap:10px;margin:18px 0 -4px}
+.gsec:first-child{margin-top:0}
+.gsec h3{margin:0;font-size:19px}
+.gsec span{font-size:12.5px;color:var(--muted)}
+.gsec .mini{margin-left:auto;border:none;background:none;color:var(--acc);font-weight:600;cursor:pointer;font-size:13px}
 .clip .th svg{transition:transform .3s}
 .clip:hover .th svg{transform:scale(1.18)}
 .clip .th{transition:filter .3s}
@@ -337,7 +340,7 @@ html *:not(svg):not(svg *){font-family:Inter,"Noto Sans Thai",system-ui,sans-ser
 body{background:var(--bg)}
 h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
 .head h1{letter-spacing:-.8px}
-.bar-top{background:#fff;backdrop-filter:none;border:var(--bw) solid var(--k);border-radius:12px;box-shadow:none;padding:6px 6px 6px 12px}
+.bar-top{background:var(--paper);backdrop-filter:none;border:var(--bw) solid var(--k);border-radius:12px;box-shadow:none;padding:6px 6px 6px 12px}
 .brand{font-weight:700;font-size:19px;letter-spacing:-.5px}
 .brand .mk{background:var(--acc);color:var(--acc-ink);border-radius:8px}
 .nb,.ib{border-radius:8px}
@@ -345,24 +348,24 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
 .nb .cnt.soft{background:var(--soft);color:var(--muted)}
 .nb .live{background:var(--acc)}
 .search{border:var(--bw) solid var(--k);border-radius:8px;height:42px}
-.packs button{border:var(--bw) solid var(--k);color:var(--ink);background:#fff;border-radius:8px}
-.packs button.on{background:var(--k);color:#fff}
+.packs button{border:var(--bw) solid var(--k);color:var(--ink);background:var(--paper);border-radius:8px}
+.packs button.on{background:var(--k);color:var(--paper)}
 .card{border:var(--bw) solid var(--k);border-radius:12px;box-shadow:none}
 .card:hover{transform:translateY(-2px);box-shadow:none}
 .card.sel{box-shadow:0 0 0 3px var(--acc)}
-.use{border:var(--bw) solid var(--k);background:#fff;border-radius:8px;font-weight:600}
+.use{border:var(--bw) solid var(--k);background:var(--paper);border-radius:8px;font-weight:600}
 .use:hover{background:var(--acc-soft);border-color:var(--k)}
 .card.sel .use{background:var(--acc);color:var(--acc-ink);border-color:var(--k)}
 .btn{border-radius:8px;font-weight:600}
-.btn.dark{background:var(--k);color:#fff;border:var(--bw) solid var(--k)}
-.cbox{background:#fff;backdrop-filter:none;border:var(--bw) solid var(--k);border-radius:14px;box-shadow:var(--hard)}
+.btn.dark{background:var(--k);color:var(--paper);border:var(--bw) solid var(--k)}
+.cbox{background:var(--paper);backdrop-filter:none;border:var(--bw) solid var(--k);border-radius:14px;box-shadow:var(--hard)}
 .steps,.actions,.tarow{border-color:var(--line)}
 .chip,.seg,.dur,.ib.sm{background:var(--soft);border:var(--bw) solid var(--k);border-radius:8px}
 .chip.ghost{border:none;background:none}
 .chip.ghost:hover,.chip.ghost.on{background:var(--soft)}
 .seg button{border-radius:6px}
 .seg button.on{background:var(--acc);color:var(--acc-ink);box-shadow:none;font-weight:600}
-.stp{background:#fff;border:1px solid var(--line)}
+.stp{background:var(--paper);border:1px solid var(--line)}
 .swl.on .sw{background:var(--acc)}
 .cost.paid::before{background:var(--acc)}
 .go{background:var(--acc);color:var(--acc-ink);border:var(--bw) solid var(--k);border-radius:8px;height:42px;padding:0 28px;font-weight:700;font-size:14.5px;letter-spacing:.2px;box-shadow:3px 3px 0 var(--k);transition:transform .12s,box-shadow .12s}
@@ -373,7 +376,7 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
 .modal{background:rgba(20,20,20,.35);backdrop-filter:none}
 .mbox{border:var(--bw) solid var(--k);border-radius:14px;box-shadow:var(--hard)}
 .sb{border-radius:8px;border-color:var(--k)}
-.sb.dark{background:var(--k);border-color:var(--k)}
+.sb.dark{background:var(--k);color:var(--paper);border-color:var(--k)}
 .sb.acc{background:var(--acc);color:var(--acc-ink);border-color:var(--k)}
 .in{border:var(--bw) solid var(--k);border-radius:8px}
 .setrow,.engbox,.job{border:var(--bw) solid var(--k);border-radius:12px}
@@ -385,7 +388,21 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
 .acsw button{width:34px;height:34px;border-radius:8px;border:var(--bw) solid var(--k);cursor:pointer}
 .acsw button.on{outline:2px solid var(--k);outline-offset:2px}
 .acsw label{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer}
-.acsw input{width:34px;height:34px;border:var(--bw) solid var(--k);border-radius:8px;padding:2px;background:#fff;cursor:pointer}
+.acsw input{width:34px;height:34px;border:var(--bw) solid var(--k);border-radius:8px;padding:2px;background:var(--paper);cursor:pointer}
+html[data-mode=dark]{
+  --bg:#0E0E10;--bg2:#1C1C20;--paper:#17171A;--ink:#F2F0EA;--muted:#A3A099;--line:#2C2C32;--soft:#222227;--k:#E9E7E2;
+  --acc-soft:color-mix(in srgb,var(--acc) 22%,#17171A);--hard:6px 6px 0 #000;color-scheme:dark;
+}
+html[data-mode=dark] .modal{background:rgba(0,0,0,.6)}
+html[data-mode=dark] .go{box-shadow:3px 3px 0 #000}
+html[data-mode=dark] .go:hover{box-shadow:4px 4px 0 #000}
+html[data-mode=dark] .card,html[data-mode=dark] .chip,html[data-mode=dark] .seg,html[data-mode=dark] .dur,html[data-mode=dark] .ib.sm,html[data-mode=dark] .use,html[data-mode=dark] .search,html[data-mode=dark] .packs button:not(.on){border-color:#3A3A42}
+html[data-mode=dark] .in{background:var(--soft);border-color:#3A3A42;color:var(--ink)}
+html[data-mode=dark] select option{background:var(--paper);color:var(--ink)}
+html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
+.modesw{display:inline-flex;border:var(--bw) solid var(--k);border-radius:8px;padding:2px;gap:2px;margin-bottom:14px}
+.modesw button{border:none;background:none;border-radius:6px;padding:6px 14px;cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;gap:6px;font-size:13px}
+.modesw button.on{background:var(--acc);color:var(--acc-ink);font-weight:600}
 </style>
 </head>
 <body>
@@ -395,6 +412,8 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
     <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
     <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4.5h10.5a2 2 0 0 1 2 2V20H7a2 2 0 0 1-2-2z"/><path d="M5 18a2 2 0 0 1 2-2h10.5"/><path d="M9 8.5h5"/></symbol>
     <symbol id="i-film" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.5v5l4-2.5z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
     <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.8"/><path d="M12 3.2l1.5 2.1 2.5-.6.6 2.5 2.4 1-.9 2.4 1.5 2.1-2.1 1.5.4 2.6-2.6.2-1.1 2.3-2.2-1.3-2.2 1.3-1.1-2.3-2.6-.2.4-2.6L3.8 13l1.5-2.1-.9-2.4 2.4-1 .6-2.5 2.5.6z"/></symbol>
     <symbol id="i-wand" viewBox="0 0 24 24"><path d="M5 19L15.5 8.5M14 5.5l.6-2 .6 2 2 .6-2 .6-.6 2-.6-2-2-.6zM18.5 10.5l.4-1.3.4 1.3 1.3.4-1.3.4-.4 1.3-.4-1.3-1.3-.4z"/><path d="M13.5 10.5l-2-2"/></symbol>
     <symbol id="i-cc" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="3"/><path d="M10.5 10.2a2.2 2.2 0 1 0 0 3.6M16.5 10.2a2.2 2.2 0 1 0 0 3.6"/></symbol>
@@ -436,6 +455,7 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
   <span class="credit" id="credit" title="ดูรายละเอียดค่าใช้จ่าย" onclick="openUsage()"></span>
   <button class="nb" onclick="openDrawer()" id="jobsBtn" title="งานที่กำลังทำ"><svg class="i"><use href="#i-reel"/></svg><span class="lbl">กำลังทำ</span><span class="cnt" id="jobCnt">0</span></button>
   <button class="nb" onclick="openClips()" title="คลังคลิปที่เสร็จแล้ว"><svg class="i"><use href="#i-film"/></svg><span class="lbl">คลังคลิป</span><span class="cnt soft" id="clipCnt">0</span></button>
+  <button class="nb" id="modeBtn" onclick="toggleMode()" title="สลับโหมดมืด/สว่าง" aria-label="สลับโหมดมืด/สว่าง"><svg class="i"><use href="#i-moon"/></svg></button>
   <button class="nb" onclick="openSettings()" title="ตั้งค่า"><svg class="i"><use href="#i-gear"/></svg></button>
 </div></div></div>
 
@@ -556,7 +576,9 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
 <div class="modal" id="mSet"><div class="mbox" style="max-width:560px">
   <h2>ตั้งค่า</h2>
   <div class="setrow" onclick="closeM('mSet'); openLib()"><svg class="i"><use href="#i-book"/></svg><div><b>คลังข้อความ</b><div class="small">บทหรือไอเดียที่เก็บไว้ใช้ซ้ำ</div></div><svg class="i" style="margin-left:auto;transform:rotate(-90deg)"><use href="#i-chevron"/></svg></div>
-  <div class="sec" style="margin:16px 0 8px;font-size:15px">สีหลักของเว็บ</div>
+  <div class="sec" style="margin:16px 0 8px;font-size:15px">โหมด</div>
+  <div class="modesw" id="sMode"></div>
+  <div class="sec" style="margin:4px 0 8px;font-size:15px">สีหลักของเว็บ</div>
   <div class="acsw" id="sAcc"></div>
   <div class="sec" style="margin:16px 0 8px;font-size:15px">ลายน้ำ</div>
   <div class="note" style="margin:-4px 0 14px">สไตล์และเสียงมาจากเทมเพลต · สั่งปรับแต่งเฉพาะครั้งได้ที่ปุ่ม “ปรับแต่ง” ในแถบพิมพ์</div>
@@ -772,21 +794,15 @@ function coverStyle(t) {
   if (t.cover && !DEMO) return `background-image:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.55)),url('/skill-cover/${enc(t.id)}?v=${t.cover === 'sample' ? Date.now() / 6e4 | 0 : 1}')`;
   return `background-image:linear-gradient(160deg,${TONES[hashN(t.id) % TONES.length]})`;
 }
-let PACK = "";   // "" ทั้งหมด · "mine" ของฉัน · ชื่อชุด เช่น opuscar
-const PACK_NAMES = {opuscar: "Lemo-Opuscar"};
+let CAT = "";   // "" ทั้งหมด · "mine" ของฉัน · ชื่อหมวด
+const catOf = t => t.category || (t.pack ? "อื่นๆ" : "mine");
 function renderPacks() {
-  const packs = [...new Set(T.map(t => t.pack).filter(Boolean))];
-  if (!packs.length) return $("#packs").innerHTML = "";
-  const n = k => k === "" ? T.length : k === "mine" ? T.filter(t => !t.pack).length : T.filter(t => t.pack === k).length;
-  $("#packs").innerHTML = [["", "ทั้งหมด"], ["mine", "ของฉัน"], ...packs.map(p => [p, PACK_NAMES[p] || p])]
-    .map(([k, l]) => `<button class="${PACK === k ? "on" : ""}" onclick="PACK='${k}'; renderGrid()">${esc(l)} <span>${n(k)}</span></button>`).join("");
+  const cats = [...new Set(T.map(catOf))].filter(c => c !== "mine").sort((a, b) => a.localeCompare(b, "th"));
+  const n = k => k === "" ? T.length : T.filter(t => catOf(t) === k).length;
+  const items = [["", "ทั้งหมด"], ...(n("mine") ? [["mine", "ของฉัน"]] : []), ...cats.map(c => [c, c])];
+  $("#packs").innerHTML = items.length > 2 ? items.map(([k, l]) => `<button class="${CAT === k ? "on" : ""}" onclick="CAT=dq('${q(k)}'); renderGrid()">${esc(l)} <span>${n(k)}</span></button>`).join("") : "";
 }
-function renderGrid() {
-  renderPacks();
-  const kw = $("#q").value.trim().toLowerCase();
-  const list = T.filter(t => (!PACK || (PACK === "mine" ? !t.pack : t.pack === PACK)) &&
-    (!kw || (t.name + " " + t.description + " " + (t.tags || []).join(" ")).toLowerCase().includes(kw)));
-  $("#grid").innerHTML = list.map(t => {
+function cardHtml(t) {
     const o = t.options || {}, sel = tplSel?.id === t.id;
     return `<div class="card ${sel ? "sel" : ""}">
       <div class="cover" onclick="viewTemplate(dq('${q(t.id)}'))">
@@ -795,9 +811,24 @@ function renderGrid() {
         <div class="meta">${t.engine || t.html_engine ? `<span class="tagx engtag">${ic("sliders")}มีเอนจิน</span>` : ""}${o.duration ? `<span class="tagx">${ic("clock")}${esc(fmtSec(+o.duration))}</span>` : ""}${o.voice ? `<span class="tagx">${ic("mic")}${esc(voiceName(o.voice).split(" ·")[0])}</span>` : ""}</div>
         <div class="ttl">${esc(t.name)}</div></div>
       <div class="cfoot"><div class="d" title="${esc(t.description)}">${esc(t.description || "")}</div>
-        <button class="use" onclick="useTemplate(dq('${q(t.id)}'))">${sel ? ic("check") + "เลือกอยู่" : `ใช้<span class="arr">→</span>`}</button></div>
+        <button class="use" onclick="useTemplate(dq('${q(t.id)}'))">${sel ? ic("check") + "Selected" : "Use"}</button></div>
     </div>`;
-  }).join("") || `<div class="empty">${T.length ? "ไม่พบเทมเพลตที่ค้นหา" : "ยังไม่มีเทมเพลต กด “สร้างเทมเพลต” แล้ววางสกิลของคุณ"}</div>`;
+}
+function renderGrid() {
+  renderPacks();
+  const kw = $("#q").value.trim().toLowerCase();
+  const list = T.filter(t => (!CAT || catOf(t) === CAT) &&
+    (!kw || (t.name + " " + t.description + " " + (t.category || "") + " " + (t.tags || []).join(" ")).toLowerCase().includes(kw)));
+  if (!CAT && !kw && list.length > 12) {   // ทั้งหมด → แยกเป็นหมวด
+    const groups = {};
+    list.forEach(t => (groups[catOf(t)] = groups[catOf(t)] || []).push(t));
+    const order = Object.keys(groups).sort((a, b) => a === "mine" ? -1 : b === "mine" ? 1 : a.localeCompare(b, "th"));
+    $("#grid").innerHTML = order.map(c => `<div class="gsec"><h3>${esc(c === "mine" ? "ของฉัน" : c)}</h3><span>${groups[c].length}</span>
+      ${groups[c].length > 5 ? `<button class="mini" onclick="CAT=dq('${q(c)}'); renderGrid(); scrollTo({top:0,behavior:'smooth'})">ดูทั้งหมด</button>` : ""}</div>` +
+      groups[c].slice(0, 5).map(cardHtml).join("")).join("");
+    return;
+  }
+  $("#grid").innerHTML = list.map(cardHtml).join("") || `<div class="empty">${T.length ? "ไม่พบเทมเพลตที่ค้นหา" : "ยังไม่มีเทมเพลต กด “สร้างเทมเพลต” แล้ววางสกิลของคุณ"}</div>`;
 }
 $("#q").oninput = renderGrid;
 function useTemplate(id) {
@@ -1358,9 +1389,25 @@ async function pickAccent(c) {   // เปลี่ยนทันที + เ�
   applyAccent(c); SET.ui_accent = c; renderAccent();
   const r = await api("POST", "/api/settings", {ui_accent: c}).catch(() => null); if (r) SET = r;
 }
+function applyMode(m) {
+  m = m || "light";
+  document.documentElement.dataset.mode = m === "auto" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : m;
+  try { localStorage.setItem("ts-mode", m); } catch (e) {}
+  const b = $("#modeBtn"); if (b) b.innerHTML = ic(document.documentElement.dataset.mode === "dark" ? "sun" : "moon");
+}
+function renderMode() {
+  const cur = SET.ui_mode || "light";
+  $("#sMode").innerHTML = [["light", "sun", "สว่าง"], ["dark", "moon", "มืด"], ["auto", "gear", "ตามเครื่อง"]]
+    .map(([k, i, l]) => `<button class="${cur === k ? "on" : ""}" onclick="pickMode('${k}')">${ic(i)}${l}</button>`).join("");
+}
+async function pickMode(m) {   // เปลี่ยนทันที + เก็บใน Drive
+  applyMode(m); SET.ui_mode = m; if ($("#sMode")) renderMode();
+  const r = await api("POST", "/api/settings", {ui_mode: m}).catch(() => null); if (r) SET = r;
+}
+function toggleMode() { pickMode(document.documentElement.dataset.mode === "dark" ? "light" : "dark"); }
 async function openSettings() {
   SET = await call(() => api("GET", "/api/settings")) || SET;
-  renderAccent();
+  renderAccent(); renderMode();
   $("#sWm").classList.toggle("on", !!SET.watermark); $("#sWmText").value = SET.watermark_text || "";
   openM("mSet");
 }
@@ -1499,7 +1546,7 @@ async function boot() {
   $("#demoBar").innerHTML = DEMO ? `<div class="demo">${ic("info")}ตัวอย่างหน้าเว็บ: ข้อมูลสมมติ เมื่อรันบน Colab จะใช้ข้อมูลจริงจาก Drive</div>` : "";
   try {
     const [t, s] = await Promise.all([api("GET", "/api/skills"), api("GET", "/api/settings")]);
-    T = t || []; SET = s || {}; if (SET.ui_accent) applyAccent(SET.ui_accent);
+    T = t || []; SET = s || {}; if (SET.ui_accent) applyAccent(SET.ui_accent); applyMode(SET.ui_mode);
     O.q = SET.quality || O.q; O.wm = SET.watermark !== false; O.engine = SET.script_engine === "claude" ? "claude" : "free"; O.vis = SET.visual_source || O.vis;
     O.dur = +(SET.target_seconds || O.dur);
   } catch (e) { if (/เข้าสู่ระบบ/.test(e.message)) needLogin = true; }

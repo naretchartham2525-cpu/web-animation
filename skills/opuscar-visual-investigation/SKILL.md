@@ -1,7 +1,8 @@
 ---
 name: Visual Investigation
-description: สารคดีและตัดต่อ · เหมาะกับ Reconstructions, Fact-checks, Incident reports
+description: เหมาะกับ Reconstructions, Fact-checks, Incident reports
 tags: [opuscar, Edit & Documentary]
+category: สารคดีและตัดต่อ
 pack: opuscar
 look: "A cold investigation desk: footage, photographs, documents, sound and maps from one real event, laid out on one shared clock so they check each other. The clock lives inside the picture — timestamps on the evidence, a playhead on a data chart, a stopwatch over the decisive seconds;"
 ---

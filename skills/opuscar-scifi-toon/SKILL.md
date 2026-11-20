@@ -1,7 +1,8 @@
 ---
 name: Sci-Fi Sitcom Toon
-description: การ์ตูน · เหมาะกับ Comedy, Tech brands, Social shorts
+description: เหมาะกับ Comedy, Tech brands, Social shorts
 tags: [opuscar, Cartoons]
+category: การ์ตูน
 pack: opuscar
 look: "Adult-animation sci-fi sitcom: thick boiling outlines, flat colour, a duo whose reactions don't match, a glowing portal, and one palette per world."
 ---

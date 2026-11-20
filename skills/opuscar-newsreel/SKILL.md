@@ -1,7 +1,8 @@
 ---
 name: 1920s Newsreel
-description: สารคดีและตัดต่อ · เหมาะกับ History stories, Fads & eras, Anniversaries
+description: เหมาะกับ History stories, Fads & eras, Anniversaries
 tags: [opuscar, Edit & Documentary]
+category: สารคดีและตัดต่อ
 pack: opuscar
 look: "A sound newsreel of the late 1920s, cut from real archive material: a searchlight-and-globe ident with a brass fanfare, a newspaper that spins into the lens, a fast and cheerful announcer on an optical soundtrack, place-and-date cards, maps, magazine pages and documents, wipes, flips and irises, and a hot band that can"
 ---

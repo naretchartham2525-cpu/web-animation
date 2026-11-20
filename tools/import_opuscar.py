@@ -83,8 +83,9 @@ def main(src):
         look = essence(style_md)
         skill = f"""---
 name: {one_line(meta.get('en') or slug)}
-description: {CAT_TH.get(cat, cat)} · เหมาะกับ {one_line(uses)}{by}
+description: เหมาะกับ {one_line(uses)}{by}
 tags: [opuscar, {one_line(cat)}]
+category: {CAT_TH.get(cat, cat)}
 pack: opuscar
 look: "{look}"
 ---

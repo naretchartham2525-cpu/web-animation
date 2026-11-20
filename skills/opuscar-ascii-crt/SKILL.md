@@ -1,7 +1,8 @@
 ---
 name: CRT ASCII Terminal
-description: ฟิล์มและเทป · เหมาะกับ Developer tools, Sci-fi, Tech brands
+description: เหมาะกับ Developer tools, Sci-fi, Tech brands
 tags: [opuscar, Film & Tape]
+category: ฟิล์มและเทป
 pack: opuscar
 look: "Everything on screen is a real character on a monospace grid, lit by the phosphor of an old monochrome CRT."
 ---

@@ -1,7 +1,8 @@
 ---
 name: Isometric People Scene
-description: 3D และโมเดลจิ๋ว · เหมาะกับ Everyday rules, Queues, Comparisons
+description: เหมาะกับ Everyday rules, Queues, Comparisons
 tags: [opuscar, 3D & Miniature]
+category: 3D และโมเดลจิ๋ว
 pack: opuscar
 look: "A calm explainer of an everyday rule, set in one real place drawn in true isometric with flat colour: small faceless people seen from behind do the thing in order, while serif type lands on the ground, character by character, as if painted there."
 ---

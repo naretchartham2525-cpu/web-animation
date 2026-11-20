@@ -1,7 +1,8 @@
 ---
 name: Under the Microscope
-description: เครื่องมือและหลักฐาน · เหมาะกับ Biomedicine, Materials science, Skincare science
+description: เหมาะกับ Biomedicine, Materials science, Skincare science
 tags: [opuscar, Instruments & Evidence]
+category: เครื่องมือและหลักฐาน
 pack: opuscar
 look: "Real, licence-clean microscopy of a real specimen, seen as it is, and one continuous change of scale that carries the viewer from the glass slide in the hand to a single cell."
 ---

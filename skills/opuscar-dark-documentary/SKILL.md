@@ -1,7 +1,8 @@
 ---
 name: Radar Sweep Documentary
-description: เครื่องมือและหลักฐาน · เหมาะกับ History of science and engineering, Archaeology, sites and reconstructions, Astronomy, deep space and survey
+description: เหมาะกับ History of science and engineering, Archaeology, sites and reconstructions, Astronomy, deep space and survey
 tags: [opuscar, Instruments & Evidence]
+category: เครื่องมือและหลักฐาน
 pack: opuscar
 look: "The world is black until a scan passes. A plane of light sweeps across terrain, machines and rooms; what it has touched lights up, then settles into echoes (contour lines, range rings, wireframe edges) that slowly fade. Facts arrive as instrument readings:"
 ---

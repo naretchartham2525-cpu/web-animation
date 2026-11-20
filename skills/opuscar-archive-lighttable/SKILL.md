@@ -1,7 +1,8 @@
 ---
 name: Archive Light Table
-description: เครื่องมือและหลักฐาน · เหมาะกับ Brand history, Archive stories, Museums
+description: เหมาะกับ Brand history, Archive stories, Museums
 tags: [opuscar, Instruments & Evidence]
+category: เครื่องมือและหลักฐาน
 pack: opuscar
 look: "Real archive objects (glass negatives, slides, letters, telegrams, clippings, drawings) lie on a cool, backlit light table. A loupe comes down on one of them, and inside the glass the object comes alive: a negative turns positive, a line of type lights up, a number lifts off the page, a photograph opens into depth."
 ---

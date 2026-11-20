@@ -1,7 +1,8 @@
 ---
 name: Pictogram Motion
-description: กราฟิกและตัวอักษร · เหมาะกับ Public services and city stories, Brand and event identity films, Explainers told through signs and objects
+description: เหมาะกับ Public services and city stories, Brand and event identity films, Explainers told through signs and objects
 tags: [opuscar, Graphic & Type]
+category: กราฟิกและตัวอักษร
 pack: opuscar
 look: "A beat-locked film built from three things only: a square-grid 'core graphic' of circles, half-discs and tiny patterned cells whose rows slide past each other; geometric pictograms (objects, vehicles, weather, signs, and a disc-headed figure when one is needed) made of round-capped bars, discs and capsules;"
 ---

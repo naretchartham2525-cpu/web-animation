@@ -1,7 +1,8 @@
 ---
 name: City Symphony
-description: สารคดีและตัดต่อ · เหมาะกับ City films, Music montages, Openers
+description: เหมาะกับ City films, Music montages, Openers
 tags: [opuscar, Edit & Documentary]
+category: สารคดีและตัดต่อ
 pack: opuscar
 look: "A city film cut like a piece of minimalist music: time-lapse turns traffic, crowds and clouds into rivers of light, the cuts get denser with the score's subdivisions, one thing is slowed almost to a stop, and the film ends on a hard cut to black on a downbeat. No narrator. The music carries it."
 ---

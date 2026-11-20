@@ -1,7 +1,8 @@
 ---
 name: Neon Tubes
-description: แสงและเส้น · เหมาะกับ Shop openings and mascot stories, Nightlife and city-pop music videos, City and festival night idents
+description: เหมาะกับ Shop openings and mascot stories, Nightlife and city-pop music videos, City and festival night idents
 tags: [opuscar, Light & Lines]
+category: แสงและเส้น
 pack: opuscar
 look: "Real neon signs on a rainy night street: bent glass tubes filled with gas on painted boards, striking with a flicker, lighting the wet walls and doubling in every puddle. The figures on the signs are alive:"
 ---

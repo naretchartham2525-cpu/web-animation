@@ -1,7 +1,8 @@
 ---
 name: Caption News
-description: สารคดีและตัดต่อ · เหมาะกับ Social news, Report explainers, Data shorts
+description: เหมาะกับ Social news, Report explainers, Data shorts
 tags: [opuscar, Edit & Documentary]
+category: สารคดีและตัดต่อ
 pack: opuscar
 look: "Social-video news that reads with the sound off. Real footage, photos and the source document are the ground; huge captions are the lead actor, slammed in a chunk at a time with one keyword on a yellow block."
 ---

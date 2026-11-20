@@ -1,7 +1,8 @@
 ---
 name: Transit Map
-description: ข้อมูลและแผนที่ · เหมาะกับ Transport, Growth over time, Networks
+description: เหมาะกับ Transport, Growth over time, Networks
 tags: [opuscar, Data & Maps]
+category: ข้อมูลและแผนที่
 pack: opuscar
 look: "A metro schematic printed on a physical sheet: lines held to eight directions, white stops, black-outlined interchange capsules, water as a flat blue band. The network is drawn on by glowing pen tips while a real perspective camera moves over the paper:"
 ---

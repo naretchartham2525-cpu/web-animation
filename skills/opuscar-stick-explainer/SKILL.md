@@ -1,7 +1,8 @@
 ---
 name: Stick-figure Explainer
-description: สเก็ตช์และกระดาน · เหมาะกับ Science explainers, Networks & social ideas, Data comparisons
+description: เหมาะกับ Science explainers, Networks & social ideas, Data comparisons
 tags: [opuscar, Sketch & Board]
+category: สเก็ตช์และกระดาน
 pack: opuscar
 look: "Plain stick people on warm paper, one accent colour, and a logic you can watch: people stand on a 'system line', react to each other, and hold hands."
 ---

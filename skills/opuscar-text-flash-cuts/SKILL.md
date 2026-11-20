@@ -1,7 +1,8 @@
 ---
 name: Text Flash Cuts
-description: กราฟิกและตัวอักษร · เหมาะกับ Suspense & drama trailers, Title sequences, Manifesto films
+description: เหมาะกับ Suspense & drama trailers, Title sequences, Manifesto films
 tags: [opuscar, Graphic & Type]
+category: กราฟิกและตัวอักษร
 pack: opuscar
 look: "Avant-garde TV anime in the manner of the early-2000s 'text frame' school: full-screen heavy Mincho title cards cut in for two to nine frames, architecture reduced to symbolic geometry, a red-black-white palette, characters as silhouettes or extreme close-ups, and the signature over-the-shoulder head tilt."
 ---

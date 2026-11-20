@@ -1,7 +1,8 @@
 ---
 name: 16-bit Pixel RPG
-description: เกม · เหมาะกับ Game trailers, Recaps, Nostalgia
+description: เหมาะกับ Game trailers, Recaps, Nostalgia
 tags: [opuscar, Games]
+category: เกม
 pack: opuscar
 look: "A short film that looks, sounds and behaves like a mid-90s console role-playing game: 320×180 pixels, a limited indexed palette, text boxes that type, menus, save files, chip music with echo."
 ---

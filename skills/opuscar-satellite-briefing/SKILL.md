@@ -1,7 +1,8 @@
 ---
 name: Satellite Briefing
-description: เครื่องมือและหลักฐาน · เหมาะกับ Climate, News explainers, Geography
+description: เหมาะกับ Climate, News explainers, Geography
 tags: [opuscar, Instruments & Evidence]
+category: เครื่องมือและหลักฐาน
 pack: opuscar
 look: "Real satellite imagery of a real place, graded down to an analyst's grey, with thin white measurement lines drawn on the ground: a lock-on reticle, outlines, a range line, one reading."
 ---

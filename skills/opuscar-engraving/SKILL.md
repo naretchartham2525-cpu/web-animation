@@ -1,7 +1,8 @@
 ---
 name: Copperplate Engraving
-description: งานพิมพ์ · เหมาะกับ Museum labels, Science explainers, Brand heritage
+description: เหมาะกับ Museum labels, Science explainers, Brand heritage
 tags: [opuscar, Print & Printmaking]
+category: งานพิมพ์
 pack: opuscar
 look: "An intaglio plate that engraves itself: a burin cuts swelling lines into copper, a proof is pulled, and the figure builds up — outline, hatching, cross-hatching — until engraved lettering, magnified details and a hand-laid wash make a finished plate."
 ---
