@@ -19,6 +19,7 @@ IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp"}
 AUDIO_EXT = {".mp3", ".wav", ".m4a", ".aac", ".ogg"}
 
 DEFAULT_SETTINGS = {
+    "ui_accent": "#4F46E5",                       # สีหลักของหน้าเว็บ (ตั้งในหน้า ตั้งค่า)
     # --- AI เขียนบท (OpenRouter) ---
     "script_engine": "free",                      # free | claude | paid  (โหมดเขียนเองเลือกที่แถบพิมพ์)
     "claude_model": "anthropic/claude-haiku-5.5", # Claude เขียนบท (ถูกมาก ~$0.001/EP)

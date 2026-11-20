@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Thuean Studio</title>
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>try{const a=localStorage.getItem("ts-accent");if(a)document.documentElement.style.setProperty("--acc",a)}catch(e){}</script>
 <style>
 :root{
   --bg:#f3ede4;--bg2:#ece3d6;--paper:#fffdf9;--ink:#2a241e;--muted:#7d7266;--line:#e3d9cb;--soft:#f6f0e7;
@@ -321,6 +322,70 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
   .two{grid-template-columns:1fr}
   .pop{width:auto;left:0;right:0}
 }
+
+/* ===== ธีม G · Clean Bold (พื้นขาว ขอบดำ เงาแข็งเฉพาะแถบสร้าง/ปุ่ม Create) ===== */
+:root{
+  --bg:#F7F7F8;--bg2:#EFEFF2;--paper:#FFFFFF;--ink:#141414;--muted:#5E5E66;--line:#E4E4E8;--soft:#F4F4F6;
+  --acc:#4F46E5;--acc-ink:#FFFFFF;--acc-soft:color-mix(in srgb,var(--acc) 12%,#fff);--k:#141414;--bw:1.5px;
+  --r:12px;--shadow:none;--hard:6px 6px 0 var(--k);
+}
+html *:not(svg):not(svg *){font-family:Inter,"Noto Sans Thai",system-ui,sans-serif!important}
+.brand{white-space:nowrap}
+@media (max-width:520px){.brand{font-size:16px;gap:8px}.brand .mk{width:28px;height:28px}.bar-top{padding:5px 4px 5px 8px;gap:2px}.nb{padding:8px 7px}.ib{width:32px}}
+.grp .dur{gap:6px;padding:0 4px}
+#durNum{width:34px}
+body{background:var(--bg)}
+h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
+.head h1{letter-spacing:-.8px}
+.bar-top{background:#fff;backdrop-filter:none;border:var(--bw) solid var(--k);border-radius:12px;box-shadow:none;padding:6px 6px 6px 12px}
+.brand{font-weight:700;font-size:19px;letter-spacing:-.5px}
+.brand .mk{background:var(--acc);color:var(--acc-ink);border-radius:8px}
+.nb,.ib{border-radius:8px}
+.nb .cnt{background:var(--acc);color:var(--acc-ink)}
+.nb .cnt.soft{background:var(--soft);color:var(--muted)}
+.nb .live{background:var(--acc)}
+.search{border:var(--bw) solid var(--k);border-radius:8px;height:42px}
+.packs button{border:var(--bw) solid var(--k);color:var(--ink);background:#fff;border-radius:8px}
+.packs button.on{background:var(--k);color:#fff}
+.card{border:var(--bw) solid var(--k);border-radius:12px;box-shadow:none}
+.card:hover{transform:translateY(-2px);box-shadow:none}
+.card.sel{box-shadow:0 0 0 3px var(--acc)}
+.use{border:var(--bw) solid var(--k);background:#fff;border-radius:8px;font-weight:600}
+.use:hover{background:var(--acc-soft);border-color:var(--k)}
+.card.sel .use{background:var(--acc);color:var(--acc-ink);border-color:var(--k)}
+.btn{border-radius:8px;font-weight:600}
+.btn.dark{background:var(--k);color:#fff;border:var(--bw) solid var(--k)}
+.cbox{background:#fff;backdrop-filter:none;border:var(--bw) solid var(--k);border-radius:14px;box-shadow:var(--hard)}
+.steps,.actions,.tarow{border-color:var(--line)}
+.chip,.seg,.dur,.ib.sm{background:var(--soft);border:var(--bw) solid var(--k);border-radius:8px}
+.chip.ghost{border:none;background:none}
+.chip.ghost:hover,.chip.ghost.on{background:var(--soft)}
+.seg button{border-radius:6px}
+.seg button.on{background:var(--acc);color:var(--acc-ink);box-shadow:none;font-weight:600}
+.stp{background:#fff;border:1px solid var(--line)}
+.swl.on .sw{background:var(--acc)}
+.cost.paid::before{background:var(--acc)}
+.go{background:var(--acc);color:var(--acc-ink);border:var(--bw) solid var(--k);border-radius:8px;height:42px;padding:0 28px;font-weight:700;font-size:14.5px;letter-spacing:.2px;box-shadow:3px 3px 0 var(--k);transition:transform .12s,box-shadow .12s}
+.go::after{display:none}
+.go:hover{background:var(--acc);transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--k)}
+.go:active{transform:translate(2px,2px);box-shadow:none}
+.drawer{border:var(--bw) solid var(--k);border-radius:14px;box-shadow:var(--hard)}
+.modal{background:rgba(20,20,20,.35);backdrop-filter:none}
+.mbox{border:var(--bw) solid var(--k);border-radius:14px;box-shadow:var(--hard)}
+.sb{border-radius:8px;border-color:var(--k)}
+.sb.dark{background:var(--k);border-color:var(--k)}
+.sb.acc{background:var(--acc);color:var(--acc-ink);border-color:var(--k)}
+.in{border:var(--bw) solid var(--k);border-radius:8px}
+.setrow,.engbox,.job{border:var(--bw) solid var(--k);border-radius:12px}
+#mLogin{background:var(--bg)}
+#lgForm{border:var(--bw) solid var(--k);border-radius:12px;box-shadow:var(--hard)}
+#lgBtn{background:var(--acc);color:var(--acc-ink);border-radius:8px}
+#splash{background:var(--bg)}
+.acsw{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.acsw button{width:34px;height:34px;border-radius:8px;border:var(--bw) solid var(--k);cursor:pointer}
+.acsw button.on{outline:2px solid var(--k);outline-offset:2px}
+.acsw label{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer}
+.acsw input{width:34px;height:34px;border:var(--bw) solid var(--k);border-radius:8px;padding:2px;background:#fff;cursor:pointer}
 </style>
 </head>
 <body>
@@ -491,6 +556,8 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
 <div class="modal" id="mSet"><div class="mbox" style="max-width:560px">
   <h2>ตั้งค่า</h2>
   <div class="setrow" onclick="closeM('mSet'); openLib()"><svg class="i"><use href="#i-book"/></svg><div><b>คลังข้อความ</b><div class="small">บทหรือไอเดียที่เก็บไว้ใช้ซ้ำ</div></div><svg class="i" style="margin-left:auto;transform:rotate(-90deg)"><use href="#i-chevron"/></svg></div>
+  <div class="sec" style="margin:16px 0 8px;font-size:15px">สีหลักของเว็บ</div>
+  <div class="acsw" id="sAcc"></div>
   <div class="sec" style="margin:16px 0 8px;font-size:15px">ลายน้ำ</div>
   <div class="note" style="margin:-4px 0 14px">สไตล์และเสียงมาจากเทมเพลต · สั่งปรับแต่งเฉพาะครั้งได้ที่ปุ่ม “ปรับแต่ง” ในแถบพิมพ์</div>
   <span class="swl" id="sWm" onclick="this.classList.toggle('on')" style="margin:0 0 14px -5px"><span class="sw"><i></i></span>ใส่ลายน้ำเป็นค่าเริ่มต้น</span>
@@ -1275,8 +1342,25 @@ async function addLib() { const text = $("#lText").value.trim(); if (!text) retu
 async function saveToLib() { const text = $("#idea").value.trim(); if (!text) return toast("ยังไม่มีข้อความ", true); if (await call(() => api("POST", "/api/library", {text}))) toast("เก็บลงคลังแล้ว"); }
 
 // ================= ตั้งค่าช่อง =================
+const ACCENTS = ["#4F46E5", "#2563EB", "#0F766E", "#E11D48", "#EA580C", "#141414"];
+function inkFor(hex) { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16 & 255) + 0.587 * (n >> 8 & 255) + 0.114 * (n & 255)) > 160 ? "#141414" : "#FFFFFF"; }
+function applyAccent(c) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(c || "")) return;
+  const st = document.documentElement.style; st.setProperty("--acc", c); st.setProperty("--acc-ink", inkFor(c));
+  try { localStorage.setItem("ts-accent", c); } catch (e) {}
+}
+function renderAccent() {
+  const cur = (SET.ui_accent || "#4F46E5").toLowerCase();
+  $("#sAcc").innerHTML = ACCENTS.map(c => `<button style="background:${c}" class="${c.toLowerCase() === cur ? "on" : ""}" aria-label="สี ${c}" onclick="pickAccent('${c}')"></button>`).join("") +
+    `<label><input type="color" value="${cur}" aria-label="เลือกสีเอง" oninput="applyAccent(this.value)" onchange="pickAccent(this.value)">เลือกเอง</label>`;
+}
+async function pickAccent(c) {   // เปลี่ยนทันที + เก็บไว้ใน Drive (ทุกเครื่องได้สีเดียวกัน)
+  applyAccent(c); SET.ui_accent = c; renderAccent();
+  const r = await api("POST", "/api/settings", {ui_accent: c}).catch(() => null); if (r) SET = r;
+}
 async function openSettings() {
   SET = await call(() => api("GET", "/api/settings")) || SET;
+  renderAccent();
   $("#sWm").classList.toggle("on", !!SET.watermark); $("#sWmText").value = SET.watermark_text || "";
   openM("mSet");
 }
@@ -1415,7 +1499,7 @@ async function boot() {
   $("#demoBar").innerHTML = DEMO ? `<div class="demo">${ic("info")}ตัวอย่างหน้าเว็บ: ข้อมูลสมมติ เมื่อรันบน Colab จะใช้ข้อมูลจริงจาก Drive</div>` : "";
   try {
     const [t, s] = await Promise.all([api("GET", "/api/skills"), api("GET", "/api/settings")]);
-    T = t || []; SET = s || {};
+    T = t || []; SET = s || {}; if (SET.ui_accent) applyAccent(SET.ui_accent);
     O.q = SET.quality || O.q; O.wm = SET.watermark !== false; O.engine = SET.script_engine === "claude" ? "claude" : "free"; O.vis = SET.visual_source || O.vis;
     O.dur = +(SET.target_seconds || O.dur);
   } catch (e) { if (/เข้าสู่ระบบ/.test(e.message)) needLogin = true; }
