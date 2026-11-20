@@ -1083,14 +1083,19 @@ function showPicked() {
   $("#tContent").closest("label").style.display = f ? "none" : "";          // เนื้อหามาจากไฟล์แล้ว
   $("#tName").placeholder = f ? "ใช้ชื่อในไฟล์ (พิมพ์ถ้าอยากเปลี่ยน)" : "เช่น อนิเมะผจญภัย";
 }
+const isVid = f => /^video\//.test(f.type) || /\.(mp4|mov|webm|m4v|mkv|avi)$/i.test(f.name);
+const isImg = f => /^image\//.test(f.type) || /\.(jpe?g|png|webp)$/i.test(f.name);
 function pickMedia(inp) {
   const f = inp.files ? inp.files[0] : inp; if (inp.value !== undefined) inp.value = ""; if (!f) return;
-  if (!/^(image|video)\//.test(f.type)) return toast("ใส่ได้เฉพาะรูปหรือคลิป", true);
-  PEND.media = f; mediaPrev(URL.createObjectURL(f), f.type.startsWith("video"), f.name);
+  if (!isVid(f) && !isImg(f)) return toast("ใส่ได้เฉพาะรูป (.jpg .png .webp) หรือคลิป (.mp4 .mov .webm)", true);
+  if (f.size > 95e6) return toast(`ไฟล์ใหญ่ ${fmtMB(f.size)} เกินที่อัปผ่านลิงก์ได้ (95 MB) · ตัดคลิปให้สั้นลงก่อน`, true);
+  PEND.media = f; mediaPrev(URL.createObjectURL(f), isVid(f), `${f.name} · ${fmtMB(f.size)}`);
 }
-function mediaPrev(src, vid, label) {
+function mediaPrev(src, vid, label) {   // ขึ้นตัวอย่างทันที · คลิปที่เบราว์เซอร์เล่นไม่ได้ (เช่น .mov จากมือถือ) → ไอคอนคลิปแทน ระบบแปลงให้ตอนบันทึก
   $("#tMediaPrev").outerHTML = `<div id="tMediaPrev" style="display:contents">${src ? (vid ? `<video class="pv" src="${src}" muted loop autoplay playsinline></video>` : `<img class="pv" src="${src}" alt="">`) : `<span class="pv">${ic("plus")}</span>`}
     <span><b>${src ? esc(label || "") : "เลือกรูปหรือคลิป"}</b><br><span class="small">${src ? "กดเพื่อเปลี่ยน" : "หรือลากไฟล์มาวาง · .jpg .png .webp .mp4 .mov"}</span></span></div>`;
+  const v = $("#tMediaPrev video");
+  if (v) v.addEventListener("error", () => { v.outerHTML = `<span class="pv">${ic("film")}</span>`; }, {once: true});
 }
 async function copyEnginePrompt() {
   const r = await call(() => api("POST", `/api/skills/${enc(editingId)}/engine-prompt`, {idea: $("#idea").value.trim(), options: {duration: O.dur}}));
@@ -1120,20 +1125,27 @@ function editTemplate() {
   editingId = null; editingTpl = null; $("#tplTitle").textContent = "เพิ่มเทมเพลต";
   tplForm(null); openM("mTpl");
 }
-async function upForm(url, f) {
-  const fd = new FormData(); fd.append("file", f);
-  const r = await fetch(url, {method: "POST", body: fd, credentials: "same-origin"});
-  const j = await r.json().catch(() => ({ok: false, error: "HTTP " + r.status}));
-  if (!j.ok) throw new Error(j.error || "อัปโหลดไม่สำเร็จ");
-  return j.data;
+function upForm(url, f, onPct) {   // อัปไฟล์ + บอกเปอร์เซ็นต์ (ใช้ XHR เพราะ fetch บอกความคืบหน้าการอัปไม่ได้)
+  return new Promise((res, rej) => {
+    const x = new XMLHttpRequest(), fd = new FormData(); fd.append("file", f);
+    x.open("POST", url); x.withCredentials = true;
+    if (onPct) x.upload.onprogress = e => e.lengthComputable && onPct(Math.round(e.loaded * 100 / e.total));
+    x.onload = () => { let j; try { j = JSON.parse(x.responseText); } catch { j = {ok: false, error: x.status === 413 ? "ไฟล์ใหญ่เกินไป" : x.status >= 500 ? `เซิร์ฟเวอร์ตอบช้าหรือขัดข้อง (HTTP ${x.status})` : "HTTP " + x.status}; }
+      j.ok ? res(j.data) : rej(new Error(j.error || "อัปโหลดไม่สำเร็จ")); };
+    x.onerror = () => rej(new Error("อัปโหลดไม่สำเร็จ: การเชื่อมต่อหลุด"));
+    x.send(fd);
+  });
 }
 async function saveTemplate() {
   const old = (editingTpl && editingTpl.options) || {};
   const styleOn = $("#tStyleOn").classList.contains("on");
   let id = editingId;
+  const btn = $("#mTpl .mfoot .sb.dark"), btnHtml = btn.innerHTML, busy = t => { btn.disabled = true; btn.textContent = t; };
+  if (btn.disabled) return;
+  busy("กำลังบันทึก…");
   try {
     if (!editingId && PEND.skill) {                  // เพิ่มจากไฟล์สกิล → นำเข้าตอนกดบันทึก
-      id = (await upForm("/api/skills/import", PEND.skill)).id;
+      id = (await upForm("/api/skills/import", PEND.skill, p => busy(`กำลังอัปสกิล ${p}%`))).id;
       const cat = $("#tCat").value.trim(), nm = $("#tName").value.trim();
       if (cat || styleOn || nm) { const t = await api("GET", "/api/skills/" + enc(id));
         await api("POST", "/api/skills", {id, name: nm || t.name, description: t.description, content: t.content, category: cat || t.category, options: {...(t.options || {}), image_style: styleOn ? $("#tStyle").value.trim() : ""}}); }
@@ -1142,8 +1154,9 @@ async function saveTemplate() {
         category: $("#tCat").value.trim(), options: {...old, image_style: styleOn ? $("#tStyle").value.trim() : ""}});
       id = r.id;
     }
-    if (PEND.media) await upForm(`/api/skills/${enc(id)}/media`, PEND.media);
-  } catch (e) { return toast(e.message, true); }
+    if (PEND.media) await upForm(`/api/skills/${enc(id)}/media`, PEND.media, p => busy(p < 100 ? `กำลังอัป${isVid(PEND.media) ? "คลิป" : "รูป"} ${p}%` : "กำลังทำรูปการ์ด…"));
+  } catch (e) { btn.disabled = false; btn.innerHTML = btnHtml; return toast(e.message, true); }
+  btn.disabled = false; btn.innerHTML = btnHtml;
   closeM("mTpl"); PEND = {skill: null, media: null};
   T = await api("GET", "/api/skills"); if (tplSel) tplSel = T.find(x => x.id === tplSel.id) || null;
   [...COVER_OK].filter(u => u.includes(`/skill-cover/${enc(id)}?`)).forEach(u => COVER_OK.delete(u));

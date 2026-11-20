@@ -278,8 +278,13 @@ def save_skill(data):
     return get_skill(sid)
 
 
+def _ff(args, timeout=120):
+    r = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *args], capture_output=True, text=True, timeout=timeout)
+    return r.returncode == 0, (r.stderr or "").strip().splitlines()[-1:] or [""]
+
+
 def save_skill_media(sid, fileobj):
-    """รูปการ์ดหรือคลิปตัวอย่างของเทมเพลต: รูป → cover.* · คลิป → sample.mp4 + ภาพนิ่งจากคลิปเป็นรูปการ์ด"""
+    """รูปการ์ดหรือคลิปตัวอย่างของเทมเพลต: รูป → cover.* · คลิป → ภาพนิ่งเป็นรูปการ์ดทันที + แปลงคลิปเป็น mp4 เบื้องหลัง (ไม่ให้หน้าเว็บรอนาน)"""
     d = SKILLS_DIR / sid
     if not d.is_dir():
         raise ValueError("ไม่พบเทมเพลต")
@@ -288,24 +293,33 @@ def save_skill_media(sid, fileobj):
         for c in d.glob("cover.*"):
             c.unlink()
         fileobj.save(d / f"cover{ext}")
-    elif ext in (".mp4", ".mov", ".webm", ".m4v"):
-        tmp = WORK_DIR / f"sample-{sid}{ext}"
-        tmp.parent.mkdir(parents=True, exist_ok=True)
+    elif ext in VIDEO_EXT:
+        WORK_DIR.mkdir(parents=True, exist_ok=True)
+        tmp = WORK_DIR / f"sample-{sid}-{int(time.time())}{ext}"
         fileobj.save(tmp)
-        out = d / "sample.mp4"
-        r = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(tmp), "-c:v", "libx264", "-preset", "veryfast", "-crf", "26",
-                            "-vf", "scale='min(720,iw)':-2", "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart", str(out)])
-        if r.returncode != 0:
+        frame = WORK_DIR / f"cover-{sid}.jpg"
+        ok_, err = _ff(["-ss", "1", "-i", str(tmp), "-frames:v", "1", "-q:v", "3", str(frame)], 60)
+        if not ok_ or not frame.exists():
+            ok_, err = _ff(["-i", str(tmp), "-frames:v", "1", "-q:v", "3", str(frame)], 60)
+        if not ok_ or not frame.exists():
             tmp.unlink(missing_ok=True)
-            raise ValueError("อ่านไฟล์คลิปไม่ได้")
+            raise ValueError("อ่านไฟล์คลิปไม่ได้: " + err[0][:160])
         for c in d.glob("cover.*"):
             c.unlink()
-        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", "1", "-i", str(tmp), "-frames:v", "1", "-q:v", "3", str(d / "cover.jpg")])
-        if not (d / "cover.jpg").exists():
-            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(tmp), "-frames:v", "1", "-q:v", "3", str(d / "cover.jpg")])
-        tmp.unlink(missing_ok=True)
+        shutil.move(str(frame), str(d / "cover.jpg"))
+
+        def convert():   # คลิปตัวอย่างสำหรับเปิดดูในเว็บ: mp4 (h264) ขนาดไม่เกิน 720 · เสร็จแล้วค่อยแทนของเดิม
+            out = WORK_DIR / f"sample-{sid}-out.mp4"
+            ok2, _ = _ff(["-i", str(tmp), "-map", "0:v:0", "-map", "0:a:0?", "-c:v", "libx264", "-preset", "veryfast", "-crf", "26",
+                          "-vf", "scale=w='min(720,iw)':h=-2", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "96k",
+                          "-movflags", "+faststart", str(out)], 900)
+            if ok2 and out.exists():
+                shutil.move(str(out), str(d / "sample.mp4"))
+                reload_skills()
+            tmp.unlink(missing_ok=True)
+        threading.Thread(target=convert, daemon=True).start()
     else:
-        raise ValueError("ใส่ได้เฉพาะรูป (.jpg .png .webp) หรือคลิป (.mp4 .mov .webm)")
+        raise ValueError("ใส่ได้เฉพาะรูป (.jpg .png .webp) หรือคลิป (.mp4 .mov .webm .mkv)")
     reload_skills()
     return get_skill(sid)
 
