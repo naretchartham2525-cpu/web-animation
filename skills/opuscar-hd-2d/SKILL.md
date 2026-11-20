@@ -3,7 +3,7 @@ name: 2.5D Pixel Art
 description: เกม · เหมาะกับ Game trailers, Fantasy, Story films
 tags: [opuscar, Games]
 pack: opuscar
-image_style: "Hand-made pixel sprites standing like paper cut-outs inside a lit, fogged, fully 3D diorama, shot from a high three-quarter angle through a tilt-shift lens: a toy world where every lamp throws a real shadow."
+look: "Hand-made pixel sprites standing like paper cut-outs inside a lit, fogged, fully 3D diorama, shot from a high three-quarter angle through a tilt-shift lens: a toy world where every lamp throws a real shadow."
 ---
 
 # 2.5D Pixel Art  ·  Lemo-Opuscar #59

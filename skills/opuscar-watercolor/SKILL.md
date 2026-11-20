@@ -3,7 +3,7 @@ name: Watercolor Brush
 description: ภาพวาด · เหมาะกับ Nature documentary, Travel, Science explainers
 tags: [opuscar, Painting & Illustration]
 pack: opuscar
-image_style: "A hand-painted journal page that paints itself: translucent brush strokes with dry-brush flying white on warm cotton paper, hand-written notes beside what is painted, nothing drawn with a vector line."
+look: "A hand-painted journal page that paints itself: translucent brush strokes with dry-brush flying white on warm cotton paper, hand-written notes beside what is painted, nothing drawn with a vector line."
 ---
 
 # Watercolor Brush  ·  Lemo-Opuscar #10

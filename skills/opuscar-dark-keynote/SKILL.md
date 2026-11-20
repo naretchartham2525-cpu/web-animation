@@ -3,7 +3,7 @@ name: Dark Tech Keynote
 description: หน้าจอและอินเทอร์เฟซ · เหมาะกับ Product launches, SaaS, Keynotes
 tags: [opuscar, Screens & Interfaces]
 pack: opuscar
-image_style: "A software launch film where the interface itself is the star: near-black gradient, hairline grid, soft light, one brand accent, and UI that moves with snap-grid precision. Light reveals, one giant number, and a sound design that is as ordered as the pixels."
+look: "A software launch film where the interface itself is the star: near-black gradient, hairline grid, soft light, one brand accent, and UI that moves with snap-grid precision. Light reveals, one giant number, and a sound design that is as ordered as the pixels."
 ---
 
 # Dark Tech Keynote  ·  Lemo-Opuscar #67

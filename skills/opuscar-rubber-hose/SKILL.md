@@ -3,7 +3,7 @@ name: 1930s Rubber Hose Cartoon
 description: การ์ตูน · เหมาะกับ Food & drink, Retro ads, Kids
 tags: [opuscar, Cartoons]
 pack: opuscar
-image_style: "Black-and-white hand-inked cartoons where every object is alive and swings to a hot jazz band."
+look: "Black-and-white hand-inked cartoons where every object is alive and swings to a hot jazz band."
 ---
 
 # 1930s Rubber Hose Cartoon  ·  Lemo-Opuscar #52

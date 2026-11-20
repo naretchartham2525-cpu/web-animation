@@ -3,7 +3,7 @@ name: Engineering Briefing Board
 description: เครื่องมือและหลักฐาน · เหมาะกับ Engineering, Option comparisons, Briefings
 tags: [opuscar, Instruments & Evidence]
 pack: opuscar
-image_style: "One real whiteboard wall, filmed: window light on enamel, ghosts of erased marker, frame and tray. Cut-out photographs of real things land on it with weight; tags, magnets, a ruler and stamps are pinned to it; marker ink draws itself in three colours with fixed meanings."
+look: "One real whiteboard wall, filmed: window light on enamel, ghosts of erased marker, frame and tray. Cut-out photographs of real things land on it with weight; tags, magnets, a ruler and stamps are pinned to it; marker ink draws itself in three colours with fixed meanings."
 ---
 
 # Engineering Briefing Board  ·  Lemo-Opuscar #87

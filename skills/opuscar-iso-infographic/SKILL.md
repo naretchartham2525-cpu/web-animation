@@ -3,7 +3,7 @@ name: Isometric Infographic
 description: แผนภาพเส้น · เหมาะกับ Process explainers, Supply chains, Annual reports
 tags: [opuscar, Line Diagrams]
 pack: opuscar
-image_style: "A system diagram comes alive: an isometric diorama of flat three-tone blocks, thin ink labels and Isotype numbers, where things open up to show their insides and the numbers are drawn, not stated."
+look: "A system diagram comes alive: an isometric diorama of flat three-tone blocks, thin ink labels and Isotype numbers, where things open up to show their insides and the numbers are drawn, not stated."
 ---
 
 # Isometric Infographic  ·  Lemo-Opuscar #45

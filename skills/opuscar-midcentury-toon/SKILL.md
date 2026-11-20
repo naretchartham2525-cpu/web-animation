@@ -3,7 +3,7 @@ name: Mid-century Cartoon
 description: การ์ตูน · เหมาะกับ Set-up guides, Help centres, How-to
 tags: [opuscar, Cartoons]
 pack: opuscar
-image_style: "1950s flat colour and limited animation for 'follow along' films: colour printed a few pixels off its broken ink line, bodies that hold still while hands do the work, abstract colour-block rooms, a calm classroom narrator, and a cool-jazz combo."
+look: "1950s flat colour and limited animation for 'follow along' films: colour printed a few pixels off its broken ink line, bodies that hold still while hands do the work, abstract colour-block rooms, a calm classroom narrator, and a cool-jazz combo."
 ---
 
 # Mid-century Cartoon  ·  Lemo-Opuscar #55

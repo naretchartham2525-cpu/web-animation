@@ -3,7 +3,7 @@ name: Paper Pop-up Book
 description: 3D และโมเดลจิ๋ว · เหมาะกับ Children's books, Game trailers, Story films
 tags: [opuscar, 3D & Miniature]
 pack: opuscar
-image_style: "A pop-up book on a real desk becomes a stage: flat cut-paper actors with white borders perform in front of paper sets that spring up from the page, under real lamp light and a real macro lens."
+look: "A pop-up book on a real desk becomes a stage: flat cut-paper actors with white borders perform in front of paper sets that spring up from the page, under real lamp light and a real macro lens."
 ---
 
 # Paper Pop-up Book  ·  Lemo-Opuscar #79

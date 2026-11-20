@@ -3,7 +3,7 @@ name: Scratchboard Long Take
 description: งานพิมพ์ · เหมาะกับ Journeys, Wildlife, Landscapes
 tags: [opuscar, Print & Printmaking]
 pack: opuscar
-image_style: "A three-dimensional world rendered as a scratchboard print, ink and paper with one red, crossed by one unbroken camera move. Depth, weather and light are all cut lines; the camera travels through the print instead of the print being turned page by page."
+look: "A three-dimensional world rendered as a scratchboard print, ink and paper with one red, crossed by one unbroken camera move. Depth, weather and light are all cut lines; the camera travels through the print instead of the print being turned page by page."
 ---
 
 # Scratchboard Long Take  ·  Lemo-Opuscar #33

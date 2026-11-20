@@ -3,7 +3,7 @@ name: CRT ASCII Terminal
 description: ฟิล์มและเทป · เหมาะกับ Developer tools, Sci-fi, Tech brands
 tags: [opuscar, Film & Tape]
 pack: opuscar
-image_style: "Everything on screen is a real character on a monospace grid, lit by the phosphor of an old monochrome CRT."
+look: "Everything on screen is a real character on a monospace grid, lit by the phosphor of an old monochrome CRT."
 ---
 
 # CRT ASCII Terminal  ·  Lemo-Opuscar #62

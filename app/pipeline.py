@@ -302,6 +302,18 @@ def story_context(proj_name, upto_ep, max_chars=2500):
     return "\n\n".join(parts)[-max_chars:]
 
 
+def skill_text(skill):
+    """เนื้อหาเทมเพลต + วิธีเขียนช่องภาพของเอนจิน (ถ้ามีเอนจินจากคลิปแรก)"""
+    if not skill:
+        return ""
+    txt = skill["content"].strip()
+    d = html_engine_dir(skill)
+    if d and (d / "SCRIPT.md").exists():
+        txt += ("\n\n=== เอนจินของเทมเพลตนี้: วิธีเขียนคำบรรยายภาพ (ช่องที่ 2 ของแต่ละบรรทัด) ให้เอนจินเข้าใจ ===\n"
+                + (d / "SCRIPT.md").read_text(encoding="utf-8", errors="replace").strip())
+    return txt
+
+
 def chat_prompt(skill, idea, start_ep, count, s, context="", bible=""):
     """คำสั่งสำเร็จรูปให้ผู้ใช้ก๊อปไปถาม Claude ในแชท (ฟรี) แล้ววางบทกลับมา"""
     end = start_ep + count - 1
@@ -310,7 +322,7 @@ def chat_prompt(skill, idea, start_ep, count, s, context="", bible=""):
     eps = f"EP {start_ep}" if count == 1 else f"EP {start_ep} ถึง EP {end} ({count} ตอน)"
     lines = [f"ช่วยเขียนบทพากย์หนังสั้นแอนิเมชัน {eps}" + (" ต่อจากเรื่องเดิม" if start_ep > 1 else "")]
     if skill:
-        lines.append(f"\n=== เทมเพลต / สไตล์ (ทำตามนี้เคร่งครัด) ===\n{skill['content'].strip()}\n=== จบเทมเพลต ===")
+        lines.append(f"\n=== เทมเพลต / สไตล์ (ทำตามนี้เคร่งครัด) ===\n{skill_text(skill)}\n=== จบเทมเพลต ===")
     if s.get("_tweak_th"):
         lines.append(f"\nปรับแต่งเพิ่มเติม (เสริมจากเทมเพลต ไม่เปลี่ยนสไตล์หลัก): {s['_tweak_th']}")
     if bible.strip():
@@ -333,7 +345,7 @@ def chat_prompt(skill, idea, start_ep, count, s, context="", bible=""):
 def write_script(ctx, proj, ep, s, skill):
     prev = core.read_json(core.ep_dir(proj["name"], ep - 1) / "script.json", {}) if ep > 1 else {}
     inputs = proj.get("inputs") if s.get("visual_source") == "drive" else []
-    msgs = _script_messages(proj, skill["content"] if skill else "", ep, s,
+    msgs = _script_messages(proj, skill_text(skill), ep, s,
                             (prev or {}).get("summary", ""), inputs or [])
     model = script_model(s)
     ctx.log(f"เขียนบทด้วย {model}" + (" (ฟรี)" if s.get("script_engine") == "free" else ""))
@@ -481,7 +493,8 @@ def _ai_images(ctx, proj_name, script, edir, s, w, h, skill):
     st = str((skill or {}).get("options", {}).get("image_style") or "").strip()
     if st.lower() == "none":
         st = ""
-    style = ", ".join(x for x in (st, s.get("_img_extra") or "") if x)
+    look = str((skill or {}).get("options", {}).get("look") or "").strip()   # ลุคของสไตล์ (เทมเพลตชุดที่นำเข้า)
+    style = ", ".join(x for x in (look, st, s.get("_img_extra") or "") if x)
     # ขนาดที่ขอจากบริการฟรี (ไม่ต้องใหญ่ เดี๋ยว ffmpeg ขยายให้) → เร็วขึ้น
     scale = min(1.0, 1024 / max(w, h))
     iw, ih = int(w * scale) // 8 * 8, int(h * scale) // 8 * 8
@@ -504,6 +517,46 @@ def _ai_images(ctx, proj_name, script, edir, s, w, h, skill):
         picks.append(("image", f))
         ctx.progress(10 + 25 * i / n)
     return picks
+
+
+# ---------------- เอนจิน HTML ของเทมเพลต (ทำจากคลิปแรกใน Claude Code) ----------------
+def html_engine_dir(skill):
+    d = Path(skill["dir"]) / "engine" if skill and skill.get("dir") else None
+    return d if d and (d / "index.html").exists() else None
+
+
+def _render_html_engine(ctx, eng_dir, proj_name, ep, script, scenes, durations, adir, work, edir, s, w, h, gap):
+    """เอนจินวาดภาพทั้งตอนตามไทม์ไลน์เสียงพากย์ → joined.mp4 (ภาพ+เสียง) · คืน subs, ความยาวรวม"""
+    from . import html_engine
+    tl_scenes, subs, t = [], [], 0.0
+    for i, (sc, dur) in enumerate(zip(scenes, durations), 1):
+        seg = dur + gap
+        tl_scenes.append({"i": i, "start": round(t, 3), "end": round(t + seg, 3), "dur": round(seg, 3),
+                          "speech": round(dur, 3), "text": sc["narration"], "speaker": (sc.get("speaker") or "").strip(),
+                          "en": sc.get("subtitle_en") or "", "visual": sc.get("image_prompt") or ""})
+        subs.append((t, dur, sc.get("subtitle") or sc["narration"], sc.get("subtitle_en") or ""))
+        t += seg
+    fps = min(30, int(s.get("fps") or 24))
+    tl = {"w": w, "h": h, "fps": fps, "duration": round(t, 3), "title": script.get("title") or proj_name,
+          "series": proj_name, "ep": ep, "lang": s.get("language", "ไทย"), "scenes": tl_scenes}
+    core.write_json(edir / "timeline.json", tl)
+    html_engine.ensure_playwright(ctx.log)
+    ctx.log(f"เอนจินวาดภาพ {t:.0f} วิ ({round(t * fps)} เฟรม)")
+    html_engine.render(eng_dir, tl, work / "pic.mp4", log=ctx.log, check=ctx.check,
+                       progress=lambda f: ctx.progress(50 + 30 * f))
+    # เสียงแต่ละฉากต่อกันตามไทม์ไลน์ (เว้นช่วงตาม scene_gap)
+    ins, parts = [], []
+    for i, sc in enumerate(tl_scenes):
+        ins += ["-i", str(adir / f"s{i + 1:02d}.mp3")]
+        parts.append(f"[{i}:a]aresample=44100,apad,atrim=0:{sc['dur']}[a{i}]")
+    fc = ";".join(parts) + ";" + "".join(f"[a{i}]" for i in range(len(tl_scenes))) + f"concat=n={len(tl_scenes)}:v=0:a=1[a]"
+    ctx.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error"] + ins +
+            ["-filter_complex", fc, "-map", "[a]", "-c:a", "aac", "-b:a", "192k", "voice.m4a"], "รวมเสียง", cwd=work)
+    ctx.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", "pic.mp4", "-i", "voice.m4a",
+             "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "copy", "-shortest", "joined.mp4"], "รวมภาพกับเสียง", cwd=work)
+    ctx.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-ss", f"{min(1.5, t / 2):.2f}", "-i", "pic.mp4",
+             "-frames:v", "1", str(edir / "thumb.jpg")], "ภาพปก", cwd=work)
+    return subs, t
 
 
 # ---------------- หลัก ----------------
@@ -568,7 +621,10 @@ def run_episode(ctx, proj_name, ep):
 
     # 3) ภาพ
     picks = None
-    if s.get("visual_source") == "drive":
+    eng_dir = html_engine_dir(skill)
+    if eng_dir:
+        ctx.log(f"ภาพจากเอนจินของเทมเพลต ({eng_dir.parent.name})")
+    elif s.get("visual_source") == "drive":
         picks = _drive_media(proj_name, scenes, ep)
         if not picks:
             ctx.log("ไม่มีไฟล์ในโฟลเดอร์ input/ ของเรื่องนี้ใน Drive → ใช้พื้นสีเรียบ")
@@ -633,7 +689,9 @@ def run_episode(ctx, proj_name, ep):
     work.mkdir(parents=True)
     gap = float(s["scene_gap"])
     usage, segs, subs, t = {}, [], [], 0.0
-    for i, (sc, dur, (kind, src)) in enumerate(zip(scenes, durations, picks), 1):
+    if eng_dir:
+        subs, t = _render_html_engine(ctx, eng_dir, proj_name, ep, script, scenes, durations, adir, work, edir, s, w, h, gap)
+    for i, (sc, dur, (kind, src)) in enumerate(zip(scenes, durations, picks if not eng_dir else []), 1):
         ctx.check()
         seg_dur = dur + gap
         offset = 0.0
@@ -652,9 +710,10 @@ def run_episode(ctx, proj_name, ep):
         t += seg_dur
         ctx.progress(50 + 35 * i / len(picks))
 
-    (work / "list.txt").write_text("".join(f"file '{p.name}'\n" for p in segs), encoding="utf-8")
-    ctx.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-f", "concat", "-safe", "0",
-             "-i", "list.txt", "-c", "copy", "joined.mp4"], "รวมฉาก", cwd=work)
+    if not eng_dir:
+        (work / "list.txt").write_text("".join(f"file '{p.name}'\n" for p in segs), encoding="utf-8")
+        ctx.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-f", "concat", "-safe", "0",
+                 "-i", "list.txt", "-c", "copy", "joined.mp4"], "รวมฉาก", cwd=work)
 
     wm = (s.get("watermark_text") or "AutoClip") if s.get("watermark") else ""
     mode = s.get("sub_lang", "th") if s.get("subtitles", True) else "none"

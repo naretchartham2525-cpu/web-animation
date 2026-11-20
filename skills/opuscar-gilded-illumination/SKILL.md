@@ -3,7 +3,7 @@ name: Gilded Illumination
 description: งานฝีมือดั้งเดิม · เหมาะกับ Fables and picture-book stories, Holiday and festival shorts, Brand and origin stories
 tags: [opuscar, Traditional Crafts]
 pack: opuscar
-image_style: "The whole frame is one gilded miniature painting, and the story happens inside it: flat mineral pigments inside firm ink outlines, white-lead highlights and dots, and real gold leaf (laid in squares, with seams, burnished) that only shines when a light inside the picture moves across it. No book, no page, no desk:"
+look: "The whole frame is one gilded miniature painting, and the story happens inside it: flat mineral pigments inside firm ink outlines, white-lead highlights and dots, and real gold leaf (laid in squares, with seams, burnished) that only shines when a light inside the picture moves across it. No book, no page, no desk:"
 ---
 
 # Gilded Illumination  ·  Lemo-Opuscar #27

@@ -3,7 +3,7 @@ name: Stick-figure Explainer
 description: สเก็ตช์และกระดาน · เหมาะกับ Science explainers, Networks & social ideas, Data comparisons
 tags: [opuscar, Sketch & Board]
 pack: opuscar
-image_style: "Plain stick people on warm paper, one accent colour, and a logic you can watch: people stand on a 'system line', react to each other, and hold hands."
+look: "Plain stick people on warm paper, one accent colour, and a logic you can watch: people stand on a 'system line', react to each other, and hold hands."
 ---
 
 # Stick-figure Explainer  ·  Lemo-Opuscar #18

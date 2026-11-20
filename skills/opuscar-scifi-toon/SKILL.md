@@ -3,7 +3,7 @@ name: Sci-Fi Sitcom Toon
 description: การ์ตูน · เหมาะกับ Comedy, Tech brands, Social shorts
 tags: [opuscar, Cartoons]
 pack: opuscar
-image_style: "Adult-animation sci-fi sitcom: thick boiling outlines, flat colour, a duo whose reactions don't match, a glowing portal, and one palette per world."
+look: "Adult-animation sci-fi sitcom: thick boiling outlines, flat colour, a duo whose reactions don't match, a glowing portal, and one palette per world."
 ---
 
 # Sci-Fi Sitcom Toon  ·  Lemo-Opuscar #54

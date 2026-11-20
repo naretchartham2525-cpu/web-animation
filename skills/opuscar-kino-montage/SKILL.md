@@ -3,7 +3,7 @@ name: Constructivist Montage
 description: สารคดีและตัดต่อ · เหมาะกับ Industry histories, Milestones, Collective effort
 tags: [opuscar, Edit & Documentary]
 pack: opuscar
-image_style: "Real archive footage, photographs and documents, printed as one ink-and-paper poster with a single red, and cut on a machine beat. Diagonal bands carry the type; windows cut along the axis hold the film; people are scissored out of photographs and stacked into structures;"
+look: "Real archive footage, photographs and documents, printed as one ink-and-paper poster with a single red, and cut on a machine beat. Diagonal bands carry the type; windows cut along the axis hold the film; people are scissored out of photographs and stacked into structures;"
 ---
 
 # Constructivist Montage  ·  Lemo-Opuscar #06

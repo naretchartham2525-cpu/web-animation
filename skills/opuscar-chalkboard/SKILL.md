@@ -3,7 +3,7 @@ name: Chalkboard
 description: สเก็ตช์และกระดาน · เหมาะกับ Word origins, Myth-busting, Lessons
 tags: [opuscar, Sketch & Board]
 pack: opuscar
-image_style: "A real classroom blackboard on which chalk writes itself, stroke by stroke in true stroke order, with no hand, no chalk stick and no eraser in sight. One idea is taught the way a teacher does it: write what people think, wipe it with one pass, write what is true in the same place."
+look: "A real classroom blackboard on which chalk writes itself, stroke by stroke in true stroke order, with no hand, no chalk stick and no eraser in sight. One idea is taught the way a teacher does it: write what people think, wipe it with one pass, write what is true in the same place."
 ---
 
 # Chalkboard  ·  Lemo-Opuscar #16

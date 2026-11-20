@@ -3,7 +3,7 @@ name: Chinese Ink Wash
 description: งานฝีมือดั้งเดิม · เหมาะกับ Wuxia, Cultural brands, Poetry
 tags: [opuscar, Traditional Crafts]
 pack: opuscar
-image_style: "Xieyi ink painting on rice paper, animated: blank paper is space, one brushstroke is a mountain, a wave, a gesture or a cut."
+look: "Xieyi ink painting on rice paper, animated: blank paper is space, one brushstroke is a mountain, a wave, a gesture or a cut."
 ---
 
 # Chinese Ink Wash  ·  Lemo-Opuscar #21

@@ -3,7 +3,7 @@ name: Silhouette Rhythm
 description: กราฟิกและตัวอักษร · เหมาะกับ Music videos, Sports and team films, Nature and festival openers
 tags: [opuscar, Graphic & Type]
 pack: opuscar
-image_style: "Pure black silhouettes against a saturated sunset, changing pose on every beat; on the key beat everything freezes and only the sky keeps moving. The water is the second canvas: reflections, ripples and back-lit droplets."
+look: "Pure black silhouettes against a saturated sunset, changing pose on every beat; on the key beat everything freezes and only the sky keeps moving. The water is the second canvas: reflections, ripples and back-lit droplets."
 ---
 
 # Silhouette Rhythm  ·  Lemo-Opuscar #43

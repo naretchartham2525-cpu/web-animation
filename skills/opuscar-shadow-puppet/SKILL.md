@@ -3,7 +3,7 @@ name: Shadow Puppetry
 description: งานฝีมือดั้งเดิม · เหมาะกับ Myths & folklore, Heritage, Festivals
 tags: [opuscar, Traditional Crafts]
 pack: opuscar
-image_style: "Chinese shadow theatre: translucent dyed-hide puppets, carved like lace, pressed against a cotton screen and lit from behind by oil lamps."
+look: "Chinese shadow theatre: translucent dyed-hide puppets, carved like lace, pressed against a cotton screen and lit from behind by oil lamps."
 ---
 
 # Shadow Puppetry  ·  Lemo-Opuscar #22

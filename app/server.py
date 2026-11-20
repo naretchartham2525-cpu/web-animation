@@ -110,6 +110,40 @@ def skill_cover(sid):
     return send_file(core.SKILLS_DIR / sid / sk["cover"], max_age=3600)
 
 
+@app.post("/api/skills/<sid>/engine")
+def skill_engine_upload(sid):
+    """อัปโหลด engine.zip ที่ได้จาก Claude Code → เทมเพลตนี้วาดภาพด้วยเอนจินนั้นทุกตอน"""
+    from . import engine_html
+    sk = core.get_skill(sid)
+    f = request.files.get("file")
+    if not sk or not f:
+        abort(400)
+    return ok(engine_html.install_zip(sk, f))
+
+
+@app.delete("/api/skills/<sid>/engine")
+def skill_engine_delete(sid):
+    from . import engine_html
+    sk = core.get_skill(sid)
+    if not sk:
+        abort(404)
+    engine_html.remove(sk)
+    return ok(True)
+
+
+@app.post("/api/skills/<sid>/engine-prompt")
+def skill_engine_prompt(sid):
+    """คำสั่งให้ Claude Code สร้างเอนจิน + บท EP 1 (ใช้โควตา Claude ของผู้ใช้ ไม่เสียเครดิตเว็บ)"""
+    from . import engine_html
+    from .pipeline import effective_settings
+    sk = core.get_skill(sid)
+    if not sk:
+        abort(404)
+    b = request.get_json(force=True, silent=True) or {}
+    s = effective_settings({"options": b.get("options") or {}}, sk)
+    return ok({"prompt": engine_html.claude_code_prompt(sk, b.get("idea") or "", s)})
+
+
 @app.get("/api/skills/<sid>")
 def skill_get(sid):
     s = core.get_skill(sid)

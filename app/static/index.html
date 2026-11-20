@@ -75,6 +75,10 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .btn{border:none;border-radius:99px;padding:11px 18px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-family:Kanit;font-weight:500;font-size:15.5px;white-space:nowrap}
 .btn.dark{background:var(--ink);color:var(--paper)}
 .btn.dark:hover{background:#3b332b}
+.engbox{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:4px 0 12px;background:var(--soft)}
+.engbox .eh{display:flex;align-items:center;gap:8px;margin-bottom:6px}.engbox .eh .small{margin-left:auto}
+.engbox ol{margin:4px 0 10px;padding-left:20px;line-height:1.7}
+.engbox .ebtn{display:flex;gap:8px;flex-wrap:wrap}.engbox label.sb{cursor:pointer}
 .packs{display:flex;gap:6px;flex-wrap:wrap;margin:-6px 0 16px}
 .packs button{border:1px solid var(--line);background:var(--paper);border-radius:99px;padding:6px 14px;font-size:13px;cursor:pointer;color:var(--muted)}
 .packs button span{opacity:.7;margin-left:2px}
@@ -451,6 +455,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
     </div>
   </div>
   <label class="f"><span>สกิล / คำสั่งเขียนบท (วางสกิลของคุณตรงนี้)</span><textarea class="in" id="tContent" style="min-height:200px" placeholder="# สไตล์&#10;- โทน...&#10;## ตัวละคร&#10;- ...&#10;## กฎบทพากย์&#10;- ประโยคสั้น ไม่มีวงเล็บ"></textarea></label>
+  <div class="engbox" id="tEng"></div>
   <div class="note">บันทึกเป็นไฟล์ใน Drive: AutoClip/skills/&lt;ชื่อ&gt;/SKILL.md · ใส่ภาพปกได้โดยวาง cover.jpg ในโฟลเดอร์เดียวกัน</div>
   <div class="mfoot"><button class="sb" onclick="closeM('mTpl')">ยกเลิก</button><button class="sb dark" onclick="saveTemplate()"><svg class="i"><use href="#i-check"/></svg>บันทึก</button></div>
 </div></div>
@@ -720,7 +725,7 @@ function renderGrid() {
       <div class="cover" onclick="viewTemplate(dq('${q(t.id)}'))">
         <div class="bgi" style="${coverStyle(t)}"></div>
         <div class="ring"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="26" transform="rotate(-90 32 32)"/><path d="M27 22v20l16-10z"/></svg></div>
-        <div class="meta">${t.engine ? `<span class="tagx engtag">${ic("sliders")}มีเอนจิน</span>` : ""}${o.duration ? `<span class="tagx">${ic("clock")}${esc(fmtSec(+o.duration))}</span>` : ""}${o.voice ? `<span class="tagx">${ic("mic")}${esc(voiceName(o.voice).split(" ·")[0])}</span>` : ""}</div>
+        <div class="meta">${t.engine || t.html_engine ? `<span class="tagx engtag">${ic("sliders")}มีเอนจิน</span>` : ""}${o.duration ? `<span class="tagx">${ic("clock")}${esc(fmtSec(+o.duration))}</span>` : ""}${o.voice ? `<span class="tagx">${ic("mic")}${esc(voiceName(o.voice).split(" ·")[0])}</span>` : ""}</div>
         <div class="ttl">${esc(t.name)}</div></div>
       <div class="cfoot"><div class="d" title="${esc(t.description)}">${esc(t.description || "")}</div>
         <button class="use" onclick="useTemplate(dq('${q(t.id)}'))">${sel ? ic("check") + "เลือกอยู่" : `ใช้<span class="arr">→</span>`}</button></div>
@@ -764,12 +769,52 @@ function tplForm(t) {
   $("#tSub").value = o.sub_lang || "th";
   const eng = !!(t && t.engine);
   $("#tStyleBox").style.display = eng ? "none" : "";
+  renderEngBox(t);
   const st = o.image_style && o.image_style !== "none" ? o.image_style : "";
   $("#tStyle").value = st;
   $("#tStyleOn").classList.toggle("on", !!st);
   tStyleUI();
 }
 let editingTpl = null;
+// เอนจินจากคลิปแรก: คัดลอกคำสั่งไป Claude Code → ได้ engine.zip + บท EP 1 → อัปโหลดที่นี่ → ตอนต่อไปอัตโนมัติ
+function renderEngBox(t) {
+  const box = $("#tEng");
+  if (!t || t.engine) { box.innerHTML = ""; box.style.display = "none"; return; }
+  box.style.display = "";
+  box.innerHTML = t.html_engine
+    ? `<div class="eh">${ic("check")}<b>มีเอนจินแล้ว</b><span class="small">ทุกตอนวาดภาพด้วยเอนจินนี้ · ฟรี</span></div>
+       <div class="ebtn"><label class="sb">${ic("clip")}อัปเดตเอนจิน (.zip)<input type="file" accept=".zip" hidden onchange="uploadEngine(this)"></label>
+       <button class="sb" onclick="copyEnginePrompt()">${ic("copy")}คัดลอกคำสั่ง Claude Code</button>
+       <button class="sb" style="color:var(--err)" onclick="deleteEngine()">${ic("trash")}เลิกใช้เอนจิน</button></div>`
+    : `<div class="eh">${ic("sliders")}<b>ทำให้เคลื่อนไหวแบบตัวอย่าง</b><span class="small">ตอนนี้ใช้ภาพ AI นิ่งขยับ</span></div>
+       <ol class="small"><li>กด “คัดลอกคำสั่ง” แล้ววางใน <b>Claude Code</b> (ใช้โควตา Claude ของคุณ ไม่เสียเครดิตเว็บ)</li>
+       <li>ได้ <b>engine.zip</b> + บท EP 1 → อัปโหลด zip ที่นี่</li><li>วางบท EP 1 ในแถบสร้าง กด Create · ตอนต่อไปกดทำต่อได้อัตโนมัติ</li></ol>
+       <div class="ebtn"><button class="sb dark" onclick="copyEnginePrompt()">${ic("copy")}คัดลอกคำสั่ง Claude Code</button>
+       <label class="sb">${ic("clip")}อัปโหลด engine.zip<input type="file" accept=".zip" hidden onchange="uploadEngine(this)"></label></div>`;
+}
+async function copyEnginePrompt() {
+  const r = await call(() => api("POST", `/api/skills/${enc(editingId)}/engine-prompt`, {idea: $("#idea").value.trim(), options: {duration: O.dur}}));
+  if (r) copyText(r.prompt);
+}
+async function uploadEngine(inp) {
+  const f = inp.files[0]; inp.value = ""; if (!f) return;
+  toast("กำลังติดตั้งเอนจิน…");
+  const fd = new FormData(); fd.append("file", f);
+  const r = await fetch(`/api/skills/${enc(editingId)}/engine`, {method: "POST", body: fd, credentials: "same-origin"});
+  const j = await r.json().catch(() => ({ok: false, error: "HTTP " + r.status}));
+  if (!j.ok) return toast(j.error || "ติดตั้งเอนจินไม่สำเร็จ", true);
+  toast(`ติดตั้งเอนจินแล้ว (${j.data.files} ไฟล์)` + (j.data.script_md ? "" : " · ไม่มี SCRIPT.md: AI จะไม่รู้วิธีเขียนช่องภาพ"), !j.data.script_md);
+  await refreshTemplates();
+}
+async function deleteEngine() {
+  if (!await call(() => api("DELETE", `/api/skills/${enc(editingId)}/engine`))) return;
+  toast("เลิกใช้เอนจินแล้ว (สำรองไว้ใน engine.old)"); await refreshTemplates();
+}
+async function refreshTemplates() {
+  T = await api("GET", "/api/skills"); if (tplSel) tplSel = T.find(x => x.id === tplSel.id) || null;
+  editingTpl = T.find(x => x.id === editingId) ? {...editingTpl, ...T.find(x => x.id === editingId)} : editingTpl;
+  renderEngBox(editingTpl); renderGrid(); renderComposer();
+}
 async function viewTemplate(id) {
   const t = await call(() => api("GET", "/api/skills/" + enc(id))); if (!t) return;
   editingId = id; editingTpl = t; $("#tplTitle").textContent = "แก้เทมเพลต";

@@ -3,7 +3,7 @@ name: Scale Zoom Explainer
 description: กราฟิกและตัวอักษร · เหมาะกับ Science explainers, Scale and size, Classroom
 tags: [opuscar, Graphic & Type]
 pack: opuscar
-image_style: "Solid flat shapes on a deep night-blue ground, each with one shade step and hard-edged ring 'glows', drawn to true scale inside each frame, guided by a small character who is the camera's own lens."
+look: "Solid flat shapes on a deep night-blue ground, each with one shade step and hard-edged ring 'glows', drawn to true scale inside each frame, guided by a small character who is the camera's own lens."
 ---
 
 # Scale Zoom Explainer  ·  Lemo-Opuscar #41

@@ -3,7 +3,7 @@ name: Stained Glass
 description: งานฝีมือดั้งเดิม · เหมาะกับ Legends, Heritage, Holiday stories
 tags: [opuscar, Traditional Crafts]
 pack: opuscar
-image_style: "A medieval stained-glass window seen from inside a dark stone hall, alive only where the sun touches it: light is the clock, the camera and the story."
+look: "A medieval stained-glass window seen from inside a dark stone hall, alive only where the sun touches it: light is the clock, the camera and the story."
 ---
 
 # Stained Glass  ·  Lemo-Opuscar #26

@@ -3,7 +3,7 @@ name: Manga Panels
 description: การ์ตูน · เหมาะกับ Music videos, Product launches, Anime openings
 tags: [opuscar, Cartoons]
 pack: opuscar
-image_style: "A black-and-white Japanese manga page that moves: G-pen ink, screentone dots, one spot colour, panels that open on the beat, sound effects slammed in letter by letter, and a camera that travels across the paper and through the gutters. The panel is the cut."
+look: "A black-and-white Japanese manga page that moves: G-pen ink, screentone dots, one spot colour, panels that open on the beat, sound effects slammed in letter by letter, and a camera that travels across the paper and through the gutters. The panel is the cut."
 ---
 
 # Manga Panels  ·  Lemo-Opuscar #57

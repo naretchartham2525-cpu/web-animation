@@ -3,7 +3,7 @@ name: Tabletop App Flythrough
 description: หน้าจอและอินเทอร์เฟซ · เหมาะกับ App explainers, Workflows, Products
 tags: [opuscar, Screens & Interfaces]
 pack: opuscar
-image_style: "App screens and tools lie on a sunlit desk as printed paper cards; small pixel characters, popped up into voxel toys, carry the work from card to card, while one unbroken camera flies after them, whips between stops and finally pulls back over the whole desk."
+look: "App screens and tools lie on a sunlit desk as printed paper cards; small pixel characters, popped up into voxel toys, carry the work from card to card, while one unbroken camera flies after them, whips between stops and finally pulls back over the whole desk."
 ---
 
 # Tabletop App Flythrough  ·  Lemo-Opuscar #70

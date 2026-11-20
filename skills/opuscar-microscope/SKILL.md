@@ -3,7 +3,7 @@ name: Under the Microscope
 description: เครื่องมือและหลักฐาน · เหมาะกับ Biomedicine, Materials science, Skincare science
 tags: [opuscar, Instruments & Evidence]
 pack: opuscar
-image_style: "Real, licence-clean microscopy of a real specimen, seen as it is, and one continuous change of scale that carries the viewer from the glass slide in the hand to a single cell."
+look: "Real, licence-clean microscopy of a real specimen, seen as it is, and one continuous change of scale that carries the viewer from the glass slide in the hand to a single cell."
 ---
 
 # Under the Microscope  ·  Lemo-Opuscar #89

@@ -3,7 +3,7 @@ name: Swiss Motion Graphics
 description: กราฟิกและตัวอักษร · เหมาะกับ Brand identity, Events, Design education
 tags: [opuscar, Graphic & Type]
 pack: opuscar
-image_style: "International Typographic Style in motion: a modular grid, one typeface, one signal colour, and movement as exact as a printing press."
+look: "International Typographic Style in motion: a modular grid, one typeface, one signal colour, and movement as exact as a printing press."
 ---
 
 # Swiss Motion Graphics  ·  Lemo-Opuscar #36

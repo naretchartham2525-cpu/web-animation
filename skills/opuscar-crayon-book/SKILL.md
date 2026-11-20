@@ -3,7 +3,7 @@ name: Crayon Picture Book
 description: ภาพวาด · เหมาะกับ Picture books, Bedtime stories, Kids' learning
 tags: [opuscar, Painting & Illustration]
 pack: opuscar
-image_style: "A picture-book page drawn live in wax crayon on toothy paper, with a watercolour wash that reveals what the crayon was hiding."
+look: "A picture-book page drawn live in wax crayon on toothy paper, with a watercolour wash that reveals what the crayon was hiding."
 ---
 
 # Crayon Picture Book  ·  Lemo-Opuscar #09

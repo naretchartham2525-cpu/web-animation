@@ -3,7 +3,7 @@ name: Sketchnote
 description: สเก็ตช์และกระดาน · เหมาะกับ Lecture notes, Science explainers, One-page summaries
 tags: [opuscar, Sketch & Board]
 pack: opuscar
-image_style: "One page of visual notes on dot-grid paper, drawn while you watch: a black fineliner writes and draws, a grey marker gives volume and shadow, one yellow marker carries the single thing that matters. Banners, rounded boxes, fat arrows, icons and hand lettering grow stroke by stroke;"
+look: "One page of visual notes on dot-grid paper, drawn while you watch: a black fineliner writes and draws, a grey marker gives volume and shadow, one yellow marker carries the single thing that matters. Banners, rounded boxes, fat arrows, icons and hand lettering grow stroke by stroke;"
 ---
 
 # Sketchnote  ·  Lemo-Opuscar #17

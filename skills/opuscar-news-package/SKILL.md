@@ -3,7 +3,7 @@ name: Broadcast News Package
 description: สารคดีและตัดต่อ · เหมาะกับ News round-ups, Bulletins, Market updates
 tags: [opuscar, Edit & Documentary]
 pack: opuscar
-image_style: "A television newsroom's on-air package, built entirely in code: a sting that becomes the channel bug, a rundown of today's stories that opens and closes the bulletin, a lower-third strap that never leaves the bottom of the frame, and full-frame graphics (split-flap price boards, a line breaking a threshold, explainer m"
+look: "A television newsroom's on-air package, built entirely in code: a sting that becomes the channel bug, a rundown of today's stories that opens and closes the bulletin, a lower-third strap that never leaves the bottom of the frame, and full-frame graphics (split-flap price boards, a line breaking a threshold, explainer m"
 ---
 
 # Broadcast News Package  ·  Lemo-Opuscar #08

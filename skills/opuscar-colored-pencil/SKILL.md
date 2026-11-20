@@ -3,7 +3,7 @@ name: Colored-Pencil Science Illustration
 description: ภาพวาด · เหมาะกับ Natural-science cutaways, Picture-book explainers, Hidden structures and processes
 tags: [opuscar, Painting & Illustration]
 pack: opuscar
-image_style: "A real 3D cutaway world (ground, soil horizons, stones, buried structures, living things) redrawn every frame as a colored-pencil plate on toothed paper: four layers of pencil, a wobbling graphite contour, labels pencilled on cream paper tags."
+look: "A real 3D cutaway world (ground, soil horizons, stones, buried structures, living things) redrawn every frame as a colored-pencil plate on toothed paper: four layers of pencil, a wobbling graphite contour, labels pencilled on cream paper tags."
 ---
 
 # Colored-Pencil Science Illustration  ·  Lemo-Opuscar #13

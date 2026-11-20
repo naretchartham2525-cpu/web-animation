@@ -3,7 +3,7 @@ name: Oscilloscope Math
 description: แสงและเส้น · เหมาะกับ Maths and physics lessons, Signals and electronics, Science explainers
 tags: [opuscar, Light & Lines]
 pack: opuscar
-image_style: "Mathematics drawn by an electron beam on a phosphor screen: thin glowing green lines on near-black, a dotted graticule, monospace readouts and TeX formulas, every number on screen computed from the same values that draw the picture."
+look: "Mathematics drawn by an electron beam on a phosphor screen: thin glowing green lines on near-black, a dotted graticule, monospace readouts and TeX formulas, every number on screen computed from the same values that draw the picture."
 ---
 
 # Oscilloscope Math  ·  Lemo-Opuscar #76

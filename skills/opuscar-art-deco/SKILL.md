@@ -3,7 +3,7 @@ name: Art Deco
 description: กราฟิกและตัวอักษร · เหมาะกับ Luxury & hospitality, Galas, Invitations
 tags: [opuscar, Graphic & Type]
 pack: opuscar
-image_style: "Black lacquer, engraved gold line and airbrushed geometry: a 1930s poster that moves. Every composition has a centre axis, transitions open or close along it, and light arrives as bulbs switching on one by one."
+look: "Black lacquer, engraved gold line and airbrushed geometry: a 1930s poster that moves. Every composition has a centre axis, transitions open or close along it, and light arrives as bulbs switching on one by one."
 ---
 
 # Art Deco  ·  Lemo-Opuscar #38

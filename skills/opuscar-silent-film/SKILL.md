@@ -3,7 +3,7 @@ name: 1920s Silent Film
 description: ฟิล์มและเทป · เหมาะกับ Comedy, Retro brands, Silent storytelling
 tags: [opuscar, Film & Tape]
 pack: opuscar
-image_style: "An engraved-illustration silent film projected in a picture house: ink line and silver wash, a 4:3 print that flickers and weaves between velvet curtains, intertitles instead of voices, and a cinema pianist who plays every beat."
+look: "An engraved-illustration silent film projected in a picture house: ink line and silver wash, a 4:3 print that flickers and weaves between velvet curtains, intertitles instead of voices, and a cinema pianist who plays every beat."
 ---
 
 # 1920s Silent Film  ·  Lemo-Opuscar #63

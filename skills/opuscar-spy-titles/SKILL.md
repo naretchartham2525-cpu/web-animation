@@ -3,7 +3,7 @@ name: 60s Spy Title Sequence
 description: กราฟิกและตัวอักษร · เหมาะกับ Title sequences, Event openers, Trailers
 tags: [opuscar, Graphic & Type]
 pack: opuscar
-image_style: "A cut-paper, four-ink opening title sequence for a film that never existed: silhouettes move through sets built out of the credits themselves, every brass stab is a cut, and a title is assembled from the pieces."
+look: "A cut-paper, four-ink opening title sequence for a film that never existed: silhouettes move through sets built out of the credits themselves, every brass stab is a cut, and a title is assembled from the pieces."
 ---
 
 # 60s Spy Title Sequence  ·  Lemo-Opuscar #37

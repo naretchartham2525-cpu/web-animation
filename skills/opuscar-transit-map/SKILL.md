@@ -3,7 +3,7 @@ name: Transit Map
 description: ข้อมูลและแผนที่ · เหมาะกับ Transport, Growth over time, Networks
 tags: [opuscar, Data & Maps]
 pack: opuscar
-image_style: "A metro schematic printed on a physical sheet: lines held to eight directions, white stops, black-outlined interchange capsules, water as a flat blue band. The network is drawn on by glowing pen tips while a real perspective camera moves over the paper:"
+look: "A metro schematic printed on a physical sheet: lines held to eight directions, white stops, black-outlined interchange capsules, water as a flat blue band. The network is drawn on by glowing pen tips while a real perspective camera moves over the paper:"
 ---
 
 # Transit Map  ·  Lemo-Opuscar #97

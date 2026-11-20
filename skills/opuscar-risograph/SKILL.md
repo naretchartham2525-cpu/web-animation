@@ -3,7 +3,7 @@ name: Risograph Print
 description: งานพิมพ์ · เหมาะกับ Indie brands, Zines, Lifestyle
 tags: [opuscar, Print & Printmaking]
 pack: opuscar
-image_style: "Animation that looks printed, frame by frame, on a stencil duplicator: two or three translucent spot inks overprinted on warm paper, halftone dots, ink grain, and plates that never quite line up."
+look: "Animation that looks printed, frame by frame, on a stencil duplicator: two or three translucent spot inks overprinted on warm paper, halftone dots, ink grain, and plates that never quite line up."
 ---
 
 # Risograph Print  ·  Lemo-Opuscar #28

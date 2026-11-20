@@ -3,7 +3,7 @@ name: Pen Plotter
 description: แผนภาพเส้น · เหมาะกับ Maps and terrain, Measurements and records, Generative and data drawings
 tags: [opuscar, Line Diagrams]
 pack: opuscar
-image_style: "A pen plotter on a desk draws the subject one stroke at a time: real pens, real ink on paper, real machine motion. Maps, charts and lettering appear as polylines a gantry lays down, with pen changes at a rack, pen-up travel and pen-down ink, and the camera lives on the desk with the machine."
+look: "A pen plotter on a desk draws the subject one stroke at a time: real pens, real ink on paper, real machine motion. Maps, charts and lettering appear as polylines a gantry lays down, with pen changes at a rack, pen-up travel and pen-down ink, and the camera lives on the desk with the machine."
 ---
 
 # Pen Plotter  ·  Lemo-Opuscar #50

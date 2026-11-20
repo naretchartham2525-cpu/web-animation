@@ -3,7 +3,7 @@ name: Data Storytelling
 description: ข้อมูลและแผนที่ · เหมาะกับ Data journalism, Reports, Climate & science
 tags: [opuscar, Data & Maps]
 pack: opuscar
-image_style: "A chart that tells a story: real data, drawn mark by mark on cream paper by a red–blue pencil, with handwritten notes pinned to the numbers. The chart itself is the camera, the rhythm and the plot."
+look: "A chart that tells a story: real data, drawn mark by mark on cream paper by a red–blue pencil, with handwritten notes pinned to the numbers. The chart itself is the camera, the rhythm and the plot."
 ---
 
 # Data Storytelling  ·  Lemo-Opuscar #94

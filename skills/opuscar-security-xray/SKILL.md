@@ -3,7 +3,7 @@ name: Security X-ray
 description: เครื่องมือและหลักฐาน · เหมาะกับ Airport and customs screening, Parcel and cargo inspection, Product internals
 tags: [opuscar, Instruments & Evidence]
 pack: opuscar
-image_style: "The film is seen through a baggage-screening console: objects are never shown, only their dual-energy X-ray image, where every material has its colour (organic orange, mixed green, metal blue, impenetrable black) and every outline comes from thickness, not from a drawing."
+look: "The film is seen through a baggage-screening console: objects are never shown, only their dual-energy X-ray image, where every material has its colour (organic orange, mixed green, metal blue, impenetrable black) and every outline comes from thickness, not from a drawing."
 ---
 
 # Security X-ray  ·  Lemo-Opuscar #91

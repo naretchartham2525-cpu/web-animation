@@ -153,7 +153,7 @@ def _first_line(body):
 
 
 SKILL_OPTION_KEYS = ("duration", "quality", "aspect", "voice_on", "tts_engine", "voice", "edge_rate",
-                     "image_style", "scenes", "visual_source", "watermark", "sub_lang")
+                     "image_style", "scenes", "visual_source", "watermark", "sub_lang", "look")
 
 
 def _parse_list(v):
@@ -193,7 +193,8 @@ def _skill_from(p):
         "engine": (engine or {}).get("engine") or "",
         "dir": str(p) if p.is_dir() else "",
         "tags": _parse_list(meta.get("tags")),
-        "pack": meta.get("pack", ""),   # ชุดเทมเพลตที่นำเข้า (เช่น opuscar) → แสดงหลังเทมเพลตของผู้ใช้
+        "pack": meta.get("pack", ""),
+        "html_engine": p.is_dir() and (p / "engine" / "index.html").exists(),   # เอนจินจากคลิปแรก (Claude Code)   # ชุดเทมเพลตที่นำเข้า (เช่น opuscar) → แสดงหลังเทมเพลตของผู้ใช้
         "cover": cover,
         "options": opts,
         "file": str(f.relative_to(ROOT)),
@@ -252,7 +253,12 @@ def save_skill(data):
     d.mkdir(parents=True, exist_ok=True)
     clean = lambda v: str(v).replace("\n", " ").replace("\r", " ").strip()
     fm = [f"name: {clean(name)}", f"description: {clean(data.get('description') or '')}"]
-    tags = data.get("tags") or []
+    old = {}
+    if (d / "SKILL.md").exists():   # แก้จากเว็บ: เก็บ tags/pack เดิมไว้ (เช่น เทมเพลตชุดที่นำเข้า)
+        old, _ = _parse_frontmatter((d / "SKILL.md").read_text(encoding="utf-8", errors="replace"))
+    if old.get("pack"):
+        fm.append(f"pack: {clean(old['pack'])}")
+    tags = data.get("tags") or _parse_list(old.get("tags"))
     if isinstance(tags, str):
         tags = _parse_list(tags)
     if tags:

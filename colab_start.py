@@ -23,7 +23,7 @@ for d in sorted(os.listdir(f'{CODE}/skills')):
             for fn in files:
                 src = os.path.join(base, fn)
                 dst = os.path.normpath(os.path.join(f'{ROOT}/skills/{d}', rel, fn))
-                sysfile = rel == '.' and (fn == 'autoclip.json' or d.startswith('opuscar-') and fn in ('SKILL.md', 'STYLE.md'))
+                sysfile = rel == '.' and (fn == 'autoclip.json' or d.startswith('opuscar-') and fn == 'STYLE.md')
                 if sysfile or not os.path.exists(dst):
                     os.makedirs(os.path.dirname(dst), exist_ok=True)
                     shutil.copy2(src, dst)

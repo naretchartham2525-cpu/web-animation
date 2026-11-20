@@ -3,7 +3,7 @@ name: Whiteboard Explainer
 description: สเก็ตช์และกระดาน · เหมาะกับ Explainers, Online courses, Science
 tags: [opuscar, Sketch & Board]
 pack: opuscar
-image_style: "An explainer drawn live on one glossy dry-erase board: single-line handwriting that is actually written stroke by stroke, floating markers with no hand, magnets that can move, an eraser that can rewind, and a camera that travels across the board instead of cutting."
+look: "An explainer drawn live on one glossy dry-erase board: single-line handwriting that is actually written stroke by stroke, floating markers with no hand, magnets that can move, an eraser that can rewind, and a camera that travels across the board instead of cutting."
 ---
 
 # Whiteboard Explainer  ·  Lemo-Opuscar #15

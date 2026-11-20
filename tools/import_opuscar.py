@@ -4,7 +4,7 @@
 รันซ้ำได้ (อัปเดตทับของเดิม) · ไม่แตะเทมเพลตอื่น
 
 แต่ละสไตล์ → skills/opuscar-<slug>/
-  SKILL.md   เทมเพลตของระบบ (ชื่อ, หมวด, image_style สำหรับภาพ AI, แนวทางเขียนบท)
+  SKILL.md   เทมเพลตของระบบ (ชื่อ, หมวด, look = ลุคของสไตล์สำหรับภาพ AI, แนวทางเขียนบท)
   STYLE.md   คู่มือสไตล์ต้นฉบับ (CC BY-NC 4.0) ไว้แนบตอนคัดลอกคำสั่งให้ Claude
   cover.jpg  โปสเตอร์ย่อขนาด (เฉพาะที่เป็นของ Lemomo ล้วน CC BY 4.0)
 เครดิต/สัญญาอนุญาต → skills/_opuscar/ (โฟลเดอร์ขึ้นต้น _ ระบบไม่นับเป็นเทมเพลต)
@@ -41,7 +41,7 @@ def special_posters(src):
 
 
 def essence(style_md):
-    """ประโยคสรุปลุคของสไตล์ (บรรทัด > แรกของ STYLE.md) → ใช้เป็น image_style"""
+    """ประโยคสรุปลุคของสไตล์ (บรรทัด > แรกของ STYLE.md) → look ของเทมเพลต"""
     for line in style_md.splitlines():
         if line.startswith("> ") and not line.startswith("> References"):
             s = re.sub(r"\s+", " ", line[2:]).strip()
@@ -86,7 +86,7 @@ name: {one_line(meta.get('en') or slug)}
 description: {CAT_TH.get(cat, cat)} · เหมาะกับ {one_line(uses)}{by}
 tags: [opuscar, {one_line(cat)}]
 pack: opuscar
-image_style: "{look}"
+look: "{look}"
 ---
 
 # {meta.get('en') or slug}  ·  Lemo-Opuscar #{meta.get('num', '')}

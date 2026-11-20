@@ -3,7 +3,7 @@ name: Blueprint
 description: แผนภาพเส้น · เหมาะกับ Engineering, Hardware launches, Tech explainers
 tags: [opuscar, Line Diagrams]
 pack: opuscar
-image_style: "Engineering drawings that come alive on a sheet of cyanotype paper: white technical line work on Prussian blue, drawn in drafting order, with annotations that move."
+look: "Engineering drawings that come alive on a sheet of cyanotype paper: white technical line work on Prussian blue, drawn in drafting order, with annotations that move."
 ---
 
 # Blueprint  ·  Lemo-Opuscar #44

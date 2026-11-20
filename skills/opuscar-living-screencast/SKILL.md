@@ -3,7 +3,7 @@ name: Mascot Screencast
 description: หน้าจอและอินเทอร์เฟซ · เหมาะกับ Product tutorials, Feature launches, Onboarding
 tags: [opuscar, Screens & Interfaces]
 pack: opuscar
-image_style: "A product walkthrough that looks like a real screen recording, where a low-resolution mascot lives inside a high-resolution interface and acts out what the software is doing."
+look: "A product walkthrough that looks like a real screen recording, where a low-resolution mascot lives inside a high-resolution interface and acts out what the software is doing."
 ---
 
 # Mascot Screencast  ·  Lemo-Opuscar #68

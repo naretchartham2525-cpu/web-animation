@@ -3,7 +3,7 @@ name: Memphis Diorama
 description: 3D และโมเดลจิ๋ว · เหมาะกับ Web heroes, Ambient loops, Seasons · สไตล์โดย EianLu
 tags: [opuscar, 3D & Miniature]
 pack: opuscar
-image_style: "A place built as a tabletop model: on warm white paper an organic, grainy frame grows open, and inside it a small world in flat Memphis colours, ink outlines, hard purple shadows and tiny patterns, full of small motions under a slow camera. Calm, bright and warm; a place you watch, not a story you follow."
+look: "A place built as a tabletop model: on warm white paper an organic, grainy frame grows open, and inside it a small world in flat Memphis colours, ink outlines, hard purple shadows and tiny patterns, full of small motions under a slow camera. Calm, bright and warm; a place you watch, not a story you follow."
 ---
 
 # Memphis Diorama  ·  Lemo-Opuscar #83

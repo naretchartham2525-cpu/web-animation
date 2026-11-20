@@ -3,7 +3,7 @@ name: Satellite Briefing
 description: เครื่องมือและหลักฐาน · เหมาะกับ Climate, News explainers, Geography
 tags: [opuscar, Instruments & Evidence]
 pack: opuscar
-image_style: "Real satellite imagery of a real place, graded down to an analyst's grey, with thin white measurement lines drawn on the ground: a lock-on reticle, outlines, a range line, one reading."
+look: "Real satellite imagery of a real place, graded down to an analyst's grey, with thin white measurement lines drawn on the ground: a lock-on reticle, outlines, a range line, one reading."
 ---
 
 # Satellite Briefing  ·  Lemo-Opuscar #86

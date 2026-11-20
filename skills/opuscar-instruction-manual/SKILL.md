@@ -3,7 +3,7 @@ name: Instruction Manual Art
 description: แผนภาพเส้น · เหมาะกับ Assembly and set-up guides, Safety instructions, Product onboarding
 tags: [opuscar, Line Diagrams]
 pack: opuscar
-image_style: "The film is a printed assembly manual: one sheet of off-white paper, black line art in true isometric (45°), flat white parts, faceless people at real proportions, and the manual's own signs (step numbers, parts call-outs, dotted guide lines, flat arrows, magnifier circles, a do/don't box) telling the story."
+look: "The film is a printed assembly manual: one sheet of off-white paper, black line art in true isometric (45°), flat white parts, faceless people at real proportions, and the manual's own signs (step numbers, parts call-outs, dotted guide lines, flat arrows, magnifier circles, a do/don't box) telling the story."
 ---
 
 # Instruction Manual Art  ·  Lemo-Opuscar #49

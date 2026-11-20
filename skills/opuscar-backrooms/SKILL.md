@@ -3,7 +3,7 @@ name: Liminal Found Footage
 description: ฟิล์มและเทป · เหมาะกับ Horror, Mystery & ARG, Game teasers
 tags: [opuscar, Film & Tape]
 pack: opuscar
-image_style: "Camcorder tapes recovered from empty, endless, fluorescent-lit spaces. Rules instead of monsters."
+look: "Camcorder tapes recovered from empty, endless, fluorescent-lit spaces. Rules instead of monsters."
 ---
 
 # Liminal Found Footage  ·  Lemo-Opuscar #64

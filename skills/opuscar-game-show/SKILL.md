@@ -3,7 +3,7 @@ name: Rhythm Game Show
 description: เกม · เหมาะกับ Tech timelines, Year in review, Variety shows
 tags: [opuscar, Games]
 pack: opuscar
-image_style: "A rhythm-game variety show in flat vector: toy-like mascots with thick ink outlines on candy-coloured stripes and sunbursts, every hit landing on a fixed tempo grid, call-and-response patterns, and a judgement word when each round is won."
+look: "A rhythm-game variety show in flat vector: toy-like mascots with thick ink outlines on candy-coloured stripes and sunbursts, every hit landing on a fixed tempo grid, call-and-response patterns, and a judgement word when each round is won."
 ---
 
 # Rhythm Game Show  ·  Lemo-Opuscar #61

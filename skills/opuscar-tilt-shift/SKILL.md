@@ -3,7 +3,7 @@ name: Tilt-Shift Miniature
 description: 3D และโมเดลจิ๋ว · เหมาะกับ City promos, Real estate, Transport
 tags: [opuscar, 3D & Miniature]
 pack: opuscar
-image_style: "A real-looking place photographed from high above with a tilted lens and a time-lapse camera, so the whole world reads as a tabletop model."
+look: "A real-looking place photographed from high above with a tilted lens and a time-lapse camera, so the whole world reads as a tabletop model."
 ---
 
 # Tilt-Shift Miniature  ·  Lemo-Opuscar #80

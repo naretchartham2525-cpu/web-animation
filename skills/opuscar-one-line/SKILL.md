@@ -3,7 +3,7 @@ name: One-line Drawing
 description: สเก็ตช์และกระดาน · เหมาะกับ Brand stories, Life milestones, Minimal ads
 tags: [opuscar, Sketch & Board]
 pack: opuscar
-image_style: "A single ink line that never leaves the paper. Everything on screen is that one line being drawn; scenes don't cut, they morph."
+look: "A single ink line that never leaves the paper. Everything on screen is that one line being drawn; scenes don't cut, they morph."
 ---
 
 # One-line Drawing  ·  Lemo-Opuscar #14

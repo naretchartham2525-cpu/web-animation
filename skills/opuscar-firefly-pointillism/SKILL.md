@@ -3,7 +3,7 @@ name: Firefly Pointillism
 description: แสงและเส้น · เหมาะกับ Picture-book stories, Many becoming one, Night and nature lyric
 tags: [opuscar, Light & Lines]
 pack: opuscar
-image_style: "Thousands of soft, breathing points of light on black make up the people, animals, grass, moon, rain and words. The points are never created or destroyed: they scatter, fly off and gather somewhere else as something new, and that is how this style tells a story."
+look: "Thousands of soft, breathing points of light on black make up the people, animals, grass, moon, rain and words. The points are never created or destroyed: they scatter, fly off and gather somewhere else as something new, and that is how this style tells a story."
 ---
 
 # Firefly Pointillism  ·  Lemo-Opuscar #74

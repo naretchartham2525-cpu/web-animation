@@ -3,7 +3,7 @@ name: Live Countdown Split-screen
 description: สารคดีและตัดต่อ · เหมาะกับ Launches, Countdowns, Live events
 tags: [opuscar, Edit & Documentary]
 pack: opuscar
-image_style: "An edit style, not a look. Real footage of one event with a known zero (a launch, a verdict, a final whistle, polls closing), shown in real time: screen time equals event time, a clock ticks every second, and the screen splits into more and more cells as the moment nears, every cell showing the same second."
+look: "An edit style, not a look. Real footage of one event with a known zero (a launch, a verdict, a final whistle, polls closing), shown in real time: screen time equals event time, a clock ticks every second, and the screen splits into more and more cells as the moment nears, every cell showing the same second."
 ---
 
 # Live Countdown Split-screen  ·  Lemo-Opuscar #03

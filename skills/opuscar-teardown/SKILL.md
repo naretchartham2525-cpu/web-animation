@@ -3,7 +3,7 @@ name: Exploded Teardown
 description: แผนภาพเส้น · เหมาะกับ Hardware launches, Product pages, Spec explainers
 tags: [opuscar, Line Diagrams]
 pack: opuscar
-image_style: "A real product, built from its own engineering files (CAD, PCB layout, bill of materials), lit like a studio packshot and taken apart in front of the camera: the layers lift on one axis, the camera travels between them, every part is named with the numbers its files contain, and it closes again into one object."
+look: "A real product, built from its own engineering files (CAD, PCB layout, bill of materials), lit like a studio packshot and taken apart in front of the camera: the layers lift on one axis, the camera travels between them, every part is named with the numbers its files contain, and it closes again into one object."
 ---
 
 # Exploded Teardown  ·  Lemo-Opuscar #46

@@ -3,7 +3,7 @@ name: Double Exposure
 description: ฟิล์มและเทป · เหมาะกับ Brand and city films, Documentary and series openings, Music video intros
 tags: [opuscar, Film & Tape]
 pack: opuscar
-image_style: "A silhouette is a window. A dark animal shape from the first exposure holds a second photograph, the place that animal carries with it, while the world outside the shape is where it is now."
+look: "A silhouette is a window. A dark animal shape from the first exposure holds a second photograph, the place that animal carries with it, while the world outside the shape is where it is now."
 ---
 
 # Double Exposure  ·  Lemo-Opuscar #66

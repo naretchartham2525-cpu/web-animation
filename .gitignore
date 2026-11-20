@@ -9,3 +9,5 @@ __pycache__/
 .env
 /uploads/
 /usage.jsonl
+/skills/*/engine.old/
+/skills/*/.engine-*

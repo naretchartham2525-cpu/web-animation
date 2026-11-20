@@ -3,7 +3,7 @@ name: Glass Product Render
 description: 3D และโมเดลจิ๋ว · เหมาะกับ Product launches, Consumer tech, Beauty
 tags: [opuscar, 3D & Miniature]
 pack: opuscar
-image_style: "Launch-film product rendering in transparent and frosted glass: a dark-field studio, strip-light sweeps, dispersion, caustics, light travelling inside the object, slow exploded views that snap shut on a downbeat."
+look: "Launch-film product rendering in transparent and frosted glass: a dark-field studio, strip-light sweeps, dispersion, caustics, light travelling inside the object, slow exploded views that snap shut on a downbeat."
 ---
 
 # Glass Product Render  ·  Lemo-Opuscar #82
