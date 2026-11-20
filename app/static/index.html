@@ -1467,7 +1467,7 @@ function libCard(o) {
     <div class="i"><div class="t">EP ${o.ep}</div><button class="sb red" style="margin-top:4px" onclick="delFailed(dq('${q(o.project)}'),${o.ep})">${ic("trash")}ลบ</button></div></div>`;
   const th = o.thumb && !DEMO ? `background-image:url('/media/${enc(o.project)}/${o.thumb}')` : `background-image:linear-gradient(160deg,${TONES[hashN(o.project) % TONES.length]})`;
   return `<div class="clip"><div class="th" style="${th}" onclick="playClip(dq('${q(o.project)}'),${o.ep},dq('${q(o.path)}'))">${ic("play")}</div>
-    <div class="i"><div class="t">EP ${o.ep}${epTitle(o.title) ? " · " + esc(epTitle(o.title)) : ""}</div><div class="small">${fmtDur(o.duration)} · ${fmtWhen(o.mtime)}</div></div></div>`;
+    <div class="i"><div class="t">EP ${o.ep}</div></div></div>`;   // รายละเอียด (ชื่อตอน ความยาว วันที่) อยู่ในหน้าคลิปตอนกดเข้าไป
 }
 async function delFailed(project, ep) {
   if (!ask(`ลบ EP ${ep} ที่ทำไม่สำเร็จ? (ไปที่ถังขยะ)`)) return;
@@ -1718,7 +1718,7 @@ const MOCK = {
     {id:"b2", project:"แมวมนุษย์เงินเดือน", count:1, done:0, status:"error", stage:"ผิดพลาด", progress:0, cost_usd:0, error:"เครดิต OpenRouter ไม่พอ → ใช้ วางบท (ฟรี) แทน", logs:[]},
     {id:"c3", project:"หลอนกลางดึก", count:1, done:1, status:"done", stage:"เสร็จ EP 1", progress:100, cost_usd:0, logs:[]},
   ],
-  outs: [{project:"มิลิน ช่างปะเมฆเวหา", ep:4, title:"ฝนสีทอง", path:"ep04/final.mp4", srt:"ep04/subs.srt", srt_en:"ep04/subs_en.srt", duration:31},{project:"มิลิน ช่างปะเมฆเวหา", ep:3, title:"เมฆรั่ว", path:"ep03/final.mp4", duration:29},{project:"หลอนกลางดึก", ep:1, title:"เสียงเคาะ", path:"ep01/final.mp4", duration:58}],
+  outs: [{project:"มิลิน ช่างปะเมฆเวหา", ep:4, title:"ฝนสีทอง", path:"ep04/final.mp4", srt:"ep04/subs.srt", srt_en:"ep04/subs_en.srt", duration:31, mtime:1763513600},{project:"มิลิน ช่างปะเมฆเวหา", ep:3, title:"เมฆรั่ว", path:"ep03/final.mp4", duration:29, mtime:1763427200},{project:"หลอนกลางดึก", ep:1, title:"เสียงเคาะ", path:"ep01/final.mp4", duration:58, mtime:1763340800}],
   lib: [{id:"t1", title:"บท EP 1–2 มิลิน", text:"# EP 1: เมฆรั่ว\nเช้าวันนั้น ฟ้าเหนือหมู่บ้านมีรูโหว่ | a small hole in the sky\n…"},{id:"t2", title:"ไอเดีย: แมวนักสืบ", text:"แมวดำนักสืบไขคดีขนมหายในร้านเบเกอรี่"}],
 };
 const DEF_SET = {watermark:true, watermark_text:"Thuean Studio", script_engine:"free", visual_source:"ai", quality:"hd", target_seconds:30};
