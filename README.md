@@ -213,3 +213,14 @@ skills/<ชื่อสกิล>/
 
 ## อัปเดตโค้ดเวอร์ชันใหม่
 ไม่ต้องทำอะไร ทุกครั้งที่รันช่อง ระบบดึงโค้ดล่าสุดจาก GitHub ให้เอง (โปรเจกต์/ตั้งค่าใน Drive ไม่ถูกทับ · สกิล: อัปเดตเฉพาะ autoclip.json + เติมไฟล์ที่ขาด)
+
+
+## เทมเพลตชุด Lemo-Opuscar (99 สไตล์)
+
+`skills/opuscar-*` ดัดแปลงจาก [Lemo-Opuscar](https://github.com/lemomo-ai/lemo-opuscar) by Lemomo (LemoLab) ·
+เอกสารสไตล์ใช้ [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) (ห้ามขายหรือนำไปทำบริการหาเงิน) ·
+ภาพปก [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) · รายละเอียดและเครดิตเต็ม: `skills/_opuscar/README.md` ·
+คลิปที่ทำออกมาเป็นของผู้ทำ ใช้เชิงพาณิชย์ได้
+
+ในระบบนี้ แต่ละสไตล์ใช้ "ลุค" ของสไตล์สั่งภาพ AI (ฟรี) + เสียง + ซับของระบบ ไม่ใช่แอนิเมชันที่เขียนโค้ดเฉพาะเรื่องแบบเดโมต้นฉบับ ·
+อัปเดตจากต้นทาง: `python tools/import_opuscar.py <โฟลเดอร์ lemo-opuscar>`

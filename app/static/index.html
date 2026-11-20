@@ -75,6 +75,10 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .btn{border:none;border-radius:99px;padding:11px 18px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-family:Kanit;font-weight:500;font-size:15.5px;white-space:nowrap}
 .btn.dark{background:var(--ink);color:var(--paper)}
 .btn.dark:hover{background:#3b332b}
+.packs{display:flex;gap:6px;flex-wrap:wrap;margin:-6px 0 16px}
+.packs button{border:1px solid var(--line);background:var(--paper);border-radius:99px;padding:6px 14px;font-size:13px;cursor:pointer;color:var(--muted)}
+.packs button span{opacity:.7;margin-left:2px}
+.packs button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .search{display:flex;align-items:center;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:99px;padding:0 16px;height:46px;max-width:420px;margin-bottom:20px;color:var(--muted)}
 .search input{border:none;outline:none;flex:1;background:none;color:var(--ink)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:18px;padding-bottom:260px}
@@ -373,6 +377,7 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
     <button class="btn dark" onclick="editTemplate()"><svg class="i"><use href="#i-plus"/></svg>สร้างเทมเพลต</button>
   </div>
   <div class="search"><svg class="i"><use href="#i-search"/></svg><input id="q" placeholder="ค้นหาเทมเพลต"></div>
+  <div class="packs" id="packs"></div>
   <div class="grid" id="grid"></div>
 </div>
 
@@ -695,9 +700,20 @@ function coverStyle(t) {
   if (t.cover && !DEMO) return `background-image:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.55)),url('/skill-cover/${enc(t.id)}?v=${t.cover === 'sample' ? Date.now() / 6e4 | 0 : 1}')`;
   return `background-image:linear-gradient(160deg,${TONES[hashN(t.id) % TONES.length]})`;
 }
+let PACK = "";   // "" ทั้งหมด · "mine" ของฉัน · ชื่อชุด เช่น opuscar
+const PACK_NAMES = {opuscar: "Lemo-Opuscar"};
+function renderPacks() {
+  const packs = [...new Set(T.map(t => t.pack).filter(Boolean))];
+  if (!packs.length) return $("#packs").innerHTML = "";
+  const n = k => k === "" ? T.length : k === "mine" ? T.filter(t => !t.pack).length : T.filter(t => t.pack === k).length;
+  $("#packs").innerHTML = [["", "ทั้งหมด"], ["mine", "ของฉัน"], ...packs.map(p => [p, PACK_NAMES[p] || p])]
+    .map(([k, l]) => `<button class="${PACK === k ? "on" : ""}" onclick="PACK='${k}'; renderGrid()">${esc(l)} <span>${n(k)}</span></button>`).join("");
+}
 function renderGrid() {
+  renderPacks();
   const kw = $("#q").value.trim().toLowerCase();
-  const list = T.filter(t => !kw || (t.name + " " + t.description).toLowerCase().includes(kw));
+  const list = T.filter(t => (!PACK || (PACK === "mine" ? !t.pack : t.pack === PACK)) &&
+    (!kw || (t.name + " " + t.description + " " + (t.tags || []).join(" ")).toLowerCase().includes(kw)));
   $("#grid").innerHTML = list.map(t => {
     const o = t.options || {}, sel = tplSel?.id === t.id;
     return `<div class="card ${sel ? "sel" : ""}">

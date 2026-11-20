@@ -193,6 +193,7 @@ def _skill_from(p):
         "engine": (engine or {}).get("engine") or "",
         "dir": str(p) if p.is_dir() else "",
         "tags": _parse_list(meta.get("tags")),
+        "pack": meta.get("pack", ""),   # ชุดเทมเพลตที่นำเข้า (เช่น opuscar) → แสดงหลังเทมเพลตของผู้ใช้
         "cover": cover,
         "options": opts,
         "file": str(f.relative_to(ROOT)),
@@ -212,7 +213,7 @@ def reload_skills():
         sk = _skill_from(p)
         if sk:
             items.append(sk)
-    items.sort(key=lambda x: x["mtime"], reverse=True)
+    items.sort(key=lambda x: (bool(x.get("pack")), 0 if x.get("pack") else -x["mtime"], x["name"].lower()))   # ของผู้ใช้ก่อน แล้วค่อยชุดที่นำเข้า
     _skills_cache = items
     return items
 

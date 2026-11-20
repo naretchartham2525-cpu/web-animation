@@ -23,13 +23,14 @@ for d in sorted(os.listdir(f'{CODE}/skills')):
             for fn in files:
                 src = os.path.join(base, fn)
                 dst = os.path.normpath(os.path.join(f'{ROOT}/skills/{d}', rel, fn))
-                if fn == 'autoclip.json' and rel == '.' or not os.path.exists(dst):
+                sysfile = rel == '.' and (fn == 'autoclip.json' or d.startswith('opuscar-') and fn in ('SKILL.md', 'STYLE.md'))
+                if sysfile or not os.path.exists(dst):
                     os.makedirs(os.path.dirname(dst), exist_ok=True)
                     shutil.copy2(src, dst)
 if added:
-    print('➕ เพิ่มเทมเพลตใหม่จาก GitHub:', added)
+    print(f'➕ เพิ่มเทมเพลตใหม่จาก GitHub {len(added)} อัน:', ', '.join(added[:8]) + (' …' if len(added) > 8 else ''))
 print('✅ Drive:', ROOT)
-print('   สกิล:', sorted(os.listdir(f'{ROOT}/skills')))
+print('   สกิล:', len([d for d in os.listdir(f'{ROOT}/skills') if not d.startswith(('.', '_'))]), 'เทมเพลต')
 print('   โปรเจกต์:', sorted(os.listdir(f'{ROOT}/projects')))
 
 # ---------- 2) ติดตั้งเครื่องมือ ----------
