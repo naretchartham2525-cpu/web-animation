@@ -1002,8 +1002,7 @@ function renderEngBox(t) {
   box.innerHTML = t.html_engine
     ? `<div class="eh">${ic("check")}<b>มีเอนจินแล้ว</b><span class="small">ทุกตอนวาดภาพด้วยเอนจินนี้ · ฟรี</span></div>
        <div class="ebtn"><label class="sb">${ic("clip")}อัปเดตเอนจิน (.zip แทนที่ของเดิม)<input type="file" accept=".zip" hidden onchange="uploadEngine(this)"></label>
-       <button class="sb" onclick="copyEnginePrompt()">${ic("copy")}คัดลอกคำสั่ง Claude Code</button>
-       <button class="sb" style="color:var(--err)" onclick="deleteEngine()">${ic("trash")}เลิกใช้เอนจิน</button></div>`
+       <button class="sb" onclick="copyEnginePrompt()">${ic("copy")}คัดลอกคำสั่ง Claude Code</button></div>`
     : `<div class="eh">${ic("sliders")}<b>ทำให้เคลื่อนไหวแบบตัวอย่าง</b><span class="small">ตอนนี้ใช้ภาพ AI นิ่งขยับ</span></div>
        <ol class="small"><li>กด “คัดลอกคำสั่ง” แล้ววางใน <b>Claude Code</b> (ใช้โควตา Claude ของคุณ ไม่เสียเครดิตเว็บ)</li>
        <li>ได้ <b>engine.zip</b> + บท EP 1 → อัปโหลด zip ที่นี่</li><li>วางบท EP 1 ในแถบสร้าง กด Create · ตอนต่อไปกดทำต่อได้อัตโนมัติ</li></ol>
@@ -1033,10 +1032,6 @@ async function uploadEngine(inp) {
   if (!j.ok) return toast(j.error || "ติดตั้งเอนจินไม่สำเร็จ", true);
   toast(`ติดตั้งเอนจินแล้ว (${j.data.files} ไฟล์)` + (j.data.script_md ? "" : " · ไม่มี SCRIPT.md: AI จะไม่รู้วิธีเขียนช่องภาพ"), !j.data.script_md);
   await refreshTemplates();
-}
-async function deleteEngine() {
-  if (!await call(() => api("DELETE", `/api/skills/${enc(editingId)}/engine`))) return;
-  toast("เลิกใช้เอนจินแล้ว"); await refreshTemplates();
 }
 async function refreshTemplates() {
   T = await api("GET", "/api/skills"); if (tplSel) tplSel = T.find(x => x.id === tplSel.id) || null;
