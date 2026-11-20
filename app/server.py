@@ -880,6 +880,43 @@ def ready():
     return ok(READY)
 
 
+OPUSCAR_FILMS = os.environ.get("OPUSCAR_FILMS_URL", "https://lemomo-ai.github.io/lemo-opuscar-films")
+
+
+def _opuscar_demos():
+    """คลิปตัวอย่างของเทมเพลตชุด Lemo-Opuscar (หนังเดโมของแต่ละสไตล์ CC BY 4.0 · เครดิตใน skills/_opuscar)
+    ดาวน์โหลดทีละอัน → ตัด 30 วิแรก ไม่เอาเสียง (เสียงพากย์บางเรื่องห้ามนำไปใช้) ย่อ 720 → เป็นคลิปบนการ์ด + รูปการ์ด
+    ทำครั้งเดียวต่อเทมเพลต · ข้ามอันที่ผู้ใช้ใส่คลิปเองแล้ว"""
+    import requests
+    while not READY.get("done"):            # ให้ภาพปกทำก่อน (หน้ารอโหลดรอสิ่งนั้นอยู่)
+        time.sleep(10)
+    mark = core.SKILLS_DIR / "_opuscar" / "demos.json"
+    done = core.read_json(mark, {}) or {}
+    todo = [sk for sk in core.list_skills() if sk.get("pack") == "opuscar" and sk["id"] not in done and not sk.get("sample")]
+    for sk in todo:
+        while jobs and jobs.busy():
+            time.sleep(30)
+        slug = sk["id"].removeprefix("opuscar-")
+        tmp = core.WORK_DIR / f"demo-{slug}.mp4"
+        try:
+            core.WORK_DIR.mkdir(parents=True, exist_ok=True)
+            with requests.get(f"{OPUSCAR_FILMS}/{slug}.mp4", stream=True, timeout=60) as r:
+                if r.status_code != 200:
+                    done[sk["id"]] = f"HTTP {r.status_code}"
+                    continue
+                with open(tmp, "wb") as f:
+                    for chunk in r.iter_content(1 << 20):
+                        f.write(chunk)
+            core.set_skill_clip(sk["id"], tmp, max_sec=30, audio=False)
+            done[sk["id"]] = "ok"
+            print("🎬 คลิปตัวอย่างเทมเพลต:", sk["id"], flush=True)
+        except Exception as e:  # noqa: BLE001  ไม่สำเร็จ → ลองใหม่รอบเปิดเครื่องถัดไป
+            print("คลิปตัวอย่างไม่สำเร็จ:", sk["id"], str(e)[:120], flush=True)
+        finally:
+            tmp.unlink(missing_ok=True)
+            core.write_json(mark, {k: v for k, v in done.items() if v == "ok" or v.startswith("HTTP 404")})
+
+
 def _auto_covers():
     """เทมเพลตที่ยังไม่มีภาพปก → สร้างภาพตัวอย่างด้วย AI ฟรี ตามลุคของเทมเพลต (ทีละภาพ ระหว่างหน้ารอโหลด)
     ภาพไหนไม่สำเร็จ (เว็บฟรีติดคิว/ล่ม) → วนกลับมาทำใหม่อีก 2 รอบในการเปิดเครื่องครั้งเดียวกัน"""
@@ -929,6 +966,7 @@ def main():
     core.reload_skills()
     jobs = JobManager()
     threading.Thread(target=_auto_covers, daemon=True).start()
+    threading.Thread(target=_opuscar_demos, daemon=True).start()
     print(f"AutoClip {VERSION} | root={core.ROOT} | http://{a.host}:{a.port}", flush=True)
     app.run(host=a.host, port=a.port, threaded=True, use_reloader=False)
 

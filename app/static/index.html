@@ -1880,13 +1880,12 @@ async function loadingScreen() {   // รอจนการ์ดทุกใบ
   sp.classList.add("off");
   if (!DEMO) watchCovers();
 }
-async function watchCovers() {     // ภาพปกที่ระบบกำลังทำอยู่ → เสร็จเมื่อไรขึ้นในการ์ดเอง
-  for (let i = 0; i < 400; i++) {
-    const r = await api("GET", "/api/ready").catch(() => null);
-    if (!r || r.done && !r.current) return;
+async function watchCovers() {     // ภาพปก/คลิปตัวอย่างที่ระบบทำต่อเบื้องหลัง → เสร็จเมื่อไรการ์ดอัปเดตเอง
+  const sig = xs => xs.map(t => `${t.id}:${t.cover_v || (t.cover ? 1 : 0)}:${t.card_v || 0}`).join("|");
+  for (let i = 0; i < 360; i++) {
     await new Promise(res => setTimeout(res, 20000));
     const t2 = await api("GET", "/api/skills").catch(() => null);
-    if (t2 && t2.filter(t => t.cover).length !== T.filter(t => t.cover).length) { T = t2; renderGrid(); }
+    if (t2 && sig(t2) !== sig(T)) { T = t2; renderGrid(); }
   }
 }
 function hideSplash() {

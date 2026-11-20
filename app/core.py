@@ -325,6 +325,25 @@ def save_skill_media(sid, fileobj):
     return get_skill(sid)
 
 
+def set_skill_clip(sid, src, max_sec=None, audio=True):
+    """ตั้งคลิปของเทมเพลตจากไฟล์บนเครื่อง (รอจนเสร็จ): sample.mp4 + รูปการ์ดจากเฟรมวินาทีที่ 1"""
+    d = SKILLS_DIR / sid
+    out, frame = WORK_DIR / f"clip-{sid}-out.mp4", WORK_DIR / f"clip-{sid}.jpg"
+    args = ["-i", str(src), *(["-t", str(max_sec)] if max_sec else []), "-map", "0:v:0"]
+    args += ["-map", "0:a:0?", "-c:a", "aac", "-b:a", "96k"] if audio else ["-an"]
+    ok_, err = _ff([*args, "-c:v", "libx264", "-preset", "veryfast", "-crf", "27", "-vf", "scale=w='min(720,iw)':h=-2",
+                    "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(out)], 900)
+    if not ok_ or not out.exists():
+        raise ValueError("แปลงคลิปไม่ได้: " + err[0][:160])
+    _ff(["-ss", "1", "-i", str(out), "-frames:v", "1", "-q:v", "3", str(frame)], 60)
+    if frame.exists():
+        for c in d.glob("cover.*"):
+            c.unlink()
+        shutil.move(str(frame), str(d / "cover.jpg"))
+    shutil.move(str(out), str(d / "sample.mp4"))
+    reload_skills()
+
+
 # ---------------- คลังข้อความ ----------------
 LIBRARY_FILE = ROOT / "library.json"
 
