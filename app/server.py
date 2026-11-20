@@ -50,6 +50,13 @@ def index():
     return send_from_directory(STATIC, "index.html")
 
 
+@app.get("/static/<path:f>")
+def static_file(f):
+    r = send_from_directory(STATIC, f)
+    r.headers["Cache-Control"] = "public, max-age=86400"
+    return r
+
+
 @app.get("/api/ping")
 def ping():
     return ok({"auth_required": bool(PASSWORD)})
