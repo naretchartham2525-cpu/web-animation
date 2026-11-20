@@ -546,6 +546,68 @@ html[data-mode=dark] #splash .dock{border-color:rgba(255,255,255,.13)}
 @keyframes szoom{to{transform:scale(1.3);opacity:0}}
 @media (max-width:520px){#splash .bento{grid-template-columns:repeat(6,44px);grid-auto-rows:60px;gap:6px}#splash .glass{padding:12px}#splash .sname{font-size:16px}#splash .hero{padding:10px 18px 8px}}
 @media (prefers-reduced-motion: reduce){#splash *,body::before{animation:none!important}}
+
+/* ===== เลื่อนแล้วเล่าเรื่อง (scrollytelling) + ไอคอนเคลื่อนไหว + เมนูธีมกระจก ===== */
+body::before{translate:0 calc(var(--sy,0) * -.06px);filter:blur(70px) hue-rotate(calc(var(--sy,0) * .03deg))}
+.rv{opacity:0;transform:translateY(28px) scale(.97);filter:blur(6px)}
+.rv.vis{opacity:1;transform:none;filter:none;transition:opacity .6s ease var(--d,0ms),transform .7s cubic-bezier(.2,.8,.2,1) var(--d,0ms),filter .6s ease var(--d,0ms)}
+.card.rv.vis:hover{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+.gsec h3{position:relative}
+.gsec h3::after{content:"";position:absolute;left:0;bottom:-5px;height:3px;width:0;border-radius:3px;background:var(--grad);transition:width .8s cubic-bezier(.2,.8,.2,1) .2s}
+.gsec.vis h3::after{width:36px}
+.top .bar-top{position:relative;overflow:hidden;transition:padding .3s,box-shadow .3s,background .3s}
+.top .bar-top::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:calc(var(--sp,0) * 100%);background:var(--grad);opacity:.9}
+.top.sc .bar-top{padding-top:3px;padding-bottom:3px;box-shadow:0 14px 34px -18px rgba(0,0,0,.45)}
+/* เมนูด้านบน: แคปซูลกระจก + ไอคอนขยับตามความหมาย */
+.nb{border-radius:99px!important;transition:background .2s,transform .15s}
+.nb:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)!important}
+.nb:active,.ib:active,.sb:active,.packs button:active{transform:scale(.93)}
+.nb svg,.ib svg{transition:transform .45s cubic-bezier(.3,1.5,.5,1)}
+.nb:hover svg,.ib:hover svg{transform:translateY(-1px) scale(1.1)}
+.nb:has(use[href="#i-reel"]):hover svg{transform:rotate(180deg) scale(1.1)}
+.nb:has(.live) svg{animation:ispin 2.4s linear infinite}
+.nb:has(use[href="#i-film"]):hover svg{animation:ipop .5s cubic-bezier(.3,1.6,.5,1)}
+.nb:has(use[href="#i-gear"]):hover svg{transform:rotate(90deg)}
+#modeBtn:hover svg{transform:rotate(-25deg) scale(1.12)}
+#modeBtn.flip svg{animation:iflip .55s cubic-bezier(.3,1.4,.5,1)}
+.ib:has(use[href="#i-spark"]):hover svg{animation:itw .6s ease}
+.ib:has(use[href="#i-clip"]):hover svg{transform:rotate(-18deg) scale(1.1)}
+.ib:has(use[href="#i-copy"]):hover svg{transform:translate(-1px,-2px) scale(1.08)}
+.ib:has(use[href="#i-save"]):hover svg,.ib:has(use[href="#i-down"]):hover svg{animation:idrop .6s ease}
+.setrow:has(use[href="#i-trash"]):hover svg:first-child{animation:ishake .45s ease}
+@keyframes ispin{to{transform:rotate(360deg)}}
+@keyframes ipop{40%{transform:scale(1.3)}}
+@keyframes iflip{from{transform:rotate(-180deg) scale(.4)}}
+@keyframes itw{30%{transform:rotate(18deg) scale(1.2)}60%{transform:rotate(-10deg)}}
+@keyframes idrop{40%{transform:translateY(3px)}}
+@keyframes ishake{25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
+.nb .cnt{transition:transform .3s}
+.nb .cnt.bump{animation:ipop .45s cubic-bezier(.3,1.6,.5,1)}
+/* แถบหมวด: แคปซูลกระจก ตัวที่เลือกมีขอบไล่สี */
+.packs button{border-radius:99px!important;transition:transform .2s,background .2s,color .2s}
+.packs button:hover{transform:translateY(-2px)}
+.packs button.on{background:var(--ink)!important;color:var(--bg)!important;box-shadow:0 8px 18px -10px color-mix(in srgb,var(--acc) 80%,transparent)}
+/* เมนูป๊อปอัป / ลิ้นชัก / หน้าต่าง / แถวตั้งค่า */
+.pop{background:var(--glass)!important;backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border:1px solid var(--gline)!important;box-shadow:var(--gsh)!important}
+.pop.on{animation:popin .35s cubic-bezier(.3,1.4,.5,1);transform-origin:100% 100%}
+.pop.on>*{animation:rise .4s ease backwards}
+.pop.on>*:nth-child(2){animation-delay:.04s}.pop.on>*:nth-child(3){animation-delay:.08s}.pop.on>*:nth-child(4){animation-delay:.12s}.pop.on>*:nth-child(n+5){animation-delay:.16s}
+@keyframes popin{from{opacity:0;transform:scale(.92) translateY(8px)}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+.drawer{transition:transform .5s cubic-bezier(.2,1.1,.3,1)!important}
+.drawer.on .job,.drawer.on .donel{animation:rise .45s ease backwards}
+.drawer.on .job:nth-child(2),.drawer.on .donel:nth-child(2){animation-delay:.05s}.drawer.on .job:nth-child(3),.drawer.on .donel:nth-child(3){animation-delay:.1s}
+.mbox,.drawer{background:color-mix(in srgb,var(--paper) 86%,transparent)!important}
+html[data-mode=dark] .mbox,html[data-mode=dark] .drawer{background:color-mix(in srgb,#1A1A1F 86%,transparent)!important}
+.modal.on .mbox{animation:mopen .45s cubic-bezier(.2,1.1,.3,1)}
+@keyframes mopen{from{opacity:0;transform:translateY(18px) scale(.97);filter:blur(4px)}}
+.setrow{transition:transform .2s,background .2s}
+.setrow:hover{background:color-mix(in srgb,var(--ink) 5%,var(--glass))!important;transform:translateX(3px)}
+.setrow>svg:last-child{transition:transform .25s}
+.setrow:hover>svg:last-child{transform:translateX(4px)}
+.toast.err{background:color-mix(in srgb,var(--err) 88%,transparent)!important}
+.toast{background:color-mix(in srgb,#141418 82%,transparent)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:#fff!important;border:1px solid rgba(255,255,255,.14);border-radius:99px!important}
+@media (prefers-reduced-motion: reduce){.rv{opacity:1;transform:none;filter:none}.nb svg,.ib svg,.pop,.mbox,.drawer *{animation:none!important}}
 </style>
 </head>
 <body>
@@ -1027,15 +1089,6 @@ function renderGrid() {
   const kw = $("#q").value.trim().toLowerCase();
   const list = T.filter(t => (!CAT || catsOf(t).includes(CAT)) &&
     (!kw || (t.name + " " + t.description + " " + (t.category || "") + " " + (t.tags || []).join(" ")).toLowerCase().includes(kw)));
-  if (!CAT && !kw && list.length > 12) {   // ทั้งหมด → แยกเป็นหมวด
-    const groups = {};
-    list.forEach(t => catsOf(t).forEach(c => (groups[c] = groups[c] || []).push(t)));
-    const order = Object.keys(groups).sort((a, b) => a === "mine" ? -1 : b === "mine" ? 1 : a.localeCompare(b, "th"));
-    $("#grid").innerHTML = order.map(c => `<div class="gsec"><h3>${esc(c === "mine" ? "ของฉัน" : c)}</h3><span>${groups[c].length}</span>
-      ${groups[c].length > 5 ? `<button class="mini" onclick="CAT=dq('${q(c)}'); renderGrid(); scrollTo({top:0,behavior:'smooth'})">ดูทั้งหมด</button>` : ""}</div>` +
-      groups[c].slice(0, 5).map(cardHtml).join("")).join("");
-    return;
-  }
   $("#grid").innerHTML = list.map(cardHtml).join("") || `<div class="empty">${T.length ? "ไม่พบเทมเพลตที่ค้นหา" : "ยังไม่มีเทมเพลต กด “เพิ่มเทมเพลต” แล้วเลือกไฟล์สกิลของคุณ"}</div>`;
 }
 $("#q").oninput = renderGrid;
@@ -1931,6 +1984,32 @@ async function boot() {
   if (!DEMO) loadEleven();
   timer = setInterval(refreshJobs, 2500);
 }
+
+// ===== เลื่อนแล้วเล่าเรื่อง: การ์ด/หัวหมวดค่อยๆ ปรากฏตอนเลื่อนถึง · พื้นหลังเปลี่ยนสีตามการเลื่อน · แถบบนหดตัว =====
+const rvIO = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return; const el = e.target; el.classList.add("vis"); rvIO.unobserve(el); SEEN.add(rvKey(el));
+  if (el.classList.contains("gsec")) { const sp = el.querySelector("span"), n = +sp.textContent || 0, t0 = performance.now();
+    const f = now => { const k = Math.min(1, (now - t0) / 700); sp.textContent = Math.round(n * (1 - (1 - k) ** 3)); if (k < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); }
+}), {threshold: .12, rootMargin: "0px 0px -6% 0px"}) : null;
+const SEEN = new Set(), rvKey = el => (el.querySelector(".ttl,h3") || el).textContent;
+function revealGrid() {
+  if (!rvIO) return; let col = 0;
+  document.querySelectorAll("#grid > .card:not(.skel), #grid > .gsec").forEach(el => {
+    if (el.classList.contains("rv")) return;
+    if (SEEN.has(rvKey(el))) { el.classList.add("rv", "vis"); return; }   // เคยเห็นแล้ว (กด Use แล้ววาดใหม่) → ไม่เล่นซ้ำ
+    col = el.classList.contains("gsec") ? 0 : col + 1;
+    el.classList.add("rv"); el.style.setProperty("--d", (el.classList.contains("gsec") ? 0 : Math.min(col, 6) * 70) + "ms"); rvIO.observe(el);
+  });
+}
+new MutationObserver(revealGrid).observe($("#grid"), {childList: true});
+let scT = 0;
+addEventListener("scroll", () => { if (scT) return; scT = requestAnimationFrame(() => { scT = 0;
+  const y = scrollY, max = Math.max(1, document.documentElement.scrollHeight - innerHeight), r = document.documentElement.style;
+  r.setProperty("--sy", y.toFixed(0)); r.setProperty("--sp", (y / max).toFixed(3)); $(".top").classList.toggle("sc", y > 12); }); }, {passive: true});
+// ไอคอนโหมดหมุนตอนกด · ตัวเลขงาน/คลิปเด้งเมื่อเปลี่ยน
+$("#modeBtn").addEventListener("click", () => { const b = $("#modeBtn"); b.classList.remove("flip"); void b.offsetWidth; b.classList.add("flip"); });
+["#jobCnt", "#clipCnt"].forEach(id => new MutationObserver(() => { const c = $(id); if (c.dataset.v === c.textContent) return; const first = c.dataset.v === undefined; c.dataset.v = c.textContent;
+  if (!first) { c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); } }).observe($(id), {childList: true}));
 boot();
 </script>
 </body>
