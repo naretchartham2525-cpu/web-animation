@@ -470,6 +470,99 @@ html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
 .modesw{display:inline-flex;border:var(--bw) solid var(--k);border-radius:8px;padding:2px;gap:2px;margin-bottom:14px}
 .modesw button{border:none;background:none;border-radius:6px;padding:6px 14px;cursor:pointer;color:var(--muted);display:inline-flex;align-items:center;gap:6px;font-size:13px}
 .modesw button.on{background:var(--acc);color:var(--acc-ink);font-weight:600}
+/* ===== ธีม H · Glass (แผงกระจกฝ้า + แสงสีไล่ระดับด้านหลัง ตามหน้ารอโหลด) ===== */
+:root{--g1:#F43F5E;--g2:#F59E0B;--glass:color-mix(in srgb,var(--paper) 62%,transparent);--gline:color-mix(in srgb,var(--ink) 12%,transparent);
+  --gsh:0 1px 0 rgba(255,255,255,.7) inset,0 18px 40px -22px rgba(20,20,40,.35);--grad:linear-gradient(120deg,var(--acc),var(--g1) 55%,var(--g2))}
+html[data-mode=dark]{--glass:color-mix(in srgb,#1A1A1F 58%,transparent);--gline:rgba(255,255,255,.12);--gsh:0 1px 0 rgba(255,255,255,.08) inset,0 18px 40px -20px rgba(0,0,0,.8)}
+body,html[data-mode=dark] body{background:var(--bg)}
+body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;filter:blur(70px);opacity:.38;
+  background:radial-gradient(28% 32% at 18% 22%,var(--acc),transparent 70%),radial-gradient(24% 28% at 82% 30%,var(--g1),transparent 70%),radial-gradient(26% 30% at 55% 88%,var(--g2),transparent 70%);animation:ambi 26s ease-in-out infinite alternate}
+html[data-mode=dark] body::before{opacity:.26}
+@keyframes ambi{to{transform:translate(3%,-4%) rotate(8deg) scale(1.08)}}
+.bar-top,.cbox,.drawer,.mbox,#lgForm,.setrow,.engbox,.job{background:var(--glass);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);border:1px solid var(--gline);box-shadow:var(--gsh)}
+.bar-top{border-radius:16px}.cbox,.drawer,.mbox{border-radius:20px}
+html[data-mode=dark] .cbox,html[data-mode=dark] .drawer,html[data-mode=dark] .mbox,html[data-mode=dark] #lgForm{box-shadow:var(--gsh)}
+.brand .mk{background:var(--grad);background-size:200% 200%;animation:gflow 6s ease infinite;border-radius:9px}
+@keyframes gflow{50%{background-position:100% 50%}}
+.search,.in,.chip,.seg,.dur,.ib.sm,.packs button:not(.on),.use,.sb,.btn{border:1px solid var(--gline)!important;background:color-mix(in srgb,var(--paper) 55%,transparent)}
+html[data-mode=dark] .in{background:color-mix(in srgb,#000 25%,transparent)}
+.packs button.on{background:var(--ink);color:var(--bg)}
+.packs button:hover,.sb:hover,.btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px -10px rgba(0,0,0,.4)}
+/* การ์ด: กระจก + โฮเวอร์เป็นขอบไล่สีเรืองแสง (แทนเงาแข็ง) */
+.card,html[data-mode=dark] .card{position:relative;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--gline);border-radius:18px;box-shadow:var(--gsh);transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+.card::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1.5px;background:var(--grad);background-size:200% 200%;opacity:0;transition:opacity .35s;pointer-events:none;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.card:hover,html[data-mode=dark] .card:hover{transform:translateY(-6px);border-color:transparent;box-shadow:0 22px 40px -18px color-mix(in srgb,var(--acc) 75%,transparent),0 12px 30px -16px color-mix(in srgb,var(--g1) 70%,transparent)}
+.card:hover::before{opacity:1;animation:gflow 4s ease infinite}
+.card.sel,html[data-mode=dark] .card.sel{border-color:transparent;box-shadow:0 16px 34px -18px color-mix(in srgb,var(--acc) 70%,transparent)}
+.card.sel::before{opacity:1}
+.use{border-radius:99px!important;padding-inline:16px}
+.card:hover .use,.use:hover,.card.sel .use{background:var(--grad)!important;background-size:200% 200%!important;color:#fff;border-color:transparent!important}
+/* ปุ่ม Create: ไล่สีไหล */
+.go,html[data-mode=dark] .go{background:var(--grad);background-size:200% 200%;animation:gflow 6s ease infinite;color:#fff;border:none;border-radius:99px;box-shadow:0 10px 24px -10px color-mix(in srgb,var(--acc) 80%,transparent)}
+.go:hover,html[data-mode=dark] .go:hover{background:var(--grad);background-size:200% 200%;transform:translateY(-1px);box-shadow:0 14px 28px -10px color-mix(in srgb,var(--g1) 70%,transparent)}
+.go:active{transform:scale(.97);box-shadow:none}
+.seg button.on,.modesw button.on{background:var(--ink);color:var(--bg)}
+.modesw,.acsw button,.acsw input{border:1px solid var(--gline)!important}
+.modal{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#mLogin{background:transparent}
+#lgBtn{background:var(--grad);border:none;border-radius:99px}
+
+/* ===== หน้ารอโหลด (กระจกลอย + การ์ดปกเทมเพลต) ===== */
+#splash,html[data-mode=dark] #splash{background:var(--bg);perspective:1100px;overflow:hidden}
+#splash .amb{position:absolute;inset:0;pointer-events:none}
+#splash .amb i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5}
+#splash .amb .a1{width:46vw;height:46vw;max-width:520px;max-height:520px;background:var(--acc);left:6%;top:8%;animation:sm1 14s ease-in-out infinite}
+#splash .amb .a2{width:38vw;height:38vw;max-width:440px;max-height:440px;background:var(--g1);right:4%;top:28%;opacity:.38;animation:sm2 16s ease-in-out infinite}
+#splash .amb .a3{width:32vw;height:32vw;max-width:380px;max-height:380px;background:var(--g2);left:38%;bottom:-14%;opacity:.3;animation:sm3 18s ease-in-out infinite}
+html[data-mode=dark] #splash .amb i{opacity:.32}
+@keyframes sm1{50%{transform:translate(18vw,6vh) scale(1.15)}}
+@keyframes sm2{50%{transform:translate(-16vw,4vh) scale(.88)}}
+@keyframes sm3{50%{transform:translate(8vw,-10vh) scale(1.2)}}
+#splash .in2{position:relative;gap:0}
+#splash .glass{position:relative;padding:18px;border-radius:24px;background:var(--glass);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border:1px solid color-mix(in srgb,#fff 50%,transparent);box-shadow:0 30px 60px -22px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.6);transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .3s ease-out;animation:sfloat 6s ease-in-out infinite}
+html[data-mode=dark] #splash .glass{border-color:rgba(255,255,255,.13);box-shadow:0 30px 60px -20px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.1)}
+@keyframes sfloat{50%{translate:0 -6px}}
+#splash .shine{position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(240px circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.32),transparent 60%);mix-blend-mode:soft-light}
+#splash .bento{display:grid;grid-template-columns:repeat(6,68px);grid-auto-rows:90px;gap:8px}
+#splash .tc{position:relative;border-radius:10px;overflow:hidden;background:var(--soft);border:1px solid var(--gline);animation:sdrop .7s cubic-bezier(.3,1.4,.5,1) backwards;animation-delay:calc(var(--i)*55ms)}
+@keyframes sdrop{from{opacity:0;transform:translateY(30px) scale(.85) rotate(var(--r,0deg))}}
+#splash .tc.sk::before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,color-mix(in srgb,var(--paper) 70%,transparent) 50%,transparent 70%);background-size:250% 100%;animation:shimmer 1.3s linear infinite}
+#splash .tc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .9s ease,filter .9s ease,transform 1.2s cubic-bezier(.2,.7,.2,1)}
+#splash .tc img.fresh{opacity:0;filter:blur(10px);transform:scale(1.12)}
+#splash .tc .nm{position:absolute;left:5px;right:5px;bottom:4px;font-size:8.5px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .5s}
+#splash .tc.sk .nm{color:var(--muted);text-shadow:none}
+#splash .tc::after{content:"";position:absolute;inset:55% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.45));pointer-events:none}
+#splash .tc.sk::after{display:none}
+#splash .hero{grid-column:3/span 2;grid-row:2;position:relative;border-radius:12px;overflow:hidden;isolation:isolate;background:#100d1c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:1px solid rgba(255,255,255,.18);cursor:pointer;transition:transform .3s cubic-bezier(.3,1.4,.5,1),box-shadow .3s;animation:sdrop .7s cubic-bezier(.3,1.4,.5,1) backwards}
+#splash .hero:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 14px 30px -12px color-mix(in srgb,var(--g1) 70%,transparent)}
+#splash .hero .blob{position:absolute;border-radius:50%;filter:blur(16px);z-index:-1;mix-blend-mode:screen}
+#splash .hero .b1{width:90px;height:90px;background:var(--acc);left:-20px;top:-30px;animation:hb1 7s ease-in-out infinite}
+#splash .hero .b2{width:80px;height:80px;background:var(--g1);right:-24px;top:6px;animation:hb2 8s ease-in-out infinite}
+#splash .hero .b3{width:70px;height:70px;background:var(--g2);left:40px;bottom:-46px;opacity:.8;animation:hb3 9s ease-in-out infinite}
+@keyframes hb1{50%{transform:translate(70px,30px) scale(1.2)}}
+@keyframes hb2{50%{transform:translate(-80px,16px) scale(.85)}}
+@keyframes hb3{50%{transform:translate(30px,-40px) scale(1.25)}}
+#splash .hero::after{content:"";position:absolute;inset:0;z-index:-1;background:rgba(10,8,20,.28);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E")}
+#splash .sname{font-size:16px;font-weight:800;letter-spacing:-.3px;color:#fff;margin:0;text-shadow:0 1px 2px rgba(0,0,0,.5),0 0 18px rgba(0,0,0,.35);white-space:nowrap}
+#splash .sgo{font-size:9.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:rgba(255,255,255,.85)}
+#splash.ready .sgo{animation:breath 1.6s ease-in-out infinite}
+@keyframes breath{50%{opacity:.4}}
+#splash .dock{margin-top:20px;display:flex;align-items:center;gap:12px;padding:7px 8px 7px 16px;border-radius:99px;width:340px;max-width:92vw;background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid color-mix(in srgb,#fff 45%,transparent);box-shadow:0 12px 30px -12px rgba(0,0,0,.35)}
+html[data-mode=dark] #splash .dock{border-color:rgba(255,255,255,.13)}
+#splash .msg{flex:1;margin:0;font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:0}
+#splash .sbar,html[data-mode=dark] #splash .sbar{width:90px;height:5px;border:none;border-radius:9px;background:color-mix(in srgb,var(--ink) 14%,transparent);box-shadow:none;flex-shrink:0}
+#splash .sbar i{background:var(--grad);background-size:200% 100%;animation:gflow 3s linear infinite;border-radius:9px}
+#splash .sskip{visibility:visible;margin:0;flex-shrink:0;border:none;border-radius:99px;padding:6px 15px;font-weight:700;font-size:12.5px;text-decoration:none;background:color-mix(in srgb,var(--ink) 10%,transparent);color:var(--ink);cursor:pointer;transition:transform .2s,background .2s}
+#splash .sskip:hover{transform:scale(1.05)}
+#splash.ready .sskip{background:var(--ink);color:var(--bg)}
+#splash .sdet{margin-top:10px;min-height:16px}
+#splash.leave .tc{animation:sout .45s ease-in forwards;animation-delay:calc(var(--i)*18ms)}
+#splash.leave .hero{animation:szoom .6s cubic-bezier(.6,0,.3,1) forwards .15s}
+@keyframes sout{to{opacity:0;transform:translateY(24px) scale(.85)}}
+@keyframes szoom{to{transform:scale(1.4);opacity:0}}
+@media (max-width:520px){#splash .bento{grid-template-columns:repeat(6,44px);grid-auto-rows:60px;gap:6px}#splash .glass{padding:12px}#splash .sname{font-size:12.5px}#splash .sgo{font-size:8px}}
+@media (prefers-reduced-motion: reduce){#splash *,body::before{animation:none!important}}
 </style>
 </head>
 <body>
@@ -516,13 +609,10 @@ html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
 </svg>
 
 <div id="dropZone"><div><svg class="i"><use href="#i-clip"/></svg><br>วางไฟล์บทที่นี่<small>บท: .txt .md .json .py · เสียงพากย์ของคุณ: .mp3 .wav .m4a</small></div></div>
-<div id="splash" class="pre"><div class="in2">
-  <span class="smascot"><img src="/mascot/idle.webp" alt="สุมาอี้กำลังเตรียมเว็บ"></span>
-  <b class="sname">Thuean Studio</b>
-  <div class="sbar"><i id="splBar"></i></div>
-  <div class="msg" id="splMsg">กำลังเชื่อมต่อ…</div>
+<div id="splash" class="pre"><div class="amb"><i class="a1"></i><i class="a2"></i><i class="a3"></i></div><div class="in2">
+  <div class="glass" id="splGlass"><div class="bento" id="splBento"><div class="hero" role="button" tabindex="0" aria-label="เข้า Thuean Studio" onclick="splashSkip()" style="--i:0"><i class="blob b1"></i><i class="blob b2"></i><i class="blob b3"></i><b class="sname">Thuean Studio</b><span class="sgo">Enter</span></div></div><span class="shine"></span></div>
+  <div class="dock"><div class="msg" id="splMsg">กำลังเชื่อมต่อ…</div><div class="sbar"><i id="splBar"></i></div><button class="sskip" id="splSkip" onclick="splashSkip()" title="เข้าเว็บเลย ภาพปกที่เหลือจะขึ้นทีหลัง">Enter</button></div>
   <div class="sdet" id="splDet"></div>
-  <button class="sskip" id="splSkip" onclick="splashSkip()">เข้าเว็บเลย · ภาพปกที่เหลือจะขึ้นทีหลัง</button>
 </div></div>
 <div class="top"><div class="wrap"><div class="bar-top">
   <div class="brand"><span class="mk"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></span>Thuean Studio</div>
@@ -1798,20 +1888,61 @@ function splashSet(pct, msg, det) {
   if (det !== undefined) $("#splDet").textContent = det;
 }
 function splashSkip() { skipLoad = true; }
+// หน้ารอโหลด: การ์ดปกเทมเพลตจริง (อันไหนยังไม่มีปก = โครงว่างกะพริบ แล้วค่อยเผยเมื่อปกเสร็จ)
+const SPL_N = 16;
+let splTiles = [], splSwap;
+const coverUrl = t => `/skill-cover/${enc(t.id)}?v=${t.cover === "sample" ? Date.now() / 6e4 | 0 : 1}`;
+function splTile(el, t) {   // ใส่ปก: ภาพใหม่ค่อยๆ ชัดขึ้น (เบลอ → คม) ทับภาพเดิม แล้วลบภาพเดิม
+  el.dataset.id = t.id; el.querySelector(".nm").textContent = t.name;
+  if (DEMO) { el.classList.remove("sk"); el.style.background = `linear-gradient(160deg,${TONES[hashN(t.id) % TONES.length]})`; return; }
+  if (!t.cover) { el.classList.add("sk"); return; }
+  const old = el.querySelector("img"), im = new Image(); im.alt = ""; im.className = "fresh";
+  im.onload = () => { el.classList.remove("sk"); el.appendChild(im); el.appendChild(el.querySelector(".nm")); requestAnimationFrame(() => requestAnimationFrame(() => im.classList.remove("fresh"))); if (old) setTimeout(() => old.remove(), 1000); };
+  im.src = coverUrl(t);
+}
+function splashBuild() {
+  const b = $("#splBento"); b.querySelectorAll(".tc").forEach(x => x.remove());
+  const list = [...T.filter(t => t.cover), ...T.filter(t => !t.cover)].slice(0, SPL_N), hero = b.querySelector(".hero");
+  splTiles = [];
+  for (let i = 0; i < SPL_N; i++) {
+    const el = document.createElement("div"); el.className = "tc sk";
+    el.style.cssText = `--i:${i};--r:${(hashN("r" + i) % 10 - 5)}deg`; el.innerHTML = '<span class="nm"></span>';
+    b.insertBefore(el, i < 8 ? hero : null); if (list[i]) splTile(el, list[i]); splTiles.push(el);
+  }
+  b.appendChild(hero); b.insertBefore(hero, splTiles[8] || null);
+  clearInterval(splSwap);
+  splSwap = setInterval(() => {   // สลับปกทีละใบแบบนุ่ม จากเทมเพลตที่ยังไม่โชว์
+    const shown = new Set(splTiles.map(e => e.dataset.id)), pool = T.filter(t => t.cover && !shown.has(t.id));
+    const el = splTiles[Math.random() * splTiles.length | 0];
+    if (pool.length) splTile(el, pool[Math.random() * pool.length | 0]);
+  }, 1800);
+}
+function splashFill() {   // ปกที่เพิ่งเสร็จ → เติมลงช่องที่ยังว่าง
+  const shown = new Set(splTiles.map(e => e.dataset.id)), fresh = T.filter(t => t.cover && !shown.has(t.id));
+  splTiles.filter(e => e.classList.contains("sk")).forEach(e => { const t = fresh.shift(); if (t) splTile(e, t); });
+}
+document.addEventListener("pointermove", e => {   // แผงกระจกเอียงตามเมาส์ + แสงสะท้อน
+  const sp = $("#splash"); if (!sp || sp.classList.contains("off")) return;
+  const g = $("#splGlass"), r = g.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+  g.style.setProperty("--ry", (Math.max(-1, Math.min(1, x - .5)) * 12).toFixed(2) + "deg"); g.style.setProperty("--rx", (-Math.max(-1, Math.min(1, y - .5)) * 9).toFixed(2) + "deg");
+  g.style.setProperty("--mx", (x * 100).toFixed(1) + "%"); g.style.setProperty("--my", (y * 100).toFixed(1) + "%");
+});
 function preload(urls, ms) {   // โหลดภาพปกหน้าแรกให้เสร็จก่อนเข้าเว็บ
   return Promise.race([Promise.all(urls.map(u => new Promise(r => { const im = new Image(); im.onload = im.onerror = r; im.src = u; }))),
                        new Promise(r => setTimeout(r, ms))]);
 }
 async function loadingScreen() {   // หน้ารอโหลด: รอจนเว็บพร้อมจริง (ภาพปกเทมเพลต + ภาพหน้าแรก) แล้วค่อยเข้า
-  const sp = $("#splash"); sp.classList.remove("pre", "off"); skipLoad = false; $("#splSkip").classList.remove("on");
-  const start = Date.now(), skipAt = setTimeout(() => $("#splSkip").classList.add("on"), 20000);
+  const sp = $("#splash"); sp.classList.remove("pre", "off", "ready", "leave"); skipLoad = false;
+  const start = Date.now(); let polls = 0;
+  splashBuild();
   splashSet(10, "กำลังโหลดเทมเพลต…", `${T.length} เทมเพลต`);
   if (!DEMO) {
     for (;;) {
       const r = await api("GET", "/api/ready").catch(() => null);
       if (!r || r.done || skipLoad) break;
       const tot = r.covers_total || 1;
-      splashSet(15 + 70 * r.covers_done / tot, `กำลังทำภาพปกเทมเพลต ${r.covers_done}/${r.covers_total}`, r.current ? `ตอนนี้: ${r.current}` : "");
+      splashSet(15 + 70 * r.covers_done / tot, `กำลังทำภาพปก ${r.covers_done}/${r.covers_total}`, r.current ? `ตอนนี้: ${r.current}` : "");
+      if (++polls % 3 === 0) { const t2 = await api("GET", "/api/skills").catch(() => null); if (t2) { T = t2; splashFill(); } }
       await new Promise(res => setTimeout(res, 1500));
     }
     if (!skipLoad) { T = await api("GET", "/api/skills").catch(() => T); renderGrid(); }
@@ -1819,9 +1950,10 @@ async function loadingScreen() {   // หน้ารอโหลด: รอจ�
   splashSet(88, "กำลังโหลดภาพหน้าแรก…", "");
   const urls = T.filter(t => t.cover).slice(0, 18).map(t => `/skill-cover/${enc(t.id)}?v=${t.cover === "sample" ? Date.now() / 6e4 | 0 : 1}`);
   if (!DEMO && !skipLoad) await preload(urls, 8000);
-  splashSet(100, "พร้อมแล้ว", "");
-  clearTimeout(skipAt);
-  await new Promise(r => setTimeout(r, Math.max(350, 1200 - (Date.now() - start))));
+  splashSet(100, "พร้อมแล้ว", ""); sp.classList.add("ready"); splashFill();
+  await new Promise(r => setTimeout(r, Math.max(500, 1800 - (Date.now() - start))));
+  clearInterval(splSwap); sp.classList.add("leave");
+  await new Promise(r => setTimeout(r, 650));
   sp.classList.add("off");
 }
 function hideSplash() {
