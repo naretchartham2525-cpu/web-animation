@@ -37,7 +37,7 @@ def _auth():
     if not PASSWORD:
         return
     p = request.path
-    if p in ("/", "/api/login", "/api/ping") or p.startswith("/static"):
+    if p in ("/", "/api/login", "/api/login-info", "/api/ping") or p.startswith("/static"):
         return
     tok = request.cookies.get("ac_tok") or request.headers.get("X-AutoClip-Token", "")
     if not hmac.compare_digest(tok, TOKEN):
@@ -53,6 +53,12 @@ def index():
 @app.get("/api/ping")
 def ping():
     return ok({"auth_required": bool(PASSWORD)})
+
+
+@app.get("/api/login-info")
+def login_info():
+    """ช่องรหัสต้องรู้ความยาว เพื่อตรวจเองทันทีเมื่อพิมพ์ครบ (ไม่ต้องมีปุ่มกด)"""
+    return ok({"len": len(PASSWORD or "")})
 
 
 @app.post("/api/login")

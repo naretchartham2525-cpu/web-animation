@@ -139,8 +139,6 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 #mLogin.on{display:grid}
 #lgForm{position:relative;display:flex;align-items:center;gap:6px;background:var(--paper);border:1px solid var(--line);border-radius:99px;padding:6px 6px 6px 18px;box-shadow:0 10px 30px rgba(60,40,20,.10)}
 #lgPw{border:none;outline:none;background:none;font-size:16px;width:220px;padding:8px 0}
-#lgBtn{border:none;background:var(--ink);color:var(--paper);width:40px;height:40px;border-radius:50%;display:grid;place-items:center;cursor:pointer}
-#lgBtn:disabled{opacity:.5;cursor:wait}
 #lgErr{position:absolute;top:100%;left:0;right:0;text-align:center;margin-top:10px;font-size:13px;color:var(--err);min-height:18px}
 #lgForm.shake{animation:shake .35s}
 @keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(7px)}75%{transform:translateX(-4px)}}
@@ -406,7 +404,6 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
 .setrow,.engbox,.job{border:var(--bw) solid var(--k);border-radius:12px}
 #mLogin{background:var(--bg)}
 #lgForm{border:var(--bw) solid var(--k);border-radius:12px;box-shadow:var(--hard)}
-#lgBtn{background:var(--acc);color:var(--acc-ink);border-radius:8px}
 #splash{background:var(--bg)}
 #splash .in2{gap:0}
 #splash .slogo{width:64px;height:64px;border-radius:14px;background:var(--acc);color:var(--acc-ink);border:var(--bw) solid var(--k);box-shadow:4px 4px 0 var(--k);display:grid;place-items:center;animation:sbob 1.6s ease-in-out infinite}
@@ -490,7 +487,14 @@ html[data-mode=dark] .in{background:color-mix(in srgb,#000 25%,transparent)}
 .modesw,.acsw button,.acsw input{border:1px solid var(--gline)!important}
 .modal{backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 #mLogin{background:transparent}
-#lgBtn{background:var(--grad);border:none;border-radius:99px}
+#lgForm{padding:6px 18px 6px 20px!important;border-radius:99px!important}
+#lgPw{letter-spacing:2px}
+#lgDot{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:color-mix(in srgb,var(--ink) 18%,transparent);transition:background .25s,transform .25s,box-shadow .25s}
+#lgDot.wait{background:var(--acc);animation:dpulse .8s ease-in-out infinite}
+#lgDot.ok{background:#22C55E;transform:scale(1.25);box-shadow:0 0 0 5px rgba(34,197,94,.22),0 0 14px #22C55E}
+#lgDot.bad{background:var(--err);box-shadow:0 0 0 5px color-mix(in srgb,var(--err) 20%,transparent)}
+@keyframes dpulse{50%{transform:scale(.6);opacity:.5}}
+#lgErr{display:none}
 
 /* ===== หน้ารอโหลด (กระจกลอย + การ์ดปกเทมเพลต) ===== */
 #splash,html[data-mode=dark] #splash{background:var(--bg);perspective:1100px;overflow:hidden}
@@ -897,8 +901,8 @@ html[data-mode=dark] .toast{color:#FF6B6B!important}
 
 <div id="mLogin"><form id="lgForm" autocomplete="on">
   <input type="password" id="lgPw" placeholder="รหัสผ่าน" autocomplete="current-password" aria-label="รหัสผ่าน">
-  <button id="lgBtn" type="submit" aria-label="เข้าสู่ระบบ"><svg class="i"><use href="#i-send"/></svg></button>
-  <div id="lgErr"></div>
+  <span id="lgDot" aria-hidden="true"></span>
+  <div id="lgErr" role="status" aria-live="polite"></div>
 </form></div>
 
 <div class="toast" id="toast"></div>
@@ -1881,25 +1885,31 @@ function showGate() {   // ช่องใส่รหัสอย่างเ�
   const g = $("#mLogin"); if (g.classList.contains("on")) return;
   g.classList.add("on"); setTimeout(() => $("#lgPw").focus(), 50);
 }
-let lgBusy = false;
-$("#lgForm").onsubmit = async e => {
-  e.preventDefault();
-  if (lgBusy) return;                                   // กันกดซ้ำ
-  const pw = $("#lgPw").value; if (!pw) return $("#lgPw").focus();
-  lgBusy = true; $("#lgBtn").disabled = true; $("#lgErr").textContent = "";
+let lgBusy = false, lgLen = 0;
+api("GET", "/api/login-info").then(r => lgLen = r?.len || 0).catch(() => {});
+async function tryLogin() {   // พิมพ์ครบความยาวรหัส → ตรวจเองทันที: จุดเขียว = เข้าเว็บ · จุดแดง = ผิด
+  const pw = $("#lgPw").value, dot = $("#lgDot");
+  if (lgBusy || !pw) return;
+  lgBusy = true; dot.className = "wait";
   try { await api("POST", "/api/login", {password: pw}); }
   catch (err) {
-    lgBusy = false; $("#lgBtn").disabled = false;
-    $("#lgErr").textContent = /เข้าสู่ระบบ|401|รหัส/.test(err.message) ? "รหัสไม่ถูก" : err.message;
+    lgBusy = false; dot.className = "bad"; $("#lgErr").textContent = "รหัสไม่ถูก";
     const f = $("#lgForm"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake");
     $("#lgPw").select(); return;
   }
+  dot.className = "ok"; $("#lgErr").textContent = "รหัสถูก กำลังเข้าเว็บ";
+  await new Promise(r => setTimeout(r, 450));            // ให้เห็นจุดเขียวแวบหนึ่ง
   needLogin = false; $("#lgPw").value = "";
-  $("#splash").classList.remove("pre", "off"); splashSet(5, "กำลังเชื่อมต่อ…", "");   // หน้ารอโหลดขึ้นใต้ช่องรหัส
-  $("#mLogin").classList.remove("on");
-  lgBusy = false; $("#lgBtn").disabled = false;
+  $("#splash").classList.remove("pre", "off"); splashSet(5, "กำลังเชื่อมต่อ…", "");
+  $("#mLogin").classList.remove("on"); dot.className = "";
+  lgBusy = false;
   splashDone = false; await boot();                     // รหัสถูก → หน้ารอโหลด (รอเว็บพร้อมจริง) → เข้าเว็บ
-};
+}
+$("#lgPw").addEventListener("input", () => {
+  const n = $("#lgPw").value.length; if (!lgBusy) $("#lgDot").className = "";
+  if (lgLen && n === lgLen) tryLogin();
+});
+$("#lgForm").onsubmit = e => { e.preventDefault(); tryLogin(); };   // กด Enter ก็ได้ (กรณีไม่รู้ความยาว)
 document.querySelectorAll(".modal").forEach(m => m.addEventListener("mousedown", e => { if (e.target === m) closeM(m.id); }));
 document.addEventListener("keydown", e => { if (e.key === "Escape") { if (MST.length > 1) goBack(); else { closeAllM(); closeDrawer(); } } });
 let timer;
