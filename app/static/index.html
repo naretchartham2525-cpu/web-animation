@@ -75,6 +75,12 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .btn.dark:hover{background:#3b332b}
 .tdrop{display:flex;flex-direction:column;align-items:center;gap:4px;padding:22px;border:var(--bw,1px) dashed var(--k,var(--line));border-radius:12px;cursor:pointer;text-align:center;margin-bottom:12px}
 .tdrop:hover{background:var(--acc-soft)}
+#tPicked:not(:empty){display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--gline);border-radius:12px;margin-bottom:14px;background:var(--soft)}
+#tPicked b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tmedia{display:flex;align-items:center;gap:14px;padding:10px;border:1px dashed var(--gline);border-radius:12px;cursor:pointer}
+.tmedia:hover{background:var(--soft)}
+.tmedia .pv{width:72px;aspect-ratio:4/5;border-radius:9px;object-fit:cover;background:var(--soft);display:grid;place-items:center;color:var(--muted);flex-shrink:0}
+.tmedia .pv svg{width:22px;height:22px}
 .tdrop svg{width:26px;height:26px}
 .tor{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12.5px;margin:0 0 10px}
 .tor::before,.tor::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -329,9 +335,8 @@ video{width:100%;border-radius:16px;background:#000;max-height:72vh}
 }
 html *:not(svg):not(svg *){font-family:Inter,"Noto Sans Thai",system-ui,sans-serif!important}
 .brand{white-space:nowrap}
-.brand .logo{height:44px;width:auto;margin:-8px 0 -6px;flex-shrink:0}
-html[data-mode=dark] .brand .logo{filter:drop-shadow(0 0 .6px rgba(255,255,255,.75))}
-@media (max-width:520px){.brand{font-size:16px;gap:6px}.brand .logo{height:36px}.bar-top{padding:5px 4px 5px 8px;gap:2px}.nb{padding:8px 7px}.ib{width:32px}}
+.brand .logo{height:34px;width:auto;flex-shrink:0}
+@media (max-width:520px){.brand{font-size:16px;gap:6px}.brand .logo{height:28px}.bar-top{padding:5px 4px 5px 8px;gap:2px}.nb{padding:8px 7px}.ib{width:32px}}
 .grp .dur{gap:6px;padding:0 4px}
 #durNum{width:34px}
 body{background:var(--bg)}
@@ -559,7 +564,7 @@ html[data-mode=dark] .toast{color:#FF6B6B!important}
   <div class="sdet" id="splDet"></div>
 </div></div>
 <div class="top"><div class="wrap"><div class="bar-top">
-  <div class="brand"><img class="logo" src="/static/logo.webp" alt="" width="36" height="44">Thuean Studio</div>
+  <div class="brand"><img class="logo" src="/static/logo.webp?v=2" alt="" width="34" height="33">Thuean Studio</div>
   <span class="credit" id="credit" title="ดูรายละเอียดค่าใช้จ่าย" onclick="openUsage()"></span>
   <button class="nb" onclick="openDrawer()" id="jobsBtn" title="งานที่กำลังทำ"><svg class="i"><use href="#i-reel"/></svg><span class="lbl">กำลังทำ</span><span class="cnt" id="jobCnt">0</span></button>
   <button class="nb" onclick="openClips()" title="คลังคลิปที่เสร็จแล้ว"><svg class="i"><use href="#i-film"/></svg><span class="lbl">คลังคลิป</span><span class="cnt soft" id="clipCnt">0</span></button>
@@ -635,9 +640,12 @@ html[data-mode=dark] .toast{color:#FF6B6B!important}
 <!-- เทมเพลต -->
 <div class="modal" id="mTpl"><div class="mbox">
   <h2 id="tplTitle">เพิ่มเทมเพลต</h2>
-  <label class="tdrop" id="tDrop"><input type="file" accept=".zip,.skill,.md,.txt" hidden onchange="importSkill(this)">
+  <div id="tPicked"></div>
+  <label class="tdrop" id="tDrop"><input type="file" accept=".zip,.skill,.md,.txt" hidden onchange="pickSkillFile(this)">
     <svg class="i"><use href="#i-clip"/></svg><b>เลือกไฟล์สกิล</b><span class="small">.zip ทั้งโฟลเดอร์ (มี SKILL.md) หรือ .md · ลากมาวางได้</span></label>
   <div class="tor" id="tOr"><span>หรือวางเนื้อหาสกิลเอง</span></div>
+  <div class="f"><span>รูปการ์ดหรือคลิปตัวอย่าง <span class="small">(ไม่ใส่ก็ได้ ระบบทำรูปให้เอง)</span></span>
+    <label class="tmedia" id="tMedia"><input type="file" accept="image/*,video/*" hidden onchange="pickMedia(this)"><div id="tMediaPrev"></div></label></div>
   <div class="two"><label class="f"><span>ชื่อเทมเพลต</span><input class="in" id="tName" placeholder="เช่น อนิเมะผจญภัย"></label>
     <label class="f"><span>หมวด (แนวงาน)</span><input class="in" id="tCat" list="catList" placeholder="เช่น การ์ตูน"><datalist id="catList"></datalist></label></div>
   <div id="tStyleBox">
@@ -649,7 +657,7 @@ html[data-mode=dark] .toast{color:#FF6B6B!important}
   </div>
   <label class="f"><span>สกิล / คำสั่งเขียนบท (วางสกิลของคุณตรงนี้)</span><textarea class="in" id="tContent" style="min-height:200px" placeholder="# สไตล์&#10;- โทน...&#10;## ตัวละคร&#10;- ...&#10;## กฎบทพากย์&#10;- ประโยคสั้น ไม่มีวงเล็บ"></textarea></label>
   <div class="engbox" id="tEng"></div>
-  <div class="note">บันทึกเป็นไฟล์ใน Drive: AutoClip/skills/&lt;ชื่อ&gt;/SKILL.md · ใส่ภาพปกได้โดยวาง cover.jpg ในโฟลเดอร์เดียวกัน</div>
+  <div class="note">บันทึกเป็นไฟล์ใน Drive: AutoClip/skills/&lt;ชื่อ&gt;/</div>
   <div class="mfoot"><button class="sb" onclick="closeM('mTpl')">ยกเลิก</button><button class="sb dark" onclick="saveTemplate()"><svg class="i"><use href="#i-check"/></svg>บันทึก</button></div>
 </div></div>
 
@@ -957,7 +965,7 @@ const TONES = ["#c98a6b,#6e3d2d","#8fa58a,#3e5446","#d4b483,#7a5530","#a68fb3,#4
 const hashN = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 
 // ================= เทมเพลต =================
-const coverUrl = (t, w) => `/skill-cover/${enc(t.id)}?v=${t.cover === "sample" ? Date.now() / 6e5 | 0 : 1}${w ? "&w=" + w : ""}`;
+const coverUrl = (t, w) => `/skill-cover/${enc(t.id)}?v=${t.cover === "sample" ? Date.now() / 6e5 | 0 : t.cover_v || 1}${w ? "&w=" + w : ""}`;
 const COVER_OK = new Set();   // ภาพที่โหลดแล้ว → วาดการ์ดใหม่ก็ใส่ทันที ไม่ต้องรอเลื่อนถึง
 const SHADE = "linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.55))";
 function coverAttrs(t) {      // ภาพปกโหลดเฉพาะการ์ดที่ใกล้จะเห็น (ภาพย่อ 360px)
@@ -1031,7 +1039,10 @@ $("#tStyle").oninput = () => tStyleUI();
 function tplForm(t) {
   const o = (t && t.options) || {};
   $("#tName").value = t ? t.name : ""; $("#tContent").value = t ? t.content || "" : "";
-  $("#tDrop").style.display = $("#tOr").style.display = t ? "none" : "";
+  PEND = {skill: null, media: null}; showPicked();
+  if (t && t.sample) mediaPrev(`/skill-sample/${enc(t.id)}`, true, "คลิปตัวอย่าง");
+  else if (t && t.cover && !DEMO) mediaPrev(coverUrl(t, 360), false, "รูปการ์ด");
+  else mediaPrev("");
   $("#tCat").value = (t && t.category) || "";
   $("#catList").innerHTML = [...new Set(T.map(x => x.category).filter(Boolean))].sort().map(c => `<option value="${esc(c)}">`).join("");   // เพิ่มใหม่: เลือกไฟล์สกิลได้ · เสียง/ซับเลือกตอนใช้งาน
   const eng = !!(t && t.engine);
@@ -1058,15 +1069,28 @@ function renderEngBox(t) {
        <div class="ebtn"><button class="sb dark" onclick="copyEnginePrompt()">${ic("copy")}คัดลอกคำสั่ง Claude Code</button>
        <label class="sb">${ic("clip")}อัปโหลด engine.zip<input type="file" accept=".zip" hidden onchange="uploadEngine(this)"></label></div>`;
 }
-async function importSkill(inp) {
+// หน้าเพิ่มเทมเพลต: เลือก/วางไฟล์แล้วยังไม่บันทึก รอกด "บันทึก" ก่อน
+let PEND = {skill: null, media: null};
+function pickSkillFile(inp) {
   const f = inp.files ? inp.files[0] : inp; if (inp.value !== undefined) inp.value = ""; if (!f) return;
-  toast("กำลังเพิ่มเทมเพลต…");
-  const fd = new FormData(); fd.append("file", f);
-  const r = await fetch("/api/skills/import", {method: "POST", body: fd, credentials: "same-origin"});
-  const j = await r.json().catch(() => ({ok: false, error: "HTTP " + r.status}));
-  if (!j.ok) return toast(j.error || "เพิ่มเทมเพลตไม่สำเร็จ", true);
-  closeM("mTpl"); toast(`เพิ่มเทมเพลต “${j.data.name}” แล้ว`);
-  T = await api("GET", "/api/skills"); CAT = ""; renderGrid();
+  if (!/\.(zip|skill|md|txt)$/i.test(f.name)) return toast("ไฟล์สกิลต้องเป็น .zip .skill .md หรือ .txt", true);
+  PEND.skill = f; showPicked();
+}
+function showPicked() {
+  const f = PEND.skill;
+  $("#tPicked").innerHTML = f ? `${ic("clip")}<b>${esc(f.name)}</b><span class="small">${fmtMB(f.size)}</span><button class="ib" title="เอาออก" aria-label="เอาไฟล์ออก" onclick="PEND.skill=null; showPicked()">${ic("x")}</button>` : "";
+  $("#tDrop").style.display = $("#tOr").style.display = f || editingId ? "none" : "";
+  $("#tContent").closest("label").style.display = f ? "none" : "";          // เนื้อหามาจากไฟล์แล้ว
+  $("#tName").placeholder = f ? "ใช้ชื่อในไฟล์ (พิมพ์ถ้าอยากเปลี่ยน)" : "เช่น อนิเมะผจญภัย";
+}
+function pickMedia(inp) {
+  const f = inp.files ? inp.files[0] : inp; if (inp.value !== undefined) inp.value = ""; if (!f) return;
+  if (!/^(image|video)\//.test(f.type)) return toast("ใส่ได้เฉพาะรูปหรือคลิป", true);
+  PEND.media = f; mediaPrev(URL.createObjectURL(f), f.type.startsWith("video"), f.name);
+}
+function mediaPrev(src, vid, label) {
+  $("#tMediaPrev").outerHTML = `<div id="tMediaPrev" style="display:contents">${src ? (vid ? `<video class="pv" src="${src}" muted loop autoplay playsinline></video>` : `<img class="pv" src="${src}" alt="">`) : `<span class="pv">${ic("plus")}</span>`}
+    <span><b>${src ? esc(label || "") : "เลือกรูปหรือคลิป"}</b><br><span class="small">${src ? "กดเพื่อเปลี่ยน" : "หรือลากไฟล์มาวาง · .jpg .png .webp .mp4 .mov"}</span></span></div>`;
 }
 async function copyEnginePrompt() {
   const r = await call(() => api("POST", `/api/skills/${enc(editingId)}/engine-prompt`, {idea: $("#idea").value.trim(), options: {duration: O.dur}}));
@@ -1096,12 +1120,34 @@ function editTemplate() {
   editingId = null; editingTpl = null; $("#tplTitle").textContent = "เพิ่มเทมเพลต";
   tplForm(null); openM("mTpl");
 }
+async function upForm(url, f) {
+  const fd = new FormData(); fd.append("file", f);
+  const r = await fetch(url, {method: "POST", body: fd, credentials: "same-origin"});
+  const j = await r.json().catch(() => ({ok: false, error: "HTTP " + r.status}));
+  if (!j.ok) throw new Error(j.error || "อัปโหลดไม่สำเร็จ");
+  return j.data;
+}
 async function saveTemplate() {
   const old = (editingTpl && editingTpl.options) || {};
   const styleOn = $("#tStyleOn").classList.contains("on");
-  const body = {id: editingId || undefined, is_new: !editingId, name: $("#tName").value.trim(), description: editingTpl?.description || "", content: $("#tContent").value,
-    category: $("#tCat").value.trim(), options: {...old, image_style: styleOn ? $("#tStyle").value.trim() : ""}};
-  if (await call(() => api("POST", "/api/skills", body))) { closeM("mTpl"); toast("บันทึกเทมเพลตแล้ว"); T = await api("GET", "/api/skills"); if (tplSel) tplSel = T.find(x => x.id === tplSel.id) || null; renderGrid(); renderComposer(); }
+  let id = editingId;
+  try {
+    if (!editingId && PEND.skill) {                  // เพิ่มจากไฟล์สกิล → นำเข้าตอนกดบันทึก
+      id = (await upForm("/api/skills/import", PEND.skill)).id;
+      const cat = $("#tCat").value.trim(), nm = $("#tName").value.trim();
+      if (cat || styleOn || nm) { const t = await api("GET", "/api/skills/" + enc(id));
+        await api("POST", "/api/skills", {id, name: nm || t.name, description: t.description, content: t.content, category: cat || t.category, options: {...(t.options || {}), image_style: styleOn ? $("#tStyle").value.trim() : ""}}); }
+    } else {
+      const r = await api("POST", "/api/skills", {id: editingId || undefined, is_new: !editingId, name: $("#tName").value.trim(), description: editingTpl?.description || "", content: $("#tContent").value,
+        category: $("#tCat").value.trim(), options: {...old, image_style: styleOn ? $("#tStyle").value.trim() : ""}});
+      id = r.id;
+    }
+    if (PEND.media) await upForm(`/api/skills/${enc(id)}/media`, PEND.media);
+  } catch (e) { return toast(e.message, true); }
+  closeM("mTpl"); PEND = {skill: null, media: null};
+  T = await api("GET", "/api/skills"); if (tplSel) tplSel = T.find(x => x.id === tplSel.id) || null;
+  [...COVER_OK].filter(u => u.includes(`/skill-cover/${enc(id)}?`)).forEach(u => COVER_OK.delete(u));
+  renderGrid(); renderComposer();
 }
 
 // ================= แถบพิมพ์ =================
@@ -1301,7 +1347,8 @@ addEventListener("dragenter", e => { if (!hasFiles(e)) return; e.preventDefault(
 addEventListener("dragover", e => { if (hasFiles(e)) e.preventDefault(); });
 addEventListener("dragleave", e => { if (!hasFiles(e)) return; if (--dragN <= 0) { dragN = 0; $("#dropZone").classList.remove("on"); } });
 addEventListener("drop", e => { if (!hasFiles(e)) return; e.preventDefault(); dragN = 0; $("#dropZone").classList.remove("on"); if ($("#mLogin").classList.contains("on")) return;
-  if ($("#mTpl").classList.contains("on") && !editingId) return importSkill(e.dataTransfer.files[0]);   // หน้าเพิ่มเทมเพลต: ไฟล์ที่วาง = สกิล
+  if ($("#mTpl").classList.contains("on")) { const f = e.dataTransfer.files[0];   // หน้าเทมเพลต: รูป/คลิป = รูปการ์ด · ไฟล์อื่น = สกิล (รอกดบันทึก)
+    return /^(image|video)\//.test(f.type) ? pickMedia(f) : editingId ? toast("หน้าแก้เทมเพลตใส่ได้เฉพาะรูปหรือคลิป", true) : pickSkillFile(f); }
   loadFiles([...e.dataTransfer.files]); });
 
 function showComposer() { if ($("#composer").classList.contains("min")) toggleComposer(); }

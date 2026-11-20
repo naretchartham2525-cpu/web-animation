@@ -125,6 +125,22 @@ def _thumb(src, w):
         return src
 
 
+@app.post("/api/skills/<sid>/media")
+def skill_media(sid):
+    f = request.files.get("file")
+    if not f:
+        abort(400)
+    return ok(core.save_skill_media(sid, f))
+
+
+@app.get("/skill-sample/<sid>")
+def skill_sample(sid):
+    f = core.SKILLS_DIR / sid / "sample.mp4"
+    if not core.get_skill(sid) or not f.exists():
+        abort(404)
+    return send_file(f, max_age=300, conditional=True)
+
+
 @app.post("/api/skills/<sid>/engine")
 def skill_engine_upload(sid):
     """อัปโหลด engine.zip ที่ได้จาก Claude Code → เทมเพลตนี้วาดภาพด้วยเอนจินนั้นทุกตอน"""

@@ -4,6 +4,7 @@ import os
 import re
 import threading
 import shutil
+import subprocess
 import time
 from pathlib import Path
 
@@ -194,6 +195,8 @@ def _skill_from(p):
         "category": meta.get("category") or (engine or {}).get("category", ""),   # หมวดของการ์ด
         "html_engine": p.is_dir() and (p / "engine" / "index.html").exists(),   # เอนจินจากคลิปแรก (Claude Code)   # ชุดเทมเพลตที่นำเข้า (เช่น opuscar) → แสดงหลังเทมเพลตของผู้ใช้
         "cover": cover,
+        "cover_v": int((p / cover).stat().st_mtime) if cover and cover != "sample" else 0,   # เปลี่ยนรูปการ์ด → URL ใหม่ (ไม่ติดแคชเก่า)
+        "sample": p.is_dir() and (p / "sample.mp4").exists(),   # คลิปตัวอย่างที่ผู้ใช้ใส่เอง (หน้าเพิ่ม/แก้เทมเพลต)
         "options": opts,
         "file": str(f.relative_to(ROOT)),
         "chars": len(body),
@@ -271,6 +274,38 @@ def save_skill(data):
         if v not in (None, ""):
             fm.append(f"{k}: {clean(v)}")
     (d / "SKILL.md").write_text("---\n" + "\n".join(fm) + "\n---\n\n" + content + "\n", encoding="utf-8")
+    reload_skills()
+    return get_skill(sid)
+
+
+def save_skill_media(sid, fileobj):
+    """รูปการ์ดหรือคลิปตัวอย่างของเทมเพลต: รูป → cover.* · คลิป → sample.mp4 + ภาพนิ่งจากคลิปเป็นรูปการ์ด"""
+    d = SKILLS_DIR / sid
+    if not d.is_dir():
+        raise ValueError("ไม่พบเทมเพลต")
+    ext = Path(fileobj.filename or "").suffix.lower()
+    if ext in IMAGE_EXT:
+        for c in d.glob("cover.*"):
+            c.unlink()
+        fileobj.save(d / f"cover{ext}")
+    elif ext in (".mp4", ".mov", ".webm", ".m4v"):
+        tmp = WORK_DIR / f"sample-{sid}{ext}"
+        tmp.parent.mkdir(parents=True, exist_ok=True)
+        fileobj.save(tmp)
+        out = d / "sample.mp4"
+        r = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(tmp), "-c:v", "libx264", "-preset", "veryfast", "-crf", "26",
+                            "-vf", "scale='min(720,iw)':-2", "-c:a", "aac", "-b:a", "96k", "-movflags", "+faststart", str(out)])
+        if r.returncode != 0:
+            tmp.unlink(missing_ok=True)
+            raise ValueError("อ่านไฟล์คลิปไม่ได้")
+        for c in d.glob("cover.*"):
+            c.unlink()
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", "1", "-i", str(tmp), "-frames:v", "1", "-q:v", "3", str(d / "cover.jpg")])
+        if not (d / "cover.jpg").exists():
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(tmp), "-frames:v", "1", "-q:v", "3", str(d / "cover.jpg")])
+        tmp.unlink(missing_ok=True)
+    else:
+        raise ValueError("ใส่ได้เฉพาะรูป (.jpg .png .webp) หรือคลิป (.mp4 .mov .webm)")
     reload_skills()
     return get_skill(sid)
 
