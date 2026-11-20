@@ -616,10 +616,18 @@ html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
 <!-- ไฟล์ค้าง -->
 <div class="modal" id="mStore"><div class="mbox" style="max-width:640px">
   <h2>ไฟล์ค้างและพื้นที่</h2>
-  <div class="note" style="margin:-4px 0 12px">ระบบไม่ลบเอง เลือกสิ่งที่ไม่ใช้แล้วกดลบ · <b>ลบแล้วหายถาวร</b> (เทมเพลตและบทต้นฉบับไม่ถูกลบ ทำใหม่ได้เสมอ)</div>
+  <div class="note" style="margin:-4px 0 12px">ระบบไม่ลบเอง เลือกสิ่งที่ไม่ใช้แล้วกดลบ → ไปที่ <a href="#" onclick="hideM('mStore'); openTrash(); return false">ถังขยะ</a> (กู้คืนได้ · ลบถาวรในถังขยะ = หายจาก Drive ทันที)</div>
   <div id="stBody"></div>
   <div class="mfoot"><label class="small" style="margin-right:auto;display:inline-flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="stAll" onchange="document.querySelectorAll('#stBody input').forEach(c => c.checked = this.checked); stSum()">เลือกทั้งหมด</label>
     <button class="sb red" id="stDel" onclick="storeDelete()"><svg class="i"><use href="#i-trash"/></svg>ลบที่เลือก</button></div>
+</div></div>
+
+<!-- ถังขยะ -->
+<div class="modal" id="mTrash"><div class="mbox" style="max-width:640px">
+  <h2>ถังขยะ</h2>
+  <div class="note" style="margin:-4px 0 12px">ของที่ลบจากเว็บอยู่ที่นี่ · <b>กู้คืน</b> = กลับที่เดิม · <b>ลบถาวร</b> = หายจาก Google Drive ทันที กู้ไม่ได้</div>
+  <div id="trBody"></div>
+  <div class="mfoot"><button class="sb red" id="trEmpty" onclick="trashPurge()"><svg class="i"><use href="#i-trash"/></svg>ล้างถังขยะ</button></div>
 </div></div>
 
 <!-- คลังคลิป -->
@@ -643,6 +651,7 @@ html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
   <h2>ตั้งค่า</h2>
   <div class="setrow" onclick="closeM('mSet'); openLib()"><svg class="i"><use href="#i-book"/></svg><div><b>คลังข้อความ</b><div class="small">บทหรือไอเดียที่เก็บไว้ใช้ซ้ำ</div></div><svg class="i" style="margin-left:auto;transform:rotate(-90deg)"><use href="#i-chevron"/></svg></div>
   <div class="setrow" style="margin-top:8px" onclick="hideM('mSet'); openStore()"><svg class="i"><use href="#i-trash"/></svg><div><b>ไฟล์ค้างและพื้นที่</b><div class="small">ดูไฟล์ที่พัง/ไม่ได้ใช้ แล้วเลือกลบเอง</div></div><svg class="i" style="margin-left:auto;transform:rotate(-90deg)"><use href="#i-chevron"/></svg></div>
+  <div class="setrow" style="margin-top:8px" onclick="hideM('mSet'); openTrash()"><svg class="i"><use href="#i-trash"/></svg><div><b>ถังขยะ</b><div class="small">กู้คืน หรือลบถาวรจาก Drive</div></div><svg class="i" style="margin-left:auto;transform:rotate(-90deg)"><use href="#i-chevron"/></svg></div>
   <div class="sec" style="margin:16px 0 8px;font-size:15px">โหมด</div>
   <div class="modesw" id="sMode"></div>
   <div class="sec" style="margin:4px 0 8px;font-size:15px">สีหลักของเว็บ</div>
@@ -1421,7 +1430,7 @@ function playClip(project, ep) {
 }
 function playOld(path) { const v = $("#vid"); if (v) { v.src = `/media/${enc(vCur.project)}/${path}`; v.play().catch(() => {}); toast("กำลังเล่นเวอร์ชันเก่า · เปิดคลิปใหม่เพื่อกลับเวอร์ชันล่าสุด"); } }
 async function delOld(id) {
-  if (!ask("ลบเวอร์ชันเก่านี้ถาวร?")) return;
+  if (!ask("ลบเวอร์ชันเก่านี้? (ไปที่ถังขยะ กู้คืนได้)")) return;
   const r = await call(() => api("POST", "/api/storage/delete", {ids: [id]})); if (!r) return;
   vCur.old = (vCur.old || []).filter(v => v.id !== id); vidActs(); toast("ลบเวอร์ชันเก่าแล้ว");
 }
@@ -1471,7 +1480,7 @@ async function stopJob(id) { if (!ask("หยุดงานนี้? (ขอ�
 async function resumeJob(id) { if (await call(() => api("POST", `/api/jobs/${id}/resume`))) { toast("เข้าคิวแล้ว"); refreshJobs(); } }
 async function delJob(id) { if (!ask("ลบงานนี้ออกจากรายการ? (ถ้ากำลังทำจะหยุดก่อน · คลิปที่เสร็จแล้วไม่หาย)")) return; if (await call(() => api("DELETE", `/api/jobs/${id}`))) { toast("ลบงานแล้ว"); refreshJobs(); } }
 async function clearJobs() { const n = await call(() => api("POST", "/api/jobs/clear")); if (n !== undefined) { toast(`ลบงานเก่า ${n ?? 0} รายการ`); refreshJobs(); } }
-async function delClip(project, ep) { if (!ask(`ลบคลิป ${project} EP ${ep}? (ลบถาวร · เทมเพลตและบทต้นฉบับยังอยู่ ทำใหม่ได้)`)) return; if (await call(() => api("DELETE", `/api/projects/${enc(project)}/episodes/${ep}`))) { closeM("mVid"); toast("ลบคลิปแล้ว"); refreshJobs(); } }
+async function delClip(project, ep) { if (!ask(`ลบคลิป ${project} EP ${ep}? (ไปที่ถังขยะ กู้คืนได้)`)) return; if (await call(() => api("DELETE", `/api/projects/${enc(project)}/episodes/${ep}`))) { closeM("mVid"); toast("ลบคลิปแล้ว"); refreshJobs(); } }
 let STORE = [];
 const fmtMB = b => b >= 1e9 ? (b / 1e9).toFixed(2) + " GB" : b >= 1e6 ? (b / 1e6).toFixed(1) + " MB" : Math.max(1, Math.round(b / 1e3)) + " KB";
 async function openStore() {
@@ -1490,15 +1499,38 @@ function stSum() {
 }
 async function storeDelete() {
   const ids = [...document.querySelectorAll("#stBody input:checked")].map(c => c.value); if (!ids.length) return;
-  if (!ask(`ลบถาวร ${ids.length} รายการ? กู้คืนไม่ได้`)) return;
+  if (!ask(`ย้าย ${ids.length} รายการไปถังขยะ?`)) return;
   const r = await call(() => api("POST", "/api/storage/delete", {ids})); if (!r) return;
-  toast(`ลบแล้ว ${r.deleted.length} รายการ · ได้พื้นที่คืน ${fmtMB(r.freed)}`); openStore(); refreshJobs();
+  toast(`ย้ายไปถังขยะแล้ว ${r.deleted.length} รายการ · ลบถาวรได้ในถังขยะ`); openStore(); refreshJobs();
+}
+const KIND_TH = {story: "ทั้งเรื่อง", ep: "ตอน", old: "เวอร์ชันเก่า", legacy: "ของเก่า"};
+async function openTrash() {
+  openM("mTrash"); $("#trBody").innerHTML = `<div class="small">กำลังโหลด…</div>`;
+  const xs = await call(() => api("GET", "/api/trash")) || [];
+  $("#trEmpty").disabled = !xs.length;
+  $("#trEmpty").innerHTML = `${ic("trash")}ล้างถังขยะ${xs.length ? ` (${xs.length} · ${fmtMB(xs.reduce((a, x) => a + (x.size || 0), 0))})` : ""}`;
+  $("#trBody").innerHTML = xs.length ? xs.map(x => `<div class="donel" style="cursor:default">
+      <span><b style="font-weight:600">${esc(x.label)}</b> <span class="small">· ${KIND_TH[x.kind] || ""}</span></span>
+      <span class="small">${fmtMB(x.size || 0)} · ${new Date(x.deleted * 1000).toLocaleDateString("th-TH")}</span>
+      <button class="sb" onclick="trashRestore('${x.id}')">${ic("check")}กู้คืน</button>
+      <button class="sb red" onclick="trashPurge(['${x.id}'])">${ic("trash")}ลบถาวร</button></div>`).join("")
+    : `<div class="small" style="padding:20px 0;text-align:center">ถังขยะว่าง</div>`;
+}
+async function trashRestore(id) {
+  const r = await call(() => api("POST", "/api/trash/restore", {id})); if (!r) return;
+  toast(`กู้คืน “${r.label}” แล้ว`); openTrash(); refreshJobs();
+}
+async function trashPurge(ids) {
+  if (!ask(ids ? "ลบถาวร? หายจาก Google Drive ทันที กู้ไม่ได้" : "ล้างถังขยะทั้งหมด? หายจาก Google Drive ทันที กู้ไม่ได้")) return;
+  const r = await call(() => api("POST", "/api/trash/purge", {ids: ids || []})); if (!r) return;
+  toast(r.instant ? `ลบถาวรแล้ว ${r.count} รายการ · ได้พื้นที่คืน ${fmtMB(r.freed)}` : `ลบแล้ว ${r.count} รายการ · แต่ยังไม่ได้อนุญาตลบทันที ไฟล์จะค้างในถังขยะ Drive 30 วัน (รัน Colab ใหม่แล้วกดอนุญาต)`, !r.instant);
+  openTrash();
 }
 async function delEmpty(name) {
-  if (!ask(`ลบเรื่อง “${name}”? (ลบถาวร · เทมเพลตและบทต้นฉบับยังอยู่ ทำใหม่ได้)`)) return;
+  if (!ask(`ลบเรื่อง “${name}”? (ไปที่ถังขยะ กู้คืนได้)`)) return;
   if (await call(() => api("DELETE", `/api/projects/${enc(name)}`))) { PROJS = PROJS.filter(p => p.name !== name); renderClips(); toast("ลบแล้ว"); }
 }
-async function delProject(project) { if (!ask(`ลบทั้งเรื่อง “${project}” ทุก EP? (ลบถาวร · เทมเพลตและบทต้นฉบับยังอยู่ ทำใหม่ได้)`)) return; if (await call(() => api("DELETE", `/api/projects/${enc(project)}`))) { closeM("mVid"); toast("ลบทั้งเรื่องแล้ว"); refreshJobs(); } }
+async function delProject(project) { if (!ask(`ลบทั้งเรื่อง “${project}” ทุก EP? (ไปที่ถังขยะ กู้คืนได้)`)) return; if (await call(() => api("DELETE", `/api/projects/${enc(project)}`))) { closeM("mVid"); toast("ลบทั้งเรื่องแล้ว"); refreshJobs(); } }
 async function stopAll() { if (!ask("หยุดงานทั้งหมด?")) return; await call(() => api("POST", "/api/jobs/stop_all")); refreshJobs(); }
 
 // ================= ทำ EP ต่อ =================

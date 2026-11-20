@@ -729,8 +729,26 @@ def episode_delete(name, ep):
     d = core.ep_dir(name, ep)
     if not d.exists():
         abort(404)
-    shutil.rmtree(d, ignore_errors=True)   # เวอร์ชันเก่าของตอนนี้ไม่ลบ (ผู้ใช้ดู/ลบเองในคลังคลิป)
+    core.trash_move(d, "ep", f"{name} · EP {ep}")   # ไปถังขยะ (กู้คืนได้) · เวอร์ชันเก่าไม่ยุ่ง
     return ok()
+
+
+@app.get("/api/trash")
+def trash_list():
+    return ok(core.trash_list())
+
+
+@app.post("/api/trash/restore")
+def trash_restore():
+    m = core.trash_restore((request.get_json(force=True) or {}).get("id"))
+    return ok(m)
+
+
+@app.post("/api/trash/purge")
+def trash_purge():
+    """ลบถาวรจากถังขยะ (ids ว่าง/ไม่ส่ง = ล้างทั้งหมด) → หายจาก Drive ทันที"""
+    b = request.get_json(force=True) or {}
+    return ok(core.trash_purge(b.get("ids") if b.get("ids") else None))
 
 
 @app.get("/api/storage")
@@ -807,13 +825,13 @@ def skill_import():
 
 @app.delete("/api/projects/<name>")
 def project_delete(name):
-    """ลบทั้งเรื่องถาวร (ไฟล์ใน Drive + งานในรายการ)"""
+    """ลบทั้งเรื่อง → ถังขยะของเว็บ (กู้คืนได้) + เอางานของเรื่องนี้ออกจากรายการ"""
     if jobs.has_pending(name):
         raise ValueError("เรื่องนี้มีงานค้างอยู่ หยุดหรือลบงานก่อน")
     d = core.project_dir(name)
     if not (d / "project.json").exists():
         abort(404)
-    shutil.rmtree(d, ignore_errors=True)
+    core.trash_move(d, "story", name)
     jobs.forget_project(name)
     return ok()
 

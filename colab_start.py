@@ -7,6 +7,13 @@ print('✅ โค้ด:', subprocess.run(f'git -C {CODE} log -1 --format="%h %s
 # ---------- 1) Google Drive + เทมเพลต ----------
 from google.colab import drive
 drive.mount('/content/drive')
+# อนุญาตให้ระบบลบไฟล์ใน Drive ได้ทันทีตอนกด "ลบถาวร" ในถังขยะของเว็บ (ไม่ค้างในถังขยะ Drive 30 วัน)
+try:
+    from google.colab import auth
+    auth.authenticate_user()
+    print('✅ อนุญาตลบถาวรจากถังขยะเว็บแล้ว')
+except Exception as e:
+    print('⚠️ ไม่ได้อนุญาตลบถาวร: ลบในเว็บจะไปอยู่ในถังขยะ Drive 30 วัน', str(e)[:80])
 ROOT = '/content/drive/MyDrive/AutoClip'
 for d in ('skills', 'projects', 'fonts'):
     os.makedirs(f'{ROOT}/{d}', exist_ok=True)

@@ -332,10 +332,76 @@ def _size(p):
     return sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
 
 
+# ---------------- ถังขยะของเว็บ ----------------
+# ลบในเว็บ = ย้ายมาถังขยะ (กู้คืนได้) · ลบในถังขยะ = หายถาวรจาก Drive ทันที (ไม่ค้าง 30 วัน)
+TRASH_DIR = ROOT / "trash"
+
+
+def trash_move(path, kind, label, orig=None):
+    path = Path(path)
+    if not path.exists():
+        return None
+    TRASH_DIR.mkdir(parents=True, exist_ok=True)
+    tid = f"{int(time.time() * 1000)}"
+    box = TRASH_DIR / tid
+    box.mkdir()
+    write_json(box / "meta.json", {"kind": kind, "label": label, "orig": str((orig or path).relative_to(ROOT)),
+                                   "deleted": time.time(), "size": _size(path)})
+    shutil.move(str(path), str(box / "data"))
+    return tid
+
+
+def trash_list():
+    out = []
+    if TRASH_DIR.exists():
+        for b in sorted(TRASH_DIR.iterdir(), reverse=True):
+            m = read_json(b / "meta.json")
+            if m:
+                out.append({"id": b.name, **m})
+    return out
+
+
+def _trash_box(tid):
+    b = (TRASH_DIR / str(tid)).resolve()
+    if b.parent != TRASH_DIR.resolve() or not (b / "meta.json").exists():
+        raise ValueError("ไม่พบรายการในถังขยะ")
+    return b
+
+
+def trash_restore(tid):
+    b = _trash_box(tid)
+    m = read_json(b / "meta.json")
+    dst = (ROOT / m["orig"]).resolve()
+    if ROOT.resolve() not in dst.parents:
+        raise ValueError("ตำแหน่งเดิมไม่ถูกต้อง")
+    if dst.exists():
+        raise ValueError(f"มี “{m['label']}” อยู่แล้วที่เดิม (ชื่อซ้ำ) เปลี่ยนชื่อหรือลบอันที่มีอยู่ก่อน")
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(b / "data"), str(dst))
+    shutil.rmtree(b, ignore_errors=True)
+    return m
+
+
+def trash_purge(ids=None):
+    """ลบถาวร (ids=None = ล้างถังขยะทั้งหมด) · คืนจำนวน + พื้นที่ + ลบจาก Drive ทันทีได้ไหม"""
+    from . import gdrive
+    boxes = [_trash_box(i) for i in ids] if ids is not None else ([b for b in TRASH_DIR.iterdir()] if TRASH_DIR.exists() else [])
+    n, freed, instant = 0, 0, True
+    for b in boxes:
+        m = read_json(b / "meta.json") or {}
+        freed += m.get("size", 0)
+        instant = gdrive.delete_forever(b) and instant
+        n += 1
+    return {"count": n, "freed": freed, "instant": instant if n else True}
+
+
 def purge_legacy_trash():
-    """ของที่ผู้ใช้สั่งลบไปแล้วตอนระบบยังย้ายไปถังขยะ (_trash) → ลบจริงตามที่สั่ง"""
+    """ถังขยะแบบเก่า (projects/_trash) → ย้ายเข้าถังขยะใหม่ให้เห็นและเลือกได้ · engine.old ไม่ใช้แล้ว"""
     for t in [PROJECTS_DIR / "_trash", *PROJECTS_DIR.glob("*/_trash")]:
-        shutil.rmtree(t, ignore_errors=True)
+        if t.is_dir():
+            for x in list(t.iterdir()):
+                trash_move(x, "legacy", x.name, orig=PROJECTS_DIR / x.name)
+            shutil.rmtree(t, ignore_errors=True)
     for s in SKILLS_DIR.glob("*/engine.old"):
         shutil.rmtree(s, ignore_errors=True)
 
@@ -368,7 +434,7 @@ def storage_report(busy=lambda n: False):
 
 
 def storage_delete(ids, busy=lambda n: False):
-    """ลบถาวรตามที่ผู้ใช้เลือก (เฉพาะรายการที่อยู่ใน storage_report เท่านั้น)"""
+    """ย้ายไปถังขยะตามที่ผู้ใช้เลือก (เฉพาะรายการที่อยู่ใน storage_report เท่านั้น)"""
     allowed = {i["id"]: i for i in storage_report(busy)}
     done, freed, stories = [], 0, []
     for i in ids:
@@ -379,10 +445,7 @@ def storage_delete(ids, busy=lambda n: False):
         if ROOT.resolve() not in p.parents:
             continue
         freed += it["size"]
-        if p.is_dir():
-            shutil.rmtree(p, ignore_errors=True)
-        else:
-            p.unlink(missing_ok=True)
+        trash_move(p, it["kind"], it["label"])
         done.append(i)
         if it["kind"] == "story":
             stories.append(it["label"])
