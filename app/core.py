@@ -3,6 +3,7 @@ import json
 import os
 import re
 import threading
+import shutil
 import time
 from pathlib import Path
 
@@ -325,8 +326,20 @@ def ep_dir(name, ep):
     return project_dir(name) / f"ep{int(ep):02d}"
 
 
-def unique_project_name(name):
+def trash_project(name):
+    d = project_dir(name)
+    trash = PROJECTS_DIR / "_trash"
+    trash.mkdir(exist_ok=True)
+    shutil.move(str(d), str(trash / f"{d.name}_{int(time.time())}"))
+
+
+def unique_project_name(name, busy=lambda n: False):
+    """ชื่อเรื่องใหม่ไม่ให้ทับของเดิม · ถ้าชื่อเดิมเป็นเรื่องที่ไม่มีคลิปเสร็จเลย (ทำแล้วพัง) และไม่มีงานค้าง
+    → ย้ายเรื่องเก่าไปถังขยะแล้วใช้ชื่อเดิม (ไม่เกิดชื่อซ้ำแบบ "(2)")"""
     base = safe_name(name) or "เรื่องใหม่"
+    if (project_dir(base) / "project.json").exists() and not busy(base) \
+            and not any(e.get("final") for e in list_episodes(base)):
+        trash_project(base)
     n, cand = 2, base
     while (project_dir(cand) / "project.json").exists():
         cand = f"{base} ({n})"

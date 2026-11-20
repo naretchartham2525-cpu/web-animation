@@ -492,7 +492,7 @@ def quick_create():
             raise ValueError("ยังไม่มีบท EP (epNN.json) ในข้อความที่วาง")
         if not parsed["series"]:
             raise ValueError("เรื่องใหม่ต้องมี series.json (ไบเบิลซีรีส์) มาด้วย")
-        name = core.unique_project_name(b.get("name") or engine_skill.series_title(parsed, "ซีรีส์ใหม่")[:40])
+        name = core.unique_project_name(b.get("name") or engine_skill.series_title(parsed, "ซีรีส์ใหม่")[:40], jobs.has_pending)
         proj = core.create_project({"name": name, "skill": tpl, "episodes_total": len(parsed["episodes"]),
                                     "topic": "", "script_mode": "engine", "options": opts})
         n = engine_skill.save_paste(proj["name"], parsed, 1)
@@ -505,7 +505,7 @@ def quick_create():
         first = eps[0]["title"]
     else:
         first = idea.lstrip("#").strip().splitlines()[0]
-    name = core.unique_project_name(b.get("name") or first[:40])
+    name = core.unique_project_name(b.get("name") or first[:40], jobs.has_pending)
     proj = core.create_project({
         "name": name, "skill": tpl, "episodes_total": max(1, len(eps)),
         "topic": idea if mode == "ai" else "", "script_mode": mode, "options": opts,
