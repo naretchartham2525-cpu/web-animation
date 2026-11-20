@@ -37,7 +37,7 @@ def _auth():
     if not PASSWORD:
         return
     p = request.path
-    if p in ("/", "/api/login", "/api/login-info", "/api/ping") or p.startswith("/static"):
+    if p in ("/", "/api/login", "/api/ping") or p.startswith("/static"):
         return
     tok = request.cookies.get("ac_tok") or request.headers.get("X-AutoClip-Token", "")
     if not hmac.compare_digest(tok, TOKEN):
@@ -55,14 +55,17 @@ def ping():
     return ok({"auth_required": bool(PASSWORD)})
 
 
-@app.get("/api/login-info")
-def login_info():
-    """ช่องรหัสต้องรู้ความยาว เพื่อตรวจเองทันทีเมื่อพิมพ์ครบ (ไม่ต้องมีปุ่มกด)"""
-    return ok({"len": len(PASSWORD or "")})
+_LOGIN_TRIES = {}   # ip → เวลาที่ลอง (กันเดารหัสรัวๆ เพราะหน้าเว็บตรวจรหัสทุกครั้งที่พิมพ์)
 
 
 @app.post("/api/login")
 def login():
+    ip = request.headers.get("CF-Connecting-IP") or request.remote_addr or "?"
+    now = time.time()
+    tries = [t for t in _LOGIN_TRIES.get(ip, []) if now - t < 60]
+    if len(tries) >= 60:
+        return jsonify({"ok": False, "error": "ลองบ่อยเกินไป รอ 1 นาที"}), 429
+    _LOGIN_TRIES[ip] = tries + [now]
     pw = (request.get_json(silent=True) or {}).get("password", "")
     if PASSWORD and not hmac.compare_digest(pw, PASSWORD):
         return jsonify({"ok": False, "error": "รหัสผ่านไม่ถูกต้อง"}), 401

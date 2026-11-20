@@ -49,7 +49,6 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .utab td{padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
 .utab td.r,.utab th.r{text-align:right;white-space:nowrap}
 .uh{font-family:Kanit;font-size:14px;margin:14px 0 6px}
-#splash .strip i.fill{width:0;animation:none;transition:width linear}
 #dropZone{position:fixed;inset:10px;z-index:150;border:3px dashed var(--acc);border-radius:28px;background:rgba(244,226,216,.82);backdrop-filter:blur(4px);display:none;place-items:center;pointer-events:none}
 #dropZone.on{display:grid}
 #dropZone div{text-align:center;color:var(--acc);font-family:Kanit;font-size:22px}
@@ -77,7 +76,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .btn.dark{background:var(--ink);color:var(--paper)}
 .btn.dark:hover{background:#3b332b}
 .tdrop{display:flex;flex-direction:column;align-items:center;gap:4px;padding:22px;border:var(--bw,1px) dashed var(--k,var(--line));border-radius:12px;cursor:pointer;text-align:center;margin-bottom:12px}
-.tdrop:hover,.tdrop.over{background:var(--acc-soft)}
+.tdrop:hover{background:var(--acc-soft)}
 .tdrop svg{width:26px;height:26px}
 .tor{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12.5px;margin:0 0 10px}
 .tor::before,.tor::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -116,8 +115,6 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .card.sel{box-shadow:0 0 0 2.5px var(--acc),var(--shadow)}
 .cover{position:relative;aspect-ratio:4/5;background-size:cover;background-position:center;cursor:pointer;margin:8px 8px 0;border-radius:15px;overflow:hidden}
 .cover .ttl{position:absolute;left:12px;right:12px;bottom:12px;color:#fff;font-family:Kanit;font-weight:600;font-size:18px;line-height:1.25;text-shadow:0 1px 10px rgba(0,0,0,.45)}
-.cover .glyph{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.8)}
-.cover .glyph svg{width:44px;height:44px;stroke-width:1.3}
 .cover .meta{position:absolute;top:10px;left:10px;display:flex;gap:5px;flex-wrap:wrap}
 .tagx{background:rgba(255,253,249,.9);color:var(--ink);font-size:11.5px;padding:3px 9px;border-radius:99px;display:inline-flex;align-items:center;gap:4px}
 .tagx svg{width:12px;height:12px}
@@ -139,18 +136,12 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 #mLogin.on{display:grid}
 #lgForm{position:relative;display:flex;align-items:center;gap:6px;background:var(--paper);border:1px solid var(--line);border-radius:99px;padding:6px 6px 6px 18px;box-shadow:0 10px 30px rgba(60,40,20,.10)}
 #lgPw{border:none;outline:none;background:none;font-size:16px;width:220px;padding:8px 0}
-#lgErr{position:absolute;top:100%;left:0;right:0;text-align:center;margin-top:10px;font-size:13px;color:var(--err);min-height:18px}
 #lgForm.shake{animation:shake .35s}
 @keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(7px)}75%{transform:translateX(-4px)}}
 #splash.pre .in2{visibility:hidden}
 #splash{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:var(--bg);transition:opacity .45s,visibility .45s}
 #splash.off{opacity:0;visibility:hidden}
 #splash .in2{display:flex;flex-direction:column;align-items:center;gap:14px;color:var(--ink)}
-#splash .reel svg{width:56px;height:56px;stroke-width:1.3}
-#splash .strip{width:150px;height:6px;border-radius:99px;background:var(--bg2);overflow:hidden;position:relative}
-#splash .strip i{position:absolute;inset:0;width:40%;border-radius:99px;background:var(--acc);animation:slide 1.1s ease-in-out infinite}
-@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
-#splash b{font-family:Kanit;font-size:22px}
 .skel .cover{background:linear-gradient(100deg,var(--bg2) 30%,#f7f1e8 50%,var(--bg2) 70%);background-size:300% 100%;animation:shimmer 1.4s infinite}
 .skel .cfoot span{display:block;height:12px;width:60%;border-radius:99px;background:var(--bg2)}
 @keyframes shimmer{to{background-position:-100% 0}}
@@ -165,11 +156,6 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .cover .ring path{fill:rgba(255,255,255,.9);stroke:none;transform-origin:32px 32px;transition:transform .35s ease}
 .card:hover .cover .ring circle{stroke-dashoffset:0}
 .card:hover .cover .ring path{transform:scale(1.15)}
-.gsec{grid-column:1/-1;display:flex;align-items:baseline;gap:10px;margin:18px 0 -4px}
-.gsec:first-child{margin-top:0}
-.gsec h3{margin:0;font-size:19px}
-.gsec span{font-size:12.5px;color:var(--muted)}
-.gsec .mini{margin-left:auto;border:none;background:none;color:var(--acc);font-weight:600;cursor:pointer;font-size:13px}
 .clip .th svg{transition:transform .3s}
 .clip:hover .th svg{transform:scale(1.18)}
 .clip .th{transition:filter .3s}
@@ -285,7 +271,6 @@ body.eng .steps{grid-template-columns:auto auto minmax(0,1fr)}
 .sb.red{color:var(--err)}
 .logs{background:#2a241e;color:#eadfd0;border-radius:12px;padding:10px;font-family:ui-monospace,monospace;font-size:12px;max-height:220px;overflow:auto;white-space:pre-wrap;margin-top:8px}
 .err{color:var(--err);font-size:12.5px;margin-top:6px;word-break:break-word}
-.clips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .clh{display:flex;align-items:center;gap:12px;margin-bottom:6px}.clh .x{margin-left:auto}
 .story{margin-top:18px}
 .story .sh{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
@@ -322,8 +307,6 @@ textarea.in{min-height:90px;resize:vertical;line-height:1.55}
 .libi .t{font-family:Kanit;font-weight:500}
 .libi .p{color:var(--muted);font-size:13px;margin:4px 0 6px;max-height:40px;overflow:hidden;white-space:pre-line}
 .scene{background:var(--soft);border-radius:14px;padding:10px;margin-bottom:8px}
-.chk{display:flex;gap:9px;align-items:center;margin-bottom:12px}
-.chk input{accent-color:var(--ink);width:17px;height:17px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);top:78px;background:var(--ink);color:var(--paper);padding:10px 18px;border-radius:99px;z-index:99;display:none;max-width:90vw;box-shadow:var(--shadow)}
 .toast.err{background:var(--err)}
 .demo{background:rgba(255,253,249,.7);border:1px dashed #d9c3a7;color:#8a6a43;padding:8px 14px;border-radius:14px;margin-top:6px;font-size:13.5px;display:flex;gap:8px;align-items:center}
@@ -373,8 +356,6 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
 .packs button{border:var(--bw) solid var(--k);color:var(--ink);background:var(--paper);border-radius:8px}
 .packs button.on{background:var(--k);color:var(--paper)}
 .card{border:var(--bw) solid var(--k);border-radius:12px;box-shadow:none}
-.card:hover{transform:translateY(-2px);box-shadow:none}
-.card.sel{box-shadow:0 0 0 3px var(--acc)}
 .use{border:var(--bw) solid var(--k);background:var(--paper);border-radius:8px;font-weight:600}
 .use:hover{background:var(--acc-soft);border-color:var(--k)}
 .card.sel .use{background:var(--acc);color:var(--acc-ink);border-color:var(--k)}
@@ -390,10 +371,7 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
 .stp{background:var(--paper);border:1px solid var(--line)}
 .swl.on .sw{background:var(--acc)}
 .cost.paid::before{background:var(--acc)}
-.go{background:var(--acc);color:var(--acc-ink);border:var(--bw) solid var(--k);border-radius:8px;height:42px;padding:0 28px;font-weight:700;font-size:14.5px;letter-spacing:.2px;box-shadow:3px 3px 0 var(--k);transition:transform .12s,box-shadow .12s}
-.go::after{display:none}
-.go:hover{background:var(--acc);transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--k)}
-.go:active{transform:translate(2px,2px);box-shadow:none}
+.go{height:42px;padding:0 28px;font-weight:700;font-size:14.5px;letter-spacing:.2px;transition:transform .12s,box-shadow .12s}
 .drawer{border:var(--bw) solid var(--k);border-radius:14px;box-shadow:var(--hard)}
 .modal{background:rgba(20,20,20,.35);backdrop-filter:none}
 .mbox{border:var(--bw) solid var(--k);border-radius:14px;box-shadow:var(--hard)}
@@ -403,20 +381,7 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
 .in{border:var(--bw) solid var(--k);border-radius:8px}
 .setrow,.engbox,.job{border:var(--bw) solid var(--k);border-radius:12px}
 #mLogin{background:var(--bg)}
-#lgForm{border:var(--bw) solid var(--k);border-radius:12px;box-shadow:var(--hard)}
-#splash{background:var(--bg)}
-#splash .in2{gap:0}
-#splash .slogo{width:64px;height:64px;border-radius:14px;background:var(--acc);color:var(--acc-ink);border:var(--bw) solid var(--k);box-shadow:4px 4px 0 var(--k);display:grid;place-items:center;animation:sbob 1.6s ease-in-out infinite}
-#splash .slogo svg{width:26px;height:26px;fill:currentColor;stroke:none;margin-left:3px}
-@keyframes sbob{50%{transform:translate(-2px,-3px);box-shadow:6px 7px 0 var(--k)}}
-#splash .sname{font-size:30px;font-weight:800;letter-spacing:-1px;margin:20px 0 22px}
-#splash .sbar{width:280px;height:14px;border:var(--bw) solid var(--k);border-radius:8px;background:var(--paper);box-shadow:3px 3px 0 var(--k);overflow:hidden}
-#splash .sbar i{display:block;height:100%;width:3%;background:var(--acc);transition:width .5s ease}
-#splash .msg{margin-top:16px;font-size:13.5px;color:var(--ink);min-height:20px}
 #splash .sdet{font-size:12px;color:var(--muted);min-height:18px;margin-top:4px;max-width:300px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#splash .sskip{margin-top:22px;border:none;background:none;color:var(--muted);font-size:12.5px;text-decoration:underline;cursor:pointer;visibility:hidden}
-#splash .sskip.on{visibility:visible}
-html[data-mode=dark] #splash .slogo,html[data-mode=dark] #splash .sbar{box-shadow:4px 4px 0 var(--acc)}
 .acsw{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
 .acsw button{width:34px;height:34px;border-radius:8px;border:var(--bw) solid var(--k);cursor:pointer}
 .acsw button.on{outline:2px solid var(--k);outline-offset:2px}
@@ -424,12 +389,9 @@ html[data-mode=dark] #splash .slogo,html[data-mode=dark] #splash .sbar{box-shado
 .acsw input{width:34px;height:34px;border:var(--bw) solid var(--k);border-radius:8px;padding:2px;background:var(--paper);cursor:pointer}
 /* โฮเวอร์: ยกขึ้น + เงาสีหลัก ให้รู้ว่ากำลังจะเลือกอะไร */
 .card{transition:transform .15s,box-shadow .15s,border-color .15s}
-.card:hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 var(--acc);border-color:var(--k)}
-.card.sel{border-color:var(--acc);box-shadow:5px 5px 0 var(--acc)}
 .use{transition:background .15s,color .15s}
 .card:hover .use,.use:hover{background:var(--acc);color:var(--acc-ink)}
 .packs button,.sb,.btn,.mback{transition:transform .12s,box-shadow .12s,background .12s}
-.packs button:hover,.sb:hover,.btn:hover{transform:translate(-1px,-1px);box-shadow:2px 2px 0 var(--k)}
 .nb:hover,.ib:hover,.chip.ghost:hover{background:var(--acc-soft);color:var(--ink)}
 .seg button:not(.on):hover{color:var(--ink);background:var(--acc-soft)}
 .chip:hover,.dur:hover,.search:focus-within,.in:focus{border-color:var(--acc)}
@@ -440,11 +402,7 @@ html[data-mode=dark]{
 }
 html[data-mode=dark] body{background:radial-gradient(900px 500px at 15% -10%,color-mix(in srgb,var(--acc) 14%,transparent),transparent 60%),var(--bg);background-attachment:fixed}
 html[data-mode=dark] .modal{background:rgba(0,0,0,.65)}
-html[data-mode=dark] .go{box-shadow:3px 3px 0 var(--k)}
-html[data-mode=dark] .go:hover{box-shadow:4px 4px 0 var(--k)}
 html[data-mode=dark] .card,html[data-mode=dark] .chip,html[data-mode=dark] .seg,html[data-mode=dark] .dur,html[data-mode=dark] .ib.sm,html[data-mode=dark] .use,html[data-mode=dark] .search,html[data-mode=dark] .packs button:not(.on){border-color:#55555F}
-html[data-mode=dark] .card:hover{border-color:var(--k)}
-html[data-mode=dark] .card.sel{border-color:var(--acc)}
 html[data-mode=dark] .in{background:var(--soft);border-color:#3A3A42;color:var(--ink)}
 html[data-mode=dark] select option{background:var(--paper);color:var(--ink)}
 html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
@@ -542,7 +500,7 @@ html[data-mode=dark] #splash .glass{border-color:rgba(255,255,255,.13);box-shado
 html[data-mode=dark] #splash .dock{border-color:rgba(255,255,255,.13)}
 #splash .msg{flex:1;margin:0;font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:0}
 #splash .sbar,html[data-mode=dark] #splash .sbar{width:90px;height:5px;border:none;border-radius:9px;background:color-mix(in srgb,var(--ink) 14%,transparent);box-shadow:none;flex-shrink:0}
-#splash .sbar i{background:var(--grad);background-size:200% 100%;animation:gflow 3s linear infinite;border-radius:9px}
+#splash .sbar i{display:block;height:100%;width:3%;transition:width .5s ease;background:var(--grad);background-size:200% 100%;animation:gflow 3s linear infinite;border-radius:9px}
 #splash .sdet{margin-top:10px;min-height:16px}
 #splash.leave .tc{animation:sout .45s ease-in forwards;animation-delay:calc(var(--i)*18ms)}
 #splash.leave .hero{animation:szoom .6s cubic-bezier(.6,0,.3,1) forwards .15s;box-shadow:none}
@@ -556,9 +514,6 @@ body::before{translate:0 calc(var(--sy,0) * -.06px);filter:blur(70px) hue-rotate
 .rv{opacity:0;transform:translateY(28px) scale(.97);filter:blur(6px)}
 .rv.vis{opacity:1;transform:none;filter:none;transition:opacity .6s ease var(--d,0ms),transform .7s cubic-bezier(.2,.8,.2,1) var(--d,0ms),filter .6s ease var(--d,0ms)}
 .card.rv.vis:hover{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
-.gsec h3{position:relative}
-.gsec h3::after{content:"";position:absolute;left:0;bottom:-5px;height:3px;width:0;border-radius:3px;background:var(--grad);transition:width .8s cubic-bezier(.2,.8,.2,1) .2s}
-.gsec.vis h3::after{width:36px}
 .top .bar-top{position:relative;overflow:hidden;transition:padding .3s,box-shadow .3s,background .3s}
 .top .bar-top::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:calc(var(--sp,0) * 100%);background:var(--grad);opacity:.9}
 .top.sc .bar-top{padding-top:3px;padding-bottom:3px;box-shadow:0 14px 34px -18px rgba(0,0,0,.45)}
@@ -1084,7 +1039,6 @@ function coverStyle(t) {
 }
 let CAT = "";   // "" ทั้งหมด · "mine" ของฉัน · ชื่อหมวด
 const catsOf = t => [...(t.pack ? [] : ["mine"]), ...(t.category ? [t.category] : t.pack ? ["อื่นๆ"] : [])];   // ของฉัน + หมวดของมัน (อยู่ได้ทั้งสองที่)
-const catOf = t => catsOf(t)[0];
 function renderPacks() {
   const cats = [...new Set(T.flatMap(catsOf))].filter(c => c !== "mine").sort((a, b) => a.localeCompare(b, "th"));
   const n = k => k === "" ? T.length : T.filter(t => catsOf(t).includes(k)).length;
@@ -1224,7 +1178,6 @@ function tplVoice() { return tplSel?.options?.voice || ""; }
 function effVoice() { return O.voice || tplVoice(); }
 const elVoice = () => { const v = effVoice(); return v === "eleven:auto" || isEl(v); };
 const usesEl = () => !VF.main.length && (Object.values(VC.main.map).some(isEl) || elVoice() || (AUTO.provider === "eleven" && AUTO.credits > 0));
-function isFree() { return (O.mode === "manual" || O.engine === "free") && !usesEl(); }
 function goLabel() {
   const n = O.mode === "manual" ? countEps($("#idea").value) : 1;
   $("#goTxt").textContent = n > 1 ? `Create ${n} EPs` : "Create";
@@ -1305,7 +1258,6 @@ async function filesToText(files) {
 const AUDIO_OK = /\.(mp3|wav|m4a|aac|ogg|opus|flac|webm)$/i;
 // ไฟล์เสียงพากย์ของผู้ใช้: 1 ไฟล์ทั้งตอน หรือ 1 ไฟล์ต่อ 1 ตัวละคร (จับคู่จากชื่อไฟล์)
 let VF = {main: [], nx: []}, SPK = {main: [], nx: []};
-const vfCtx = () => $("#mNext").classList.contains("on") ? "nx" : "main";
 const vfText = k => k === "nx" ? $("#nxText").value : $("#idea").value;
 const vfTpl = k => k === "nx" ? "" : (tplSel?.id || "");
 async function loadSpeakers(k) {
@@ -1530,7 +1482,6 @@ function jobCard(j) {
     ${openLog[j.id] ? `<div class="logs">${esc((j.logs || []).join("\n"))}</div>` : ""}</div>`;
 }
 const isLatest = o => !o.copy && !OUTS.some(x => x.project === o.project && x.ep > o.ep);
-const clipKey = o => o.path;
 const jobEp = j => j.review?.ep || j.episode || "";
 function doneLine(j) {
   return `<div class="donel" onclick="openDone(dq('${q(j.project)}'))"><span class="ok">${ic("check")}</span><span>${esc(j.project)}${jobEp(j) ? " · EP " + jobEp(j) : ""}</span><span class="small">ดูคลิป</span></div>`;
@@ -1579,12 +1530,6 @@ async function delFailed(project, ep) {
   if (await call(() => api("DELETE", `/api/projects/${enc(project)}/episodes/${ep}`))) {
     const p = PROJS.find(x => x.name === project); if (p) p.failed_eps = p.failed_eps.filter(e => e !== ep); renderClips(); toast("ย้ายไปถังขยะแล้ว");
   }
-}
-function clipCard(o) {
-  const th = o.thumb && !DEMO ? `background-image:url('/media/${enc(o.project)}/${o.thumb}')` : `background-image:linear-gradient(160deg,${TONES[hashN(o.project) % TONES.length]})`;
-  return `<div class="clip"><div class="th" style="${th}" onclick="playClip(dq('${q(o.project)}'),${o.ep})">${ic("play")}</div>
-    <div class="i"><div class="t">${esc(o.project)}</div><div class="small">EP ${o.ep} · ${fmtDur(o.duration)}</div>
-    ${isLatest(o) ? `<button class="sb acc" style="width:100%;justify-content:center;margin-top:7px" onclick="nextEp(dq('${q(o.project)}'))">${ic("plus")}ทำ EP ${o.ep + 1} ต่อ</button>` : ""}</div></div>`;
 }
 let vMuted = false, vCur = null;
 function playClip(project, ep, path) {
@@ -1885,17 +1830,24 @@ function showGate() {   // ช่องใส่รหัสอย่างเ�
   const g = $("#mLogin"); if (g.classList.contains("on")) return;
   g.classList.add("on"); setTimeout(() => $("#lgPw").focus(), 50);
 }
-let lgBusy = false, lgLen = 0;
-api("GET", "/api/login-info").then(r => lgLen = r?.len || 0).catch(() => {});
-async function tryLogin() {   // พิมพ์ครบความยาวรหัส → ตรวจเองทันที: จุดเขียว = เข้าเว็บ · จุดแดง = ผิด
+let lgBusy = false, lgT, lgBadT;
+async function tryLogin(loud) {   // ตรวจรหัสกับหลังบ้านทุกครั้งที่พิมพ์ (หน้าเว็บไม่รู้ความยาวรหัส): ถูก = จุดเขียวเข้าเลย · ผิด = แดงเมื่อหยุดพิมพ์
   const pw = $("#lgPw").value, dot = $("#lgDot");
   if (lgBusy || !pw) return;
-  lgBusy = true; dot.className = "wait";
+  lgBusy = true; if (loud) dot.className = "wait";
   try { await api("POST", "/api/login", {password: pw}); }
   catch (err) {
-    lgBusy = false; dot.className = "bad"; $("#lgErr").textContent = "รหัสไม่ถูก";
-    const f = $("#lgForm"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake");
-    $("#lgPw").select(); return;
+    lgBusy = false;
+    if ($("#lgPw").value !== pw) { if ($("#lgPw").value) tryLogin(false); return; }   // พิมพ์ต่อไประหว่างรอ → ตรวจค่าล่าสุด
+    if (/บ่อยเกินไป/.test(err.message)) { dot.className = "bad"; $("#lgErr").textContent = err.message; return; }
+    clearTimeout(lgBadT);
+    lgBadT = setTimeout(() => {                           // หยุดพิมพ์แล้วยังผิด → จุดแดง + สั่น
+      if ($("#lgPw").value !== pw) return;
+      dot.className = "bad"; $("#lgErr").textContent = "รหัสไม่ถูก";
+      const f = $("#lgForm"); f.classList.remove("shake"); void f.offsetWidth; f.classList.add("shake"); $("#lgPw").select();
+    }, loud ? 0 : 1100);
+    if (!loud) dot.className = "";
+    return;
   }
   dot.className = "ok"; $("#lgErr").textContent = "รหัสถูก กำลังเข้าเว็บ";
   await new Promise(r => setTimeout(r, 450));            // ให้เห็นจุดเขียวแวบหนึ่ง
@@ -1906,10 +1858,10 @@ async function tryLogin() {   // พิมพ์ครบความยาว�
   splashDone = false; await boot();                     // รหัสถูก → หน้ารอโหลด (รอเว็บพร้อมจริง) → เข้าเว็บ
 }
 $("#lgPw").addEventListener("input", () => {
-  const n = $("#lgPw").value.length; if (!lgBusy) $("#lgDot").className = "";
-  if (lgLen && n === lgLen) tryLogin();
+  clearTimeout(lgT); clearTimeout(lgBadT); $("#lgDot").className = "";
+  lgT = setTimeout(() => tryLogin(false), 180);         // เว้นนิดหนึ่ง กันยิงทุกตัวอักษรตอนพิมพ์เร็ว
 });
-$("#lgForm").onsubmit = e => { e.preventDefault(); tryLogin(); };   // กด Enter ก็ได้ (กรณีไม่รู้ความยาว)
+$("#lgForm").onsubmit = e => { e.preventDefault(); clearTimeout(lgT); tryLogin(true); };   // กด Enter = ตรวจทันที
 document.querySelectorAll(".modal").forEach(m => m.addEventListener("mousedown", e => { if (e.target === m) closeM(m.id); }));
 document.addEventListener("keydown", e => { if (e.key === "Escape") { if (MST.length > 1) goBack(); else { closeAllM(); closeDrawer(); } } });
 let timer;
@@ -2013,17 +1965,15 @@ async function boot() {
 // ===== เลื่อนแล้วเล่าเรื่อง: การ์ด/หัวหมวดค่อยๆ ปรากฏตอนเลื่อนถึง · พื้นหลังเปลี่ยนสีตามการเลื่อน · แถบบนหดตัว =====
 const rvIO = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => {
   if (!e.isIntersecting) return; const el = e.target; el.classList.add("vis"); rvIO.unobserve(el); SEEN.add(rvKey(el));
-  if (el.classList.contains("gsec")) { const sp = el.querySelector("span"), n = +sp.textContent || 0, t0 = performance.now();
-    const f = now => { const k = Math.min(1, (now - t0) / 700); sp.textContent = Math.round(n * (1 - (1 - k) ** 3)); if (k < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); }
 }), {threshold: .12, rootMargin: "0px 0px -6% 0px"}) : null;
-const SEEN = new Set(), rvKey = el => (el.querySelector(".ttl,h3") || el).textContent;
+const SEEN = new Set(), rvKey = el => (el.querySelector(".ttl") || el).textContent;
 function revealGrid() {
   if (!rvIO) return; let col = 0;
-  document.querySelectorAll("#grid > .card:not(.skel), #grid > .gsec").forEach(el => {
+  document.querySelectorAll("#grid > .card:not(.skel)").forEach(el => {
     if (el.classList.contains("rv")) return;
     if (SEEN.has(rvKey(el))) { el.classList.add("rv", "vis"); return; }   // เคยเห็นแล้ว (กด Use แล้ววาดใหม่) → ไม่เล่นซ้ำ
-    col = el.classList.contains("gsec") ? 0 : col + 1;
-    el.classList.add("rv"); el.style.setProperty("--d", (el.classList.contains("gsec") ? 0 : Math.min(col, 6) * 70) + "ms"); rvIO.observe(el);
+    col++;
+    el.classList.add("rv"); el.style.setProperty("--d", (col % 6) * 70 + "ms"); rvIO.observe(el);
   });
 }
 new MutationObserver(revealGrid).observe($("#grid"), {childList: true});
