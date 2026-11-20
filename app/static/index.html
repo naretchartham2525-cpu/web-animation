@@ -677,15 +677,6 @@ html[data-mode=dark] .toast{color:#FF6B6B!important}
   <div class="mfoot"><button class="sb" onclick="closeM('mLib')">ปิด</button></div>
 </div></div>
 
-<!-- ไฟล์ค้าง -->
-<div class="modal" id="mStore"><div class="mbox" style="max-width:640px">
-  <h2>ไฟล์ค้างและพื้นที่</h2>
-  <div class="note" style="margin:-4px 0 12px">ระบบไม่ลบเอง เลือกสิ่งที่ไม่ใช้แล้วกดลบ → ไปที่ <a href="#" onclick="hideM('mStore'); openTrash(); return false">ถังขยะ</a> (กู้คืนได้ · ลบถาวรในถังขยะ = หายจาก Drive ทันที)</div>
-  <div id="stBody"></div>
-  <div class="mfoot"><label class="small" style="margin-right:auto;display:inline-flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="stAll" onchange="document.querySelectorAll('#stBody input').forEach(c => c.checked = this.checked); stSum()">เลือกทั้งหมด</label>
-    <button class="sb red" id="stDel" onclick="storeDelete()"><svg class="i"><use href="#i-trash"/></svg>ลบที่เลือก</button></div>
-</div></div>
-
 <!-- ถังขยะ -->
 <div class="modal" id="mTrash"><div class="mbox" style="max-width:640px">
   <h2>ถังขยะ</h2>
@@ -1457,7 +1448,7 @@ function notifyDone(jobs) {
   });
   seenSt = now;
 }
-let PROJS = [];   // เรื่องที่ยังไม่มีคลิปเสร็จ (เช่น ทำแล้วพัง) → โชว์ท้ายคลังให้ลบได้ กันชื่อซ้ำ "(2)"
+let PROJS = [];   // ข้อมูลเรื่อง (ตอนที่ทำไม่สำเร็จ โชว์เป็นการ์ดในเรื่องนั้นให้ลบได้)
 async function openClips() { renderClips(); openM("mClips"); if (!DEMO) { PROJS = await api("GET", "/api/projects").catch(() => PROJS); renderClips(); } }
 function renderClips() {
   const qq = ($("#clQ").value || "").trim().toLowerCase(), by = {};
@@ -1469,10 +1460,6 @@ function renderClips() {
       <button class="sb acc" onclick="hideM('mClips'); nextEp(dq('${q(n)}'))">${ic("plus")}ทำ EP ${Math.max(...ok.map(o => o.ep)) + 1} ต่อ</button></div>
       <div class="lib">${eps.map(libCard).join("")}</div></div>`; }).join("")
     : `<div class="small" style="padding:30px 0;text-align:center">${qq ? "ไม่พบเรื่องที่ค้นหา" : "ยังไม่มีคลิปที่เสร็จ"}</div>`;
-  const empty = PROJS.filter(p => !p.done_count && !OUTS.some(o => o.project === p.name) && (!qq || p.name.toLowerCase().includes(qq)));
-  if (empty.length) $("#clBody").innerHTML += `<div class="story"><div class="sh"><b>ยังไม่มีคลิปที่เสร็จ</b><span class="small">${empty.length} เรื่อง · ทำแล้วไม่สำเร็จหรือยังไม่ได้ทำ ลบได้ถ้าไม่ใช้</span></div>
-    ${empty.map(p => `<div class="donel" style="cursor:default"><span>${esc(p.name)}</span><span class="small">${p.episodes_total ? p.episodes_total + " EP ในบท" : ""}</span>
-      <button class="sb red" onclick="delEmpty(dq('${q(p.name)}'))">${ic("trash")}ลบ</button></div>`).join("")}</div>`;
 }
 const fmtWhen = t => new Date(t * 1000).toLocaleString("th-TH", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
 function libCard(o) {
@@ -1546,28 +1533,7 @@ async function resumeJob(id) { if (await call(() => api("POST", `/api/jobs/${id}
 async function delJob(id) { if (!ask("ลบงานนี้ออกจากรายการ? (ถ้ากำลังทำจะหยุดก่อน · คลิปที่เสร็จแล้วไม่หาย)")) return; if (await call(() => api("DELETE", `/api/jobs/${id}`))) { toast("ลบงานแล้ว"); refreshJobs(); } }
 async function clearJobs() { const n = await call(() => api("POST", "/api/jobs/clear")); if (n !== undefined) { toast(`ลบงานเก่า ${n ?? 0} รายการ`); refreshJobs(); } }
 async function delClip(project, ep) { if (!ask(`ลบคลิป ${project} EP ${ep}? (ไปที่ถังขยะ กู้คืนได้)`)) return; if (await call(() => api("DELETE", `/api/projects/${enc(project)}/episodes/${ep}`))) { closeM("mVid"); toast("ลบคลิปแล้ว"); refreshJobs(); } }
-let STORE = [];
 const fmtMB = b => b >= 1e9 ? (b / 1e9).toFixed(2) + " GB" : b >= 1e6 ? (b / 1e6).toFixed(1) + " MB" : Math.max(1, Math.round(b / 1e3)) + " KB";
-async function openStore() {
-  openM("mStore"); $("#stBody").innerHTML = `<div class="small">กำลังตรวจไฟล์…</div>`;
-  STORE = await call(() => api("GET", "/api/storage")) || [];
-  const groups = [["story", "เรื่องที่ยังไม่มีคลิปเสร็จ"], ["ep", "ตอนที่ทำไม่สำเร็จ"], ["old", "คลิปเวอร์ชันเก่า"]];
-  $("#stBody").innerHTML = STORE.length ? groups.map(([k, t]) => { const xs = STORE.filter(i => i.kind === k); return xs.length ? `<div class="vlab" style="margin:12px 0 6px">${t}</div>` +
-      xs.map(i => `<label class="donel" style="cursor:pointer"><input type="checkbox" value="${esc(i.id)}" onchange="stSum()"><span>${esc(i.label)}</span><span class="small">${fmtMB(i.size)} · ${new Date(i.mtime * 1000).toLocaleDateString("th-TH")}</span></label>`).join("") : ""; }).join("")
-    : `<div class="small" style="padding:20px 0;text-align:center">${ic("check")} ไม่มีไฟล์ค้าง ระบบสะอาดแล้ว</div>`;
-  $("#stAll").checked = false; stSum();
-}
-function stSum() {
-  const ids = [...document.querySelectorAll("#stBody input:checked")].map(c => c.value);
-  const sz = STORE.filter(i => ids.includes(i.id)).reduce((a, i) => a + i.size, 0);
-  $("#stDel").disabled = !ids.length; $("#stDel").innerHTML = `${ic("trash")}ลบที่เลือก${ids.length ? ` (${ids.length} · ${fmtMB(sz)})` : ""}`;
-}
-async function storeDelete() {
-  const ids = [...document.querySelectorAll("#stBody input:checked")].map(c => c.value); if (!ids.length) return;
-  if (!ask(`ย้าย ${ids.length} รายการไปถังขยะ?`)) return;
-  const r = await call(() => api("POST", "/api/storage/delete", {ids})); if (!r) return;
-  toast(`ย้ายไปถังขยะแล้ว ${r.deleted.length} รายการ · ลบถาวรได้ในถังขยะ`); openStore(); refreshJobs();
-}
 const KIND_TH = {story: "ทั้งเรื่อง", ep: "คลิป", old: "คลิป", legacy: "ที่ลบไว้ก่อนหน้า"};
 async function openTrash() {
   openM("mTrash"); $("#trBody").innerHTML = `<div class="small">กำลังโหลด…</div>`;
@@ -1590,10 +1556,6 @@ async function trashPurge(ids) {
   const r = await call(() => api("POST", "/api/trash/purge", {ids: ids || []})); if (!r) return;
   toast(r.instant ? `ลบถาวรแล้ว ${r.count} รายการ · ได้พื้นที่คืน ${fmtMB(r.freed)}` : `ลบแล้ว ${r.count} รายการ · แต่ยังไม่ได้อนุญาตลบทันที ไฟล์จะค้างในถังขยะ Drive 30 วัน (รัน Colab ใหม่แล้วกดอนุญาต)`, !r.instant);
   openTrash();
-}
-async function delEmpty(name) {
-  if (!ask(`ลบเรื่อง “${name}”? (ไปที่ถังขยะ กู้คืนได้)`)) return;
-  if (await call(() => api("DELETE", `/api/projects/${enc(name)}`))) { PROJS = PROJS.filter(p => p.name !== name); renderClips(); toast("ลบแล้ว"); }
 }
 async function delProject(project) { if (!ask(`ลบทั้งเรื่อง “${project}” ทุก EP? (ไปที่ถังขยะ กู้คืนได้)`)) return; if (await call(() => api("DELETE", `/api/projects/${enc(project)}`))) { closeM("mVid"); toast("ลบทั้งเรื่องแล้ว"); refreshJobs(); } }
 async function stopAll() { if (!ask("หยุดงานทั้งหมด?")) return; await call(() => api("POST", "/api/jobs/stop_all")); refreshJobs(); }
