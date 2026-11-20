@@ -121,9 +121,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .cfoot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 12px}
 .cfoot .d{font-size:12.5px;color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .use{background:var(--soft);color:var(--ink);border:1px solid var(--line);border-radius:99px;padding:7px 14px;font-family:Kanit;font-weight:500;cursor:pointer;white-space:nowrap;display:inline-flex;gap:5px;align-items:center}
-.use:hover{background:var(--acc-soft);border-color:#e6c7b6}
 .use svg{width:15px;height:15px}
-.card.sel .use{background:var(--acc);color:#fff;border-color:var(--acc)}
 .empty{color:var(--muted);text-align:center;padding:50px 10px;grid-column:1/-1}
 .composer{position:fixed;left:0;right:0;bottom:16px;z-index:40;pointer-events:none;padding:0 16px}
 .cbox{pointer-events:auto;max-width:940px;margin:0 auto;background:rgba(255,253,249,.97);backdrop-filter:blur(16px);border:1px solid rgba(120,95,70,.16);border-radius:22px;box-shadow:0 1px 2px rgba(60,40,20,.06),0 12px 40px rgba(60,40,20,.14);padding:10px 14px 12px 18px;position:relative}
@@ -356,9 +354,6 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
 .packs button{border:var(--bw) solid var(--k);color:var(--ink);background:var(--paper);border-radius:8px}
 .packs button.on{background:var(--k);color:var(--paper)}
 .card{border:var(--bw) solid var(--k);border-radius:12px;box-shadow:none}
-.use{border:var(--bw) solid var(--k);background:var(--paper);border-radius:8px;font-weight:600}
-.use:hover{background:var(--acc-soft);border-color:var(--k)}
-.card.sel .use{background:var(--acc);color:var(--acc-ink);border-color:var(--k)}
 .btn{border-radius:8px;font-weight:600}
 .btn.dark{background:var(--k);color:var(--paper);border:var(--bw) solid var(--k)}
 .cbox{background:var(--paper);backdrop-filter:none;border:var(--bw) solid var(--k);border-radius:14px;box-shadow:var(--hard)}
@@ -389,8 +384,6 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
 .acsw input{width:34px;height:34px;border:var(--bw) solid var(--k);border-radius:8px;padding:2px;background:var(--paper);cursor:pointer}
 /* โฮเวอร์: ยกขึ้น + เงาสีหลัก ให้รู้ว่ากำลังจะเลือกอะไร */
 .card{transition:transform .15s,box-shadow .15s,border-color .15s}
-.use{transition:background .15s,color .15s}
-.card:hover .use,.use:hover{background:var(--acc);color:var(--acc-ink)}
 .packs button,.sb,.btn,.mback{transition:transform .12s,box-shadow .12s,background .12s}
 .nb:hover,.ib:hover,.chip.ghost:hover{background:var(--acc-soft);color:var(--ink)}
 .seg button:not(.on):hover{color:var(--ink);background:var(--acc-soft)}
@@ -419,20 +412,21 @@ body,html[data-mode=dark] body{background:var(--bg)}
 html[data-mode=dark] .cbox,html[data-mode=dark] .drawer,html[data-mode=dark] .mbox,html[data-mode=dark] #lgForm{box-shadow:var(--gsh)}
 .brand .mk{background:var(--grad);border-radius:9px}
 @keyframes gflow{50%{background-position:100% 50%}}
-.search,.in,.chip,.seg,.dur,.ib.sm,.packs button:not(.on),.use,.sb,.btn{border:1px solid var(--gline)!important;background:color-mix(in srgb,var(--paper) 55%,transparent)}
+.search,.in,.chip,.seg,.dur,.ib.sm,.packs button:not(.on),.sb,.btn{border:1px solid var(--gline)!important;background:color-mix(in srgb,var(--paper) 55%,transparent)}
 html[data-mode=dark] .in{background:color-mix(in srgb,#000 25%,transparent)}
 .packs button.on{background:var(--ink);color:var(--bg)}
 .packs button:hover,.sb:hover,.btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px -10px rgba(0,0,0,.4)}
 /* การ์ด: กระจก + โฮเวอร์เป็นขอบไล่สีเรืองแสง (แทนเงาแข็ง) */
 .card,html[data-mode=dark] .card{position:relative;background:color-mix(in srgb,var(--paper) 88%,transparent);content-visibility:auto;contain-intrinsic-size:auto 330px;border:1px solid var(--gline);border-radius:18px;box-shadow:var(--gsh);transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
-.card::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1.5px;background:var(--grad);background-size:200% 200%;opacity:0;transition:opacity .35s;pointer-events:none;
-  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
-.card:hover,html[data-mode=dark] .card:hover{transform:translateY(-6px);border-color:transparent;box-shadow:0 22px 40px -18px color-mix(in srgb,var(--acc) 75%,transparent),0 12px 30px -16px color-mix(in srgb,var(--g1) 70%,transparent)}
-.card:hover::before{opacity:1;animation:gflow 4s ease infinite}
-.card.sel,html[data-mode=dark] .card.sel{border-color:transparent;box-shadow:0 16px 34px -18px color-mix(in srgb,var(--acc) 70%,transparent)}
-.card.sel::before{opacity:1}
-.use{border-radius:99px!important;padding-inline:16px}
-.card:hover .use,.use:hover,.card.sel .use{background:var(--grad)!important;background-size:200% 200%!important;color:#fff;border-color:transparent!important}
+/* การ์ด: ชี้/เลือก = ขอบสีตัดกับธีม (เข้มบนพื้นสว่าง · สว่างบนพื้นมืด) + เงาจางๆ */
+.card:hover,html[data-mode=dark] .card:hover{transform:translateY(-4px);border-color:var(--ink);box-shadow:0 16px 30px -20px rgba(0,0,0,.4)}
+html[data-mode=dark] .card:hover{box-shadow:0 16px 30px -18px rgba(0,0,0,.8)}
+.card.sel,html[data-mode=dark] .card.sel{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink),0 16px 30px -20px rgba(0,0,0,.4)}
+/* ปุ่ม Use: ปุ่มธรรมดา มีเงานูนบอกว่ากดได้ · ชี้แล้วลอยขึ้น · กดแล้วยุบ */
+.use,html[data-mode=dark] .use{background:var(--paper);color:var(--ink);border:1px solid var(--gline);border-radius:99px;padding:7px 16px;font-weight:600;box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 2px 6px -2px rgba(0,0,0,.25);transition:transform .15s,box-shadow .15s}
+.use:hover,.card:hover .use{transform:translateY(-1px);box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 7px 14px -6px rgba(0,0,0,.4)}
+.use:active{transform:translateY(1px);box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.card.sel .use,html[data-mode=dark] .card.sel .use{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 /* ปุ่ม Create: ไล่สีไหล */
 .go,html[data-mode=dark] .go{background:var(--grad);background-size:200% 200%;animation:gflow 6s ease infinite;color:#fff;border:none;border-radius:99px;box-shadow:0 10px 24px -10px color-mix(in srgb,var(--acc) 80%,transparent)}
 .go:hover,html[data-mode=dark] .go:hover{background:var(--grad);background-size:200% 200%;transform:translateY(-1px);box-shadow:0 14px 28px -10px color-mix(in srgb,var(--g1) 70%,transparent)}
