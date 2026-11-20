@@ -982,12 +982,19 @@ const coverIO = "IntersectionObserver" in window ? new IntersectionObserver(es =
   if (!e.isIntersecting) return; const el = e.target, u = el.dataset.bg; coverIO.unobserve(el); delete el.dataset.bg;
   const im = new Image(); im.onload = () => { COVER_OK.add(u); el.style.backgroundImage = `${SHADE},url('${u}')`; }; im.src = u;
 }), {rootMargin: "600px 0px"}) : null;
-const vidIO = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => {   // คลิปบนการ์ด: เล่นเฉพาะตอนเห็น
+// คลิปบนการ์ด: จอที่มีเมาส์ = เล่นเฉพาะการ์ดที่ชี้อยู่ · มือถือ (ไม่มีเมาส์) = เล่นเฉพาะการ์ดที่เห็นเต็มใบ ไม่เกิน 2 ใบ (กันเครื่องหน่วง)
+const HOVER = matchMedia("(hover:hover)").matches;
+function vPlay(v) { if (!v.src) { v.src = v.dataset.src; v.addEventListener("playing", () => v.classList.add("on"), {once: true}); } v.play().catch(() => {}); }
+function vStop(v) { v.pause(); v.classList.remove("on"); try { v.currentTime = 0; } catch {} }
+const vidIO = !HOVER && "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => {
   const v = e.target;
-  if (e.isIntersecting) { if (!v.src) { v.src = v.dataset.src; v.addEventListener("playing", () => v.classList.add("on"), {once: true}); } v.play().catch(() => {}); } else v.pause();
-}), {rootMargin: "100px 0px"}) : null;
+  if (e.isIntersecting && document.querySelectorAll("#grid video.cvid.on").length < 2) vPlay(v); else if (!e.isIntersecting) vStop(v);
+}), {threshold: .9}) : null;
 function lazyCovers() {
-  document.querySelectorAll("#grid video.cvid").forEach(v => vidIO ? vidIO.observe(v) : (v.src = v.dataset.src, v.autoplay = true)); document.querySelectorAll("#grid .bgi[data-bg]").forEach(el => coverIO ? coverIO.observe(el) : (el.style.backgroundImage = `${SHADE},url('${el.dataset.bg}')`)); }
+  document.querySelectorAll("#grid video.cvid").forEach(v => {
+    if (vidIO) return vidIO.observe(v);
+    const c = v.closest(".card"); c.addEventListener("mouseenter", () => vPlay(v)); c.addEventListener("mouseleave", () => vStop(v));
+  }); document.querySelectorAll("#grid .bgi[data-bg]").forEach(el => coverIO ? coverIO.observe(el) : (el.style.backgroundImage = `${SHADE},url('${el.dataset.bg}')`)); }
 let CAT = "";   // "" ทั้งหมด · "mine" ของฉัน · ชื่อหมวด
 const catsOf = t => [...(t.pack ? [] : ["mine"]), ...(t.category ? [t.category] : t.pack ? ["อื่นๆ"] : [])];   // ของฉัน + หมวดของมัน (อยู่ได้ทั้งสองที่)
 function renderPacks() {
