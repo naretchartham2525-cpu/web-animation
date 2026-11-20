@@ -18,10 +18,6 @@ def engine_dir(skill):
     return Path(skill["dir"]) / "engine" if skill and skill.get("dir") else None
 
 
-def has_engine(skill):
-    d = engine_dir(skill)
-    return bool(d and (d / "index.html").exists())
-
 
 def claude_code_prompt(skill, idea="", s=None):
     s = s or {}
@@ -130,13 +126,6 @@ def install_zip(skill, fileobj):
     core.reload_skills()
     return {"files": sum(1 for _ in (sdir / "engine").rglob("*") if _.is_file()),
             "script_md": (sdir / "engine" / "SCRIPT.md").exists()}
-
-
-def remove(skill):
-    d = engine_dir(skill)
-    if d and d.exists():
-        shutil.rmtree(d, ignore_errors=True)
-    core.reload_skills()
 
 
 def import_skill(fileobj):

@@ -75,33 +75,10 @@ def login():
 
 
 # ---------------- สถานะ ----------------
-@app.get("/api/status")
-def status():
-    projects = core.list_projects()
-    return ok({
-        "version": VERSION,
-        "root": str(core.ROOT),
-        "keys": core.keys_status(),
-        "ffmpeg": shutil.which("ffmpeg") is not None,
-        "busy": jobs.busy(),
-        "queue": jobs.queue_len(),
-        "projects": len(projects),
-        "episodes_done": sum(p["done_count"] for p in projects),
-        "cost_usd": round(sum(float(p.get("cost_usd") or 0) for p in projects), 4),
-        "skills": len(core.list_skills()),
-        "script_engine": core.load_settings().get("script_engine"),
-    })
-
-
 # ---------------- สกิล ----------------
 @app.get("/api/skills")
 def skills():
     return ok(core.list_skills())
-
-
-@app.post("/api/skills/reload")
-def skills_reload():
-    return ok(core.reload_skills())
 
 
 @app.post("/api/skills")
@@ -129,16 +106,6 @@ def skill_engine_upload(sid):
     if not sk or not f:
         abort(400)
     return ok(engine_html.install_zip(sk, f))
-
-
-@app.delete("/api/skills/<sid>/engine")
-def skill_engine_delete(sid):
-    from . import engine_html
-    sk = core.get_skill(sid)
-    if not sk:
-        abort(404)
-    engine_html.remove(sk)
-    return ok(True)
 
 
 @app.post("/api/skills/<sid>/engine-prompt")
@@ -597,13 +564,6 @@ def make_prompt():
             return ok({"prompt": engine_skill.chat_prompt(skill, "", 1, count, s, b.get("idea") or "")})
         text = chat_prompt(skill, b.get("idea") or "", 1, count, s)
     return ok({"prompt": text})
-
-
-@app.post("/api/parse")
-def parse_preview():
-    from .pipeline import parse_manual_episodes
-    eps = parse_manual_episodes(request.get_json(force=True).get("text"))
-    return ok([{"title": e["title"], "scenes": len(e["scenes"])} for e in eps])
 
 
 # ---------------- คลังข้อความ ----------------

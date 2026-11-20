@@ -282,9 +282,6 @@ class JobManager:
     def busy(self):
         return self.current is not None
 
-    def queue_len(self):
-        return len(self.queue)
-
     # ---------- worker ----------
     def _worker(self):
         while True:

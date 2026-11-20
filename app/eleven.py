@@ -67,9 +67,6 @@ def voices():
     return sorted(out, key=lambda x: x["name"].lower())
 
 
-AGE_MAP = {"young": "young", "middle_aged": "middle_aged", "old": "old"}
-
-
 def library(gender="", age="", language="th", page_size=30):
     """ค้นเสียงใน Voice Library (เสียงที่คนอื่นแชร์) · กรองภาษาไทย/เพศ/วัย · ตัดเสียงที่คิดเครดิตแพงกว่าปกติ"""
     params = {"page_size": page_size, "language": language, "sort": "usage_character_count_1y"}

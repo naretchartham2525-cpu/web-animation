@@ -19,10 +19,6 @@ def manifest(skill):
     return core.read_json(Path(skill["dir"]) / "autoclip.json", {}) or {}
 
 
-def is_engine(skill):
-    return bool(skill and skill.get("engine"))
-
-
 # ---------------- อ่านบทที่วางมา ----------------
 def _json_objects(text):
     """ดึง JSON object ทุกก้อนจากข้อความ (ในหรือนอก ```json``` ก็ได้)"""
@@ -78,13 +74,6 @@ def parse_paste(text):
         raise ValueError("ไม่พบบท JSON ของสกิล (ต้องมี epNN.json ที่มี \"shots\")")
     eps.sort(key=lambda e: int(e.get("ep") or 0))
     return {"series": series, "episodes": eps, "bg": bg}
-
-
-def count_episodes(text):
-    try:
-        return len(parse_paste(text)["episodes"])
-    except ValueError:
-        return 0
 
 
 def engine_dir(name):

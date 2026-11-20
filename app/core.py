@@ -117,12 +117,6 @@ def save_settings(new):
         return s
 
 
-def keys_status():
-    return {
-        "openrouter": bool(os.environ.get("OPENROUTER_API_KEY")),
-    }
-
-
 # ---------------- names ----------------
 def safe_name(name):
     name = re.sub(r'[\\/:*?"<>|\x00-\x1f]', "", str(name or "")).strip().strip(".")
@@ -603,17 +597,6 @@ def next_episode(name):
     while (d / f"ep{n:02d}" / "final.mp4").exists():
         n += 1
     return n
-
-
-def old_versions(name, ep):
-    """คลิปเวอร์ชันเก่าของตอนนี้ (เก็บไว้ตอนสั่งทำใหม่ทับ) · ผู้ใช้ดู/ลบเองในคลังคลิป"""
-    d = project_dir(name)
-    out = []
-    for o in sorted(d.glob(f"_old_ep{int(ep):02d}_*"), reverse=True):
-        f = o / "final.mp4"
-        out.append({"id": str(o.relative_to(ROOT)), "path": f"{o.name}/final.mp4" if f.exists() else "",
-                    "mtime": o.stat().st_mtime, "size": _size(o)})
-    return out
 
 
 def list_outputs():

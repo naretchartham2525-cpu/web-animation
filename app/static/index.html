@@ -1866,7 +1866,6 @@ document.querySelectorAll(".modal").forEach(m => m.addEventListener("mousedown",
 document.addEventListener("keydown", e => { if (e.key === "Escape") { if (MST.length > 1) goBack(); else { closeAllM(); closeDrawer(); } } });
 let timer;
 $("#grid").innerHTML = Array(4).fill('<div class="card skel"><div class="cover"></div><div class="cfoot"><span></span></div></div>').join("");
-const t0 = Date.now();
 let needLogin = false, splashDone = false, skipLoad = false;
 function splashSet(pct, msg, det) {
   $("#splBar").style.width = Math.max(3, Math.min(100, pct)) + "%";
