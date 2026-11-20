@@ -605,14 +605,15 @@ html[data-mode=dark] .mbox,html[data-mode=dark] .drawer{background:color-mix(in 
 .setrow:hover{background:color-mix(in srgb,var(--ink) 5%,var(--glass))!important;transform:translateX(3px)}
 .setrow>svg:last-child{transition:transform .25s}
 .setrow:hover>svg:last-child{transform:translateX(4px)}
-.toast.err{background:color-mix(in srgb,var(--err) 88%,transparent)!important}
-.toast{top:auto;left:auto;transform:none;max-width:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;padding:7px 16px;box-shadow:0 10px 24px -12px rgba(0,0,0,.5);animation:tin .35s cubic-bezier(.3,1.4,.5,1)}
+.toast,.toast.err{background:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;border:none!important;box-shadow:none!important;color:var(--err)!important;font-weight:700}
+html[data-mode=dark] .toast{color:#FF6B6B!important}
+.toast{top:auto;left:auto;transform:none;max-width:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13.5px;padding:4px 6px;text-shadow:0 0 12px var(--bg),0 0 4px var(--bg);animation:tin .45s cubic-bezier(.3,1.5,.5,1),tfloat 2.4s ease-in-out .45s infinite}
+@keyframes tfloat{50%{translate:0 -3px}}
 @keyframes tin{from{opacity:0;translate:0 -8px}}
 .toast.tb{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:min(46%,520px);z-index:2}
 .toast.tm{position:fixed;left:50%;top:4px;padding:5px 14px;font-size:12.5px;transform:translateX(-50%);max-width:min(92vw,640px);z-index:120}
 .toast.td{position:absolute;left:16px;right:16px;bottom:14px;text-align:center;z-index:3}
 @media (max-width:640px){.toast.tb{left:6px;transform:translateY(-50%);max-width:calc(100% - 190px)}}
-.toast{background:color-mix(in srgb,#141418 82%,transparent)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:#fff!important;border:1px solid rgba(255,255,255,.14);border-radius:99px!important}
 @media (prefers-reduced-motion: reduce){.rv{opacity:1;transform:none;filter:none}.nb svg,.ib svg,.pop,.mbox,.drawer *{animation:none!important}}
 </style>
 </head>
@@ -912,11 +913,12 @@ const dq = decodeURIComponent;
 const ic = n => `<svg class="i"><use href="#i-${n}"/></svg>`;
 let DEMO = new URLSearchParams(location.search).has("demo") || location.protocol === "file:";
 const ask = m => DEMO ? true : confirm(m);
-function toast(m, err) {   // ข้อความแจ้งสั้นๆ: วางในที่ว่างที่ไม่บังอะไร (กลางแถบบน · ช่องว่างเหนือหน้าต่าง · ท้ายลิ้นชักงาน)
+function toast(m, err) {   // แจ้งเฉพาะตอนผิดพลาด: ตัวหนังสือแดงลอยๆ ในที่ว่างที่ไม่บังอะไร (กลางแถบบน · เหนือหน้าต่าง · ท้ายลิ้นชักงาน)
+  if (!err) return;            // ทำสำเร็จไม่ต้องเด้งบอก (ผลเห็นบนหน้าจออยู่แล้ว)
   const t = $("#toast"), modal = document.querySelector(".modal.on"), dr = $("#drawer").classList.contains("on") ? $("#drawer") : null;
   const where = modal ? "tm" : dr ? "td" : "tb", host = modal ? document.body : dr || $(".bar-top");
   if (t.parentNode !== host) host.appendChild(t);
-  t.textContent = m; t.title = m; t.className = `toast ${where}${err ? " err" : ""}`; t.style.display = "block";
+  t.textContent = m; t.title = m; t.className = `toast ${where} err`; t.style.display = "block";
   t.style.animation = "none"; void t.offsetWidth; t.style.animation = "";
   clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", err ? 5000 : 3500);
 }
