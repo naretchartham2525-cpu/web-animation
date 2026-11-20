@@ -24,6 +24,16 @@ for d in sorted(os.listdir(f'{CODE}/skills')):
                 src = os.path.join(base, fn)
                 dst = os.path.normpath(os.path.join(f'{ROOT}/skills/{d}', rel, fn))
                 sysfile = rel == '.' and (fn == 'autoclip.json' or d.startswith('opuscar-') and fn == 'STYLE.md')
+                if rel == '.' and fn == 'SKILL.md' and d.startswith('opuscar-') and os.path.exists(dst):
+                    # เทมเพลตชุดที่นำเข้า: อัปเดตตามเวอร์ชันใหม่ ถ้าผู้ใช้ไม่ได้แก้เองในเว็บ (เทียบลายนิ้วมือที่ซิงก์ครั้งก่อน)
+                    import hashlib
+                    h = lambda f: hashlib.sha1(open(f, 'rb').read()).hexdigest()
+                    mark = os.path.join(os.path.dirname(dst), '.synced')
+                    last = open(mark).read().strip() if os.path.exists(mark) else ''
+                    if (not last or last == h(dst)) and h(src) != h(dst):
+                        shutil.copy2(src, dst)
+                    open(mark, 'w').write(h(dst))
+                    continue
                 if sysfile or not os.path.exists(dst):
                     os.makedirs(os.path.dirname(dst), exist_ok=True)
                     shutil.copy2(src, dst)

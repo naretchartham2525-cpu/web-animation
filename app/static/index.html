@@ -96,6 +96,9 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .vdanger button{border:none;background:none;color:var(--err);font-size:12.5px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;padding:0}
 .vdanger svg{width:14px;height:14px}
 @media (max-width:760px){.vgrid{grid-template-columns:1fr}.vgrid #vBody video{max-height:55vh}}
+.mback{display:inline-flex;align-items:center;gap:4px;border:var(--bw,1px) solid var(--k,var(--line));background:var(--paper);color:var(--ink);border-radius:8px;height:32px;padding:0 12px 0 8px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:12px;transition:transform .12s,box-shadow .12s}
+.mback svg{transform:rotate(90deg);width:16px;height:16px}
+.mback:hover{transform:translate(-1px,-1px);box-shadow:2px 2px 0 var(--k,var(--ink))}
 .engbox{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:4px 0 12px;background:var(--soft)}
 .engbox .eh{display:flex;align-items:center;gap:8px;margin-bottom:6px}.engbox .eh .small{margin-left:auto}
 .engbox ol{margin:4px 0 10px;padding-left:20px;line-height:1.7}
@@ -415,20 +418,35 @@ h1,h2,h3,.disp{font-weight:700;letter-spacing:-.4px}
 #splash .sdet{font-size:12px;color:var(--muted);min-height:18px;margin-top:4px;max-width:300px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #splash .sskip{margin-top:22px;border:none;background:none;color:var(--muted);font-size:12.5px;text-decoration:underline;cursor:pointer;visibility:hidden}
 #splash .sskip.on{visibility:visible}
-html[data-mode=dark] #splash .slogo,html[data-mode=dark] #splash .sbar{box-shadow:4px 4px 0 #000}
+html[data-mode=dark] #splash .slogo,html[data-mode=dark] #splash .sbar{box-shadow:4px 4px 0 var(--acc)}
 .acsw{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
 .acsw button{width:34px;height:34px;border-radius:8px;border:var(--bw) solid var(--k);cursor:pointer}
 .acsw button.on{outline:2px solid var(--k);outline-offset:2px}
 .acsw label{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);cursor:pointer}
 .acsw input{width:34px;height:34px;border:var(--bw) solid var(--k);border-radius:8px;padding:2px;background:var(--paper);cursor:pointer}
+/* โฮเวอร์: ยกขึ้น + เงาสีหลัก ให้รู้ว่ากำลังจะเลือกอะไร */
+.card{transition:transform .15s,box-shadow .15s,border-color .15s}
+.card:hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 var(--acc);border-color:var(--k)}
+.card.sel{border-color:var(--acc);box-shadow:5px 5px 0 var(--acc)}
+.use{transition:background .15s,color .15s}
+.card:hover .use,.use:hover{background:var(--acc);color:var(--acc-ink)}
+.packs button,.sb,.btn,.mback{transition:transform .12s,box-shadow .12s,background .12s}
+.packs button:hover,.sb:hover,.btn:hover{transform:translate(-1px,-1px);box-shadow:2px 2px 0 var(--k)}
+.nb:hover,.ib:hover,.chip.ghost:hover{background:var(--acc-soft);color:var(--ink)}
+.seg button:not(.on):hover{color:var(--ink);background:var(--acc-soft)}
+.chip:hover,.dur:hover,.search:focus-within,.in:focus{border-color:var(--acc)}
+.search:focus-within,.in:focus{box-shadow:0 0 0 3px var(--acc-soft)}
 html[data-mode=dark]{
-  --bg:#0E0E10;--bg2:#1C1C20;--paper:#17171A;--ink:#F2F0EA;--muted:#A3A099;--line:#2C2C32;--soft:#222227;--k:#E9E7E2;
-  --acc-soft:color-mix(in srgb,var(--acc) 22%,#17171A);--hard:6px 6px 0 #000;color-scheme:dark;
+  --bg:#0C0C0E;--bg2:#1B1B20;--paper:#161619;--ink:#F5F3EE;--muted:#ABA79F;--line:#2E2E35;--soft:#1F1F25;--k:#ECEAE4;
+  --acc-soft:color-mix(in srgb,var(--acc) 26%,#161619);--hard:6px 6px 0 var(--acc);color-scheme:dark;
 }
-html[data-mode=dark] .modal{background:rgba(0,0,0,.6)}
-html[data-mode=dark] .go{box-shadow:3px 3px 0 #000}
-html[data-mode=dark] .go:hover{box-shadow:4px 4px 0 #000}
-html[data-mode=dark] .card,html[data-mode=dark] .chip,html[data-mode=dark] .seg,html[data-mode=dark] .dur,html[data-mode=dark] .ib.sm,html[data-mode=dark] .use,html[data-mode=dark] .search,html[data-mode=dark] .packs button:not(.on){border-color:#3A3A42}
+html[data-mode=dark] body{background:radial-gradient(900px 500px at 15% -10%,color-mix(in srgb,var(--acc) 14%,transparent),transparent 60%),var(--bg);background-attachment:fixed}
+html[data-mode=dark] .modal{background:rgba(0,0,0,.65)}
+html[data-mode=dark] .go{box-shadow:3px 3px 0 var(--k)}
+html[data-mode=dark] .go:hover{box-shadow:4px 4px 0 var(--k)}
+html[data-mode=dark] .card,html[data-mode=dark] .chip,html[data-mode=dark] .seg,html[data-mode=dark] .dur,html[data-mode=dark] .ib.sm,html[data-mode=dark] .use,html[data-mode=dark] .search,html[data-mode=dark] .packs button:not(.on){border-color:#55555F}
+html[data-mode=dark] .card:hover{border-color:var(--k)}
+html[data-mode=dark] .card.sel{border-color:var(--acc)}
 html[data-mode=dark] .in{background:var(--soft);border-color:#3A3A42;color:var(--ink)}
 html[data-mode=dark] select option{background:var(--paper);color:var(--ink)}
 html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
@@ -569,7 +587,8 @@ html[data-mode=dark] .stp{background:var(--paper);border-color:#3A3A42}
   <label class="tdrop" id="tDrop"><input type="file" accept=".zip,.skill,.md,.txt" hidden onchange="importSkill(this)">
     <svg class="i"><use href="#i-clip"/></svg><b>เลือกไฟล์สกิล</b><span class="small">.zip ทั้งโฟลเดอร์ (มี SKILL.md) หรือ .md · ลากมาวางได้</span></label>
   <div class="tor" id="tOr"><span>หรือวางเนื้อหาสกิลเอง</span></div>
-  <label class="f"><span>ชื่อเทมเพลต</span><input class="in" id="tName" placeholder="เช่น อนิเมะผจญภัย"></label>
+  <div class="two"><label class="f"><span>ชื่อเทมเพลต</span><input class="in" id="tName" placeholder="เช่น อนิเมะผจญภัย"></label>
+    <label class="f"><span>หมวด (แนวงาน)</span><input class="in" id="tCat" list="catList" placeholder="เช่น การ์ตูน"><datalist id="catList"></datalist></label></div>
   <div id="tStyleBox">
     <span class="swl" id="tStyleOn" onclick="this.classList.toggle('on'); tStyleUI()" style="margin:0 0 10px -5px"><span class="sw"><i></i></span>เพิ่มองค์ประกอบภาพของระบบ (ปิด = ใช้ตามสกิล/บทอย่างเดียว)</span>
     <div id="tStyleWrap" style="display:none">
@@ -718,8 +737,37 @@ const ic = n => `<svg class="i"><use href="#i-${n}"/></svg>`;
 let DEMO = new URLSearchParams(location.search).has("demo") || location.protocol === "file:";
 const ask = m => DEMO ? true : confirm(m);
 function toast(m, err) { const t = $("#toast"); t.textContent = m; t.className = "toast" + (err ? " err" : ""); t.style.display = "block"; clearTimeout(t._h); t._h = setTimeout(() => t.style.display = "none", 3800); }
-function openM(id) { $("#" + id).classList.add("on"); }
-function closeM(id) { $("#" + id).classList.remove("on"); $("#" + id).querySelectorAll("video").forEach(v => v.pause()); }
+// หน้าต่างซ้อนกัน (เช่น คลังคลิป → คลิป → บท): ปุ่ม Back กลับหน้าก่อน · ✕ ปิดทั้งหมดกลับหน้าหลัก
+let MST = [], HOLD = false;
+const anyOpen = () => !!document.querySelector(".modal.on");
+function openM(id, back) {
+  if (!back) { if (!anyOpen() && !HOLD) MST = []; MST = MST.filter(x => x !== id); MST.push(id); }
+  HOLD = false;
+  $("#" + id).classList.add("on"); navBack(id);
+}
+function closeM(id) {
+  $("#" + id).classList.remove("on"); $("#" + id).querySelectorAll("video").forEach(v => v.pause());
+  MST = MST.filter(x => x !== id); if (!anyOpen()) MST = [];
+}
+function navBack(id) {
+  const box = $("#" + id + " .mbox"); if (!box) return;
+  let b = box.querySelector(":scope > .mback");
+  if (!b) { b = document.createElement("button"); b.className = "mback"; b.onclick = goBack; box.prepend(b); }
+  const prev = MST[MST.length - 2];
+  b.style.display = prev ? "" : "none";
+  b.innerHTML = `${ic("chevron")}<span>Back</span>`;
+}
+function goBack() {
+  const cur = MST.pop(), prev = MST[MST.length - 1];
+  if (cur) { $("#" + cur).classList.remove("on"); $("#" + cur).querySelectorAll("video").forEach(v => v.pause()); }
+  if (prev) openM(prev, true);
+}
+function hideM(id) { HOLD = true; $("#" + id).classList.remove("on"); $("#" + id).querySelectorAll("video").forEach(v => v.pause()); }   // ไปหน้าถัดไป (Back กลับมาได้)
+function closeAllM() { document.querySelectorAll(".modal.on").forEach(m => closeM(m.id)); MST = []; }
+document.addEventListener("click", e => {   // ✕ ในหน้าต่างซ้อน = ปิดทั้งหมด
+  const x = e.target.closest(".modal .x, .modal [aria-label='ปิด']");
+  if (x && MST.length > 1) { e.stopPropagation(); e.preventDefault(); closeAllM(); }
+}, true);
 const fmtDur = s => s ? Math.floor(s / 60) + ":" + String(Math.round(s % 60)).padStart(2, "0") : "-";
 const fmtSec = s => s >= 60 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} นาที` : `${s} วิ`;
 const usd = x => "$" + (Number(x) || 0).toFixed(4);
@@ -846,10 +894,11 @@ function coverStyle(t) {
   return `background-image:linear-gradient(160deg,${TONES[hashN(t.id) % TONES.length]})`;
 }
 let CAT = "";   // "" ทั้งหมด · "mine" ของฉัน · ชื่อหมวด
-const catOf = t => t.category || (t.pack ? "อื่นๆ" : "mine");
+const catsOf = t => [...(t.pack ? [] : ["mine"]), ...(t.category ? [t.category] : t.pack ? ["อื่นๆ"] : [])];   // ของฉัน + หมวดของมัน (อยู่ได้ทั้งสองที่)
+const catOf = t => catsOf(t)[0];
 function renderPacks() {
-  const cats = [...new Set(T.map(catOf))].filter(c => c !== "mine").sort((a, b) => a.localeCompare(b, "th"));
-  const n = k => k === "" ? T.length : T.filter(t => catOf(t) === k).length;
+  const cats = [...new Set(T.flatMap(catsOf))].filter(c => c !== "mine").sort((a, b) => a.localeCompare(b, "th"));
+  const n = k => k === "" ? T.length : T.filter(t => catsOf(t).includes(k)).length;
   const items = [["", "ทั้งหมด"], ...(n("mine") ? [["mine", "ของฉัน"]] : []), ...cats.map(c => [c, c])];
   $("#packs").innerHTML = items.length > 2 ? items.map(([k, l]) => `<button class="${CAT === k ? "on" : ""}" onclick="CAT=dq('${q(k)}'); renderGrid()">${esc(l)} <span>${n(k)}</span></button>`).join("") : "";
 }
@@ -868,11 +917,11 @@ function cardHtml(t) {
 function renderGrid() {
   renderPacks();
   const kw = $("#q").value.trim().toLowerCase();
-  const list = T.filter(t => (!CAT || catOf(t) === CAT) &&
+  const list = T.filter(t => (!CAT || catsOf(t).includes(CAT)) &&
     (!kw || (t.name + " " + t.description + " " + (t.category || "") + " " + (t.tags || []).join(" ")).toLowerCase().includes(kw)));
   if (!CAT && !kw && list.length > 12) {   // ทั้งหมด → แยกเป็นหมวด
     const groups = {};
-    list.forEach(t => (groups[catOf(t)] = groups[catOf(t)] || []).push(t));
+    list.forEach(t => catsOf(t).forEach(c => (groups[c] = groups[c] || []).push(t)));
     const order = Object.keys(groups).sort((a, b) => a === "mine" ? -1 : b === "mine" ? 1 : a.localeCompare(b, "th"));
     $("#grid").innerHTML = order.map(c => `<div class="gsec"><h3>${esc(c === "mine" ? "ของฉัน" : c)}</h3><span>${groups[c].length}</span>
       ${groups[c].length > 5 ? `<button class="mini" onclick="CAT=dq('${q(c)}'); renderGrid(); scrollTo({top:0,behavior:'smooth'})">ดูทั้งหมด</button>` : ""}</div>` +
@@ -914,7 +963,9 @@ $("#tStyle").oninput = () => tStyleUI();
 function tplForm(t) {
   const o = (t && t.options) || {};
   $("#tName").value = t ? t.name : ""; $("#tContent").value = t ? t.content || "" : "";
-  $("#tDrop").style.display = $("#tOr").style.display = t ? "none" : "";   // เพิ่มใหม่: เลือกไฟล์สกิลได้ · เสียง/ซับเลือกตอนใช้งาน
+  $("#tDrop").style.display = $("#tOr").style.display = t ? "none" : "";
+  $("#tCat").value = (t && t.category) || "";
+  $("#catList").innerHTML = [...new Set(T.map(x => x.category).filter(Boolean))].sort().map(c => `<option value="${esc(c)}">`).join("");   // เพิ่มใหม่: เลือกไฟล์สกิลได้ · เสียง/ซับเลือกตอนใช้งาน
   const eng = !!(t && t.engine);
   $("#tStyleBox").style.display = eng ? "none" : "";
   renderEngBox(t);
@@ -986,7 +1037,7 @@ async function saveTemplate() {
   const old = (editingTpl && editingTpl.options) || {};
   const styleOn = $("#tStyleOn").classList.contains("on");
   const body = {id: editingId || undefined, is_new: !editingId, name: $("#tName").value.trim(), description: editingTpl?.description || "", content: $("#tContent").value,
-    options: {...old, image_style: styleOn ? $("#tStyle").value.trim() : ""}};
+    category: $("#tCat").value.trim(), options: {...old, image_style: styleOn ? $("#tStyle").value.trim() : ""}};
   if (await call(() => api("POST", "/api/skills", body))) { closeM("mTpl"); toast("บันทึกเทมเพลตแล้ว"); T = await api("GET", "/api/skills"); if (tplSel) tplSel = T.find(x => x.id === tplSel.id) || null; renderGrid(); renderComposer(); }
 }
 
@@ -1326,7 +1377,7 @@ function renderClips() {
   const names = Object.keys(by).sort((a, b) => Math.max(...by[b].map(o => o.mtime || o.ep)) - Math.max(...by[a].map(o => o.mtime || o.ep)));
   $("#clBody").innerHTML = names.length ? names.map(n => { const eps = by[n].sort((a, b) => a.ep - b.ep), last = eps[eps.length - 1];
     return `<div class="story"><div class="sh"><b>${esc(n)}</b><span class="small">${eps.length} EP · รวม ${fmtDur(eps.reduce((t, o) => t + (o.duration || 0), 0))}</span>
-      <button class="sb acc" onclick="closeM('mClips'); nextEp(dq('${q(n)}'))">${ic("plus")}ทำ EP ${last.ep + 1} ต่อ</button></div>
+      <button class="sb acc" onclick="hideM('mClips'); nextEp(dq('${q(n)}'))">${ic("plus")}ทำ EP ${last.ep + 1} ต่อ</button></div>
       <div class="lib">${eps.map(libCard).join("")}</div></div>`; }).join("")
     : `<div class="small" style="padding:30px 0;text-align:center">${qq ? "ไม่พบเรื่องที่ค้นหา" : "ยังไม่มีคลิปที่เสร็จ"}</div>`;
   const empty = PROJS.filter(p => !p.done_count && !OUTS.some(o => o.project === p.name) && (!qq || p.name.toLowerCase().includes(qq)));
@@ -1410,7 +1461,7 @@ async function stopAll() { if (!ask("หยุดงานทั้งหมด?
 let nx = null;
 function nextEp(project) {
   const done = OUTS.filter(o => o.project === project).reduce((m, o) => Math.max(m, o.ep), 0);
-  nx = {project, start: done + 1, lastEp: done}; VC.nx = {map:{}, model:""}; closeM("mVid");
+  nx = {project, start: done + 1, lastEp: done}; VC.nx = {map:{}, model:""}; hideM("mVid");
   $("#nxTitle").textContent = `ทำ EP ต่อ · ${project}`;
   $("#nxCount").innerHTML = [1,2,3,4,5].map(n => `<option value="${n}">${n === 1 ? "EP " + nx.start : `EP ${nx.start}–${nx.start + n - 1}`}</option>`).join("");
   $("#nxVoice").innerHTML = voiceOpts("", "เสียงเดิมของเรื่อง");
@@ -1446,7 +1497,7 @@ async function nextEpAI() {
 let rv = null;
 async function openReview(project, ep, jobId) {
   const s = await call(() => api("GET", `/api/projects/${enc(project)}/episodes/${ep}/script`)); if (!s) return;
-  rv = {project, ep, jobId, s}; closeM("mVid");
+  rv = {project, ep, jobId, s}; hideM("mVid");
   $("#rvTitle").textContent = `บท · ${project} EP ${ep}`; $("#rvName").value = s.title || "";
   $("#rvScenes").innerHTML = s.scenes.map((sc, i) => `<div class="scene"><div class="small">ฉาก ${i + 1}${sc.image_prompt ? " · " + esc(sc.image_prompt) : ""}</div><textarea class="in" data-i="${i}" style="min-height:52px;margin-top:6px">${esc(sc.narration)}</textarea></div>`).join("");
   $("#rvApprove").style.display = jobId ? "" : "none"; openM("mReview");
@@ -1615,7 +1666,7 @@ $("#lgForm").onsubmit = async e => {
   splashDone = false; await boot();                     // รหัสถูก → หน้ารอโหลด (รอเว็บพร้อมจริง) → เข้าเว็บ
 };
 document.querySelectorAll(".modal").forEach(m => m.addEventListener("mousedown", e => { if (e.target === m) closeM(m.id); }));
-document.addEventListener("keydown", e => { if (e.key === "Escape") { document.querySelectorAll(".modal.on").forEach(m => closeM(m.id)); closeDrawer(); } });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if (MST.length > 1) goBack(); else { closeAllM(); closeDrawer(); } } });
 let timer;
 $("#grid").innerHTML = Array(4).fill('<div class="card skel"><div class="cover"></div><div class="cfoot"><span></span></div></div>').join("");
 const t0 = Date.now();

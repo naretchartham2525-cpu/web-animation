@@ -196,7 +196,7 @@ def _skill_from(p):
         "dir": str(p) if p.is_dir() else "",
         "tags": _parse_list(meta.get("tags")),
         "pack": meta.get("pack", ""),
-        "category": meta.get("category", ""),   # หมวดของการ์ด (ว่าง = ของฉัน)
+        "category": meta.get("category") or (engine or {}).get("category", ""),   # หมวดของการ์ด
         "html_engine": p.is_dir() and (p / "engine" / "index.html").exists(),   # เอนจินจากคลิปแรก (Claude Code)   # ชุดเทมเพลตที่นำเข้า (เช่น opuscar) → แสดงหลังเทมเพลตของผู้ใช้
         "cover": cover,
         "options": opts,
@@ -259,9 +259,11 @@ def save_skill(data):
     old = {}
     if (d / "SKILL.md").exists():   # แก้จากเว็บ: เก็บ tags/pack เดิมไว้ (เช่น เทมเพลตชุดที่นำเข้า)
         old, _ = _parse_frontmatter((d / "SKILL.md").read_text(encoding="utf-8", errors="replace"))
-    for k in ("pack", "category"):
-        if old.get(k):
-            fm.append(f"{k}: {clean(old[k])}")
+    if old.get("pack"):
+        fm.append(f"pack: {clean(old['pack'])}")
+    cat = data.get("category") if data.get("category") is not None else old.get("category")
+    if cat:
+        fm.append(f"category: {clean(cat)}")
     tags = data.get("tags") or _parse_list(old.get("tags"))
     if isinstance(tags, str):
         tags = _parse_list(tags)
