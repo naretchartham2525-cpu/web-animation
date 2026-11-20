@@ -1000,7 +1000,7 @@ function cardHtml(t) {
     const o = t.options || {}, sel = tplSel?.id === t.id;
     return `<div class="card ${sel ? "sel" : ""}">
       <div class="cover" onclick="viewTemplate(dq('${q(t.id)}'))">
-        <div class="bgi" ${coverAttrs(t)}></div>${t.card_v && !DEMO ? `<video class="cvid" muted loop playsinline preload="none" data-src="/skill-sample/${enc(t.id)}?card=1&v=${t.card_v}"></video><div class="vshade"></div>` : ""}
+        <div class="bgi" ${coverAttrs(t)}></div>${t.card_v && !DEMO ? `<video class="cvid" muted loop playsinline preload="none" data-src="/skill-sample/${enc(t.id)}?v=${t.card_v}"></video><div class="vshade"></div>` : ""}
         <div class="meta">${t.engine || t.html_engine ? `<span class="tagx engtag">${ic("sliders")}มีเอนจิน</span>` : ""}${o.duration ? `<span class="tagx">${ic("clock")}${esc(fmtSec(+o.duration))}</span>` : ""}${o.voice ? `<span class="tagx">${ic("mic")}${esc(voiceName(o.voice).split(" ·")[0])}</span>` : ""}</div>
         <div class="ttl">${esc(t.name)}</div></div>
       <div class="cfoot"><div class="d" title="${esc(t.description)}">${esc(t.description || "")}</div>
