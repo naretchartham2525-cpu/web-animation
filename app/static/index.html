@@ -1666,7 +1666,12 @@ function vidActs() {
 // แก้เสียงพากย์ของคลิปที่เสร็จแล้ว: เลือกเสียงใหม่ และ/หรือ ใส่ไฟล์เสียงที่อัดเอง → พากย์ใหม่ (บทและภาพเดิม · คลิปเดิมยังอยู่ในคลัง)
 let RE = {file: null};
 function reInit(o) {
-  if (o.copy || DEMO) { $("#vRe").innerHTML = ""; return; }
+  if (DEMO) { $("#vRe").innerHTML = ""; return; }
+  if (o.copy) {   // คลิปเวอร์ชันก่อน: พากย์ใหม่ที่คลิปล่าสุดของ EP นี้
+    $("#vRe").innerHTML = `<div class="vlab">แก้เสียงพากย์</div><div class="rerow"><span class="small">คลิปนี้เป็นเวอร์ชันก่อนของ EP ${o.ep} · เปลี่ยนเสียงได้ที่คลิปล่าสุด</span>
+      <button class="sb" onclick="playClip(dq('${q(o.project)}'), ${o.ep})">${ic("redo")}ไปที่คลิปล่าสุด</button></div>`;
+    return;
+  }
   RE = {file: null};
   $("#vRe").innerHTML = `<div class="vlab">แก้เสียงพากย์</div>
     <div id="reCast" class="small">กำลังโหลดตัวละคร…</div>
@@ -1693,12 +1698,16 @@ async function reCast(o, lang) {   // ตัวละครใน EP นี้ +
   if (!EL.models.length) await loadEleven();
   const castOpts = vgFor(dub).concat(EL.enabled ? elGroup() : []).map(([g, vs]) => `<optgroup label="${esc(g)}">${vs.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join("")}</optgroup>`).join("");
   const freeOpts = vgFor(dub).map(([g, vs]) => `<optgroup label="${esc(g)}">${vs.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join("")}</optgroup>`).join("");
-  const isNar = k => ["ผู้บรรยาย", "system", "narration"].includes(k);   // ไม่ใช่ตัวละคร → เสียงฟรีเท่านั้น
+  if (RE.np0 === undefined) RE.np0 = !!p?.options?.narrator_paid;
+  RE.np = RE.np ?? RE.np0;
+  const isNar = k => !RE.np && ["ผู้บรรยาย", "narration"].includes(k) || k === "system";   // ไม่ใช่ตัวละคร → เสียงฟรี (เว้นแต่เปิดผู้บรรยายใช้ ElevenLabs)
   box.className = ""; box.innerHTML = `<div class="rerow" style="margin-bottom:8px"><b style="min-width:90px">ภาษาพากย์</b>
-    <select class="in" id="reDub"><option value="th" ${dub === "th" ? "selected" : ""}>ไทย</option><option value="en" ${dub === "en" ? "selected" : ""}>อังกฤษ (ซับและข้อความบนจอเป็นอังกฤษด้วย)</option></select></div>` + spk.map(x => `<div class="rerow" style="margin-bottom:6px"><b style="min-width:90px" ${isNar(x.key) ? 'title="บรรยาย ใช้เสียงฟรีเท่านั้น"' : ""}>${esc(x.name || x.key)}${isNar(x.key) ? ' <span class="small">· ฟรี</span>' : ""}</b>
+    <select class="in" id="reDub"><option value="th" ${dub === "th" ? "selected" : ""}>ไทย</option><option value="en" ${dub === "en" ? "selected" : ""}>อังกฤษ (ซับและข้อความบนจอเป็นอังกฤษด้วย)</option></select></div>
+    ${EL.enabled ? `<label class="vcnp" style="margin:0 0 8px"><input type="checkbox" id="reNp" ${RE.np ? "checked" : ""}><span>ผู้บรรยายใช้ ElevenLabs ด้วย<span class="small">ปิดอยู่ = บทบรรยายใช้เสียงฟรีเสมอ ถึงเปลี่ยนเสียงตัวละครเป็น ElevenLabs ส่วนบรรยายก็ยังเป็นเสียงเดิม</span></span></label>` : ""}` + spk.map(x => `<div class="rerow" style="margin-bottom:6px"><b style="min-width:90px" ${isNar(x.key) ? 'title="บรรยาย ใช้เสียงฟรีเท่านั้น"' : ""}>${esc(x.name || x.key)}${isNar(x.key) ? ' <span class="small">· ฟรี</span>' : ""}</b>
     <select class="in" data-rk="${esc(x.key)}"><option value="">${esc("เสียงเดิม" + (cur[x.key] ? ": " + prettyVoice(cur[x.key]) : ""))}</option>${isNar(x.key) ? freeOpts : castOpts}</select></div>`).join("");
   box.querySelectorAll("select[data-rk]").forEach(sel => { sel.value = ""; vpick(sel); });
   $("#reDub").onchange = e => reCast(o, e.target.value);   // เปลี่ยนภาษา → รายการเสียงของภาษานั้น
+  const np = $("#reNp"); if (np) np.onchange = () => { RE.np = np.checked; reCast(o, $("#reDub").value); };
 }
 async function mossList(project) {   // เสียงต้นแบบ MOSS ของตัวละครในเรื่องนี้: ฟัง · ออกแบบใหม่
   const L = await api("GET", `/api/projects/${enc(project)}/moss-voices`).catch(() => []);
@@ -1721,13 +1730,17 @@ async function reGo() {
   const o = vCur, btn = $("#reGo"), vmap = {};
   document.querySelectorAll("#reCast select[data-rk]").forEach(sel => { if (sel.value && sel.value !== (RE.cur || {})[sel.dataset.rk]) vmap[sel.dataset.rk] = sel.value; });
   const dubNew = $("#reDub") && $("#reDub").value !== RE.dub ? $("#reDub").value : undefined;
-  if (!Object.keys(vmap).length && !RE.file && !dubNew) return toast("เปลี่ยนเสียงตัวละครอย่างน้อย 1 ตัว หรือใส่ไฟล์เสียงก่อน", true);
+  const npNew = $("#reNp") && RE.np !== RE.np0 ? RE.np : undefined;
+  if (!Object.keys(vmap).length && !RE.file && !dubNew && npNew === undefined) {
+    const same = [...document.querySelectorAll("#reCast select[data-rk]")].some(sel => sel.value);
+    return toast(same ? "เสียงที่เลือกเป็นเสียงเดิมของคลิปนี้อยู่แล้ว เลือกเสียงอื่น" : "เปลี่ยนเสียงตัวละครอย่างน้อย 1 ตัว หรือใส่ไฟล์เสียงก่อน", true);
+  }
   btn.disabled = true;
   try {
     let vf = null;
     if (RE.file) { btn.textContent = "กำลังอัปไฟล์เสียง…"; vf = (await upForm("/api/voice-upload", RE.file, p => btn.textContent = `กำลังอัปไฟล์เสียง ${p}%`)).id; }
     btn.textContent = "กำลังส่งงาน…";
-    await api("POST", `/api/projects/${enc(o.project)}/episodes/${o.ep}/revoice`, {voice_map: Object.keys(vmap).length ? vmap : undefined, voice_file: vf ? {"*": vf} : undefined, dub_lang: dubNew});
+    await api("POST", `/api/projects/${enc(o.project)}/episodes/${o.ep}/revoice`, {voice_map: Object.keys(vmap).length ? vmap : undefined, voice_file: vf ? {"*": vf} : undefined, dub_lang: dubNew, narrator_paid: npNew});
   } catch (e) { btn.disabled = false; btn.innerHTML = ic("redo") + "พากย์ใหม่"; return toast(e.message, true); }
   closeAllM(); refreshJobs(); openDrawer();
 }

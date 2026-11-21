@@ -278,14 +278,17 @@ def episode_revoice(name, ep):
     vf = _take_voice({"voice_file": b.get("voice_file")}) if b.get("voice_file") else None
     vmap = {k: v for k, v in (b.get("voice_map") or {}).items() if k and v}
     lang_new = b.get("dub_lang") if b.get("dub_lang") in ("th", "en") else None
-    if not vf and not b.get("voice") and not vmap and not lang_new:
+    np_new = bool(b["narrator_paid"]) if b.get("narrator_paid") is not None else None
+    if not vf and not b.get("voice") and not vmap and not lang_new and np_new is None:
         raise ValueError("เปลี่ยนเสียงตัวละคร หรือใส่ไฟล์เสียงก่อน")
-    if vmap or lang_new:                           # เสียงตัวละคร/ภาษาที่เปลี่ยน → จำไว้กับเรื่อง (EP ต่อไปใช้ด้วย)
+    if vmap or lang_new or np_new is not None:     # เสียงตัวละคร/ภาษา/ผู้บรรยาย ที่เปลี่ยน → จำไว้กับเรื่อง (EP ต่อไปใช้ด้วย)
         from .voicecast import map_key
         p = core.get_project(name) or {}
         opts = dict(p.get("options") or {})
         if lang_new:
             opts["dub_lang"] = lang_new
+        if np_new is not None:
+            opts["narrator_paid"] = np_new
         mk = map_key(opts)
         if vmap:
             opts[mk] = {**(opts.get(mk) or {}), **vmap}
@@ -304,6 +307,8 @@ def episode_revoice(name, ep):
     o.pop("voice_file", None)
     if b.get("voice"):
         o["voice"] = b["voice"]
+    if np_new is not None:
+        o["narrator_paid"] = np_new
     if lang_new and lang_new != o.get("dub_lang"):
         o["dub_lang"] = lang_new
         o.pop("voice_map", None)                   # เปลี่ยนภาษา = ชุดเสียงของภาษานั้น
