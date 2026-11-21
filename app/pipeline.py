@@ -457,7 +457,7 @@ def voice_for(s, speaker=""):
 
 def make_tts(ctx, text, out, s, speaker=""):
     from . import moss
-    if moss.is_moss(s.get("_voice")):
+    if moss.is_moss(s.get("_voice")) or moss.is_moss(voice_for(s, speaker)):
         try:
             from . import voicecast
             arch = voicecast.archetype_of({"key": speaker or "ผู้บรรยาย", "name": speaker or ""})

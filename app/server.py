@@ -276,8 +276,14 @@ def episode_revoice(name, ep):
     if any(j["project"] == name and j["status"] in ("queued", "running", "review") for j in jobs.list()):
         raise ValueError("เรื่องนี้มีงานกำลังทำอยู่ รอให้เสร็จก่อน")
     vf = _take_voice({"voice_file": b.get("voice_file")}) if b.get("voice_file") else None
-    if not vf and not b.get("voice"):
-        raise ValueError("เลือกเสียงใหม่ หรือใส่ไฟล์เสียงก่อน")
+    vmap = {k: v for k, v in (b.get("voice_map") or {}).items() if k and v}
+    if not vf and not b.get("voice") and not vmap:
+        raise ValueError("เปลี่ยนเสียงตัวละคร หรือใส่ไฟล์เสียงก่อน")
+    if vmap:                                       # เสียงตัวละครที่เปลี่ยน → จำไว้กับเรื่อง (EP ต่อไปใช้เสียงใหม่ด้วย)
+        p = core.get_project(name) or {}
+        opts = dict(p.get("options") or {})
+        opts["voice_map"] = {**(opts.get("voice_map") or {}), **vmap}
+        core.update_project(name, {"options": opts})
     keep = core.project_dir(name) / f"_old_ep{ep:02d}_{int(time.time())}"   # คลิปเดิม → อีกคลิปในคลัง
     keep.mkdir(parents=True)
     for f in ("final.mp4", "thumb.jpg", "subs.srt", "subs_en.srt", "script.json", "caption.txt"):
@@ -292,6 +298,8 @@ def episode_revoice(name, ep):
     o.pop("voice_file", None)
     if b.get("voice"):
         o["voice"] = b["voice"]
+    if vmap:
+        o["voice_map"] = {**(o.get("voice_map") or {}), **vmap}
     if vf:
         o["voice_file"] = vf
     core.write_json(d / "state.json", st)

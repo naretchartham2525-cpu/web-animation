@@ -1643,17 +1643,30 @@ function reInit(o) {
   if (o.copy || DEMO) { $("#vRe").innerHTML = ""; return; }
   RE = {file: null};
   $("#vRe").innerHTML = `<div class="vlab">แก้เสียงพากย์</div>
-    <div class="rerow"><select class="in" id="reVoice">${voiceOpts("", "เสียงเดิม")}</select></div>
+    <div id="reCast" class="small">กำลังโหลดตัวละคร…</div>
     <label class="vdrop" id="reDrop"><input type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.opus,.flac" hidden onchange="rePick(this.files[0]); this.value=''">
       ${ic("mic")}<span id="reFile"><b>ใส่ไฟล์เสียงที่อัดเอง</b> · กดหรือลากไฟล์มาวาง (ทั้ง EP ไฟล์เดียว)</span></label>
     <div id="reMoss"></div>
     <div class="rerow"><button class="sb dark" id="reGo" onclick="reGo()">${ic("redo")}พากย์ใหม่</button><span class="small">ใช้บทและภาพเดิม · คลิปเดิมยังอยู่ในคลัง</span></div>`;
-  vpick($("#reVoice"));
+  reCast(o);
   mossList(o.project);
   const dz = $("#reDrop");
   dz.ondragover = e => { e.preventDefault(); e.stopPropagation(); dz.classList.add("over"); };
   dz.ondragleave = () => dz.classList.remove("over");
   dz.ondrop = e => { e.preventDefault(); e.stopPropagation(); dz.classList.remove("over"); rePick(e.dataTransfer.files[0]); };
+}
+async function reCast(o) {   // ตัวละครใน EP นี้ + เสียงที่ใช้อยู่ → เปลี่ยนรายตัว (ฟังตัวอย่างได้)
+  const [sh, p] = await Promise.all([api("GET", `/api/projects/${enc(o.project)}/episodes/${o.ep}/voice-sheet`).catch(() => null),
+                                     api("GET", `/api/projects/${enc(o.project)}`).catch(() => null)]);
+  const box = $("#reCast"); if (!box || vCur !== o) return;
+  const spk = (sh && sh[0] && sh[0].speakers) || [{key: "ผู้บรรยาย", name: "ผู้บรรยาย"}];
+  const cur = (p && p.options && p.options.voice_map) || {};
+  RE.cur = cur;
+  if (!EL.models.length) await loadEleven();
+  const castOpts = VOICE_GROUPS.concat(EL.enabled ? elGroup() : []).map(([g, vs]) => `<optgroup label="${esc(g)}">${vs.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join("")}</optgroup>`).join("");
+  box.className = ""; box.innerHTML = spk.map(x => `<div class="rerow" style="margin-bottom:6px"><b style="min-width:90px">${esc(x.name || x.key)}</b>
+    <select class="in" data-rk="${esc(x.key)}"><option value="">${esc("เสียงเดิม" + (cur[x.key] ? ": " + prettyVoice(cur[x.key]) : ""))}</option>${castOpts}</select></div>`).join("");
+  box.querySelectorAll("select[data-rk]").forEach(sel => { sel.value = ""; vpick(sel); });
 }
 async function mossList(project) {   // เสียงต้นแบบ MOSS ของตัวละครในเรื่องนี้: ฟัง · ออกแบบใหม่
   const L = await api("GET", `/api/projects/${enc(project)}/moss-voices`).catch(() => []);
@@ -1673,14 +1686,15 @@ function rePick(f) {
   $("#reFile").innerHTML = `<b>${esc(f.name)}</b> · ${fmtMB(f.size)} <button class="ib" title="เอาออก" aria-label="เอาไฟล์ออก" onclick="event.preventDefault(); event.stopPropagation(); RE.file=null; reInit(vCur)">${ic("x")}</button>`;
 }
 async function reGo() {
-  const o = vCur, voice = $("#reVoice").value, btn = $("#reGo");
-  if (!voice && !RE.file) return toast("เลือกเสียงใหม่ หรือใส่ไฟล์เสียงก่อน", true);
+  const o = vCur, btn = $("#reGo"), vmap = {};
+  document.querySelectorAll("#reCast select[data-rk]").forEach(sel => { if (sel.value && sel.value !== (RE.cur || {})[sel.dataset.rk]) vmap[sel.dataset.rk] = sel.value; });
+  if (!Object.keys(vmap).length && !RE.file) return toast("เปลี่ยนเสียงตัวละครอย่างน้อย 1 ตัว หรือใส่ไฟล์เสียงก่อน", true);
   btn.disabled = true;
   try {
     let vf = null;
     if (RE.file) { btn.textContent = "กำลังอัปไฟล์เสียง…"; vf = (await upForm("/api/voice-upload", RE.file, p => btn.textContent = `กำลังอัปไฟล์เสียง ${p}%`)).id; }
     btn.textContent = "กำลังส่งงาน…";
-    await api("POST", `/api/projects/${enc(o.project)}/episodes/${o.ep}/revoice`, {voice: voice || undefined, voice_file: vf ? {"*": vf} : undefined});
+    await api("POST", `/api/projects/${enc(o.project)}/episodes/${o.ep}/revoice`, {voice_map: Object.keys(vmap).length ? vmap : undefined, voice_file: vf ? {"*": vf} : undefined});
   } catch (e) { btn.disabled = false; btn.innerHTML = ic("redo") + "พากย์ใหม่"; return toast(e.message, true); }
   closeAllM(); refreshJobs(); openDrawer();
 }
