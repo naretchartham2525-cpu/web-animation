@@ -473,7 +473,8 @@ def make_tts(ctx, text, out, s, speaker=""):
                 s["_moss_warned"] = True
             s = {**s, "_voice": ""}
     voice = voice_for(s, speaker)
-    if voice.startswith("eleven:") and (speaker or NARRATOR_KEY) in NARRATOR_KEYS:
+    spk_key = speaker or NARRATOR_KEY
+    if voice.startswith("eleven:") and spk_key in NARRATOR_KEYS and not (s.get("narrator_paid") and spk_key not in ("system", "เสียงระบบ")):
         # ผู้บรรยาย/เสียงระบบ ไม่ใช่ตัวละคร → ใช้เสียงฟรีเสมอ (ไม่เสียเครดิต ElevenLabs)
         voice = (s.get("voice_map") or {}).get("_free_narrator") or "edge:th-TH-NiwatNeural"
     if voice.startswith("eleven:"):
@@ -691,7 +692,7 @@ def run_episode(ctx, proj_name, ep):
     adir.mkdir(exist_ok=True)
     own = own_voices(s)
     sig = ("own:" + ",".join(f"{k}={v.name}" for k, v in sorted(own.items()))) if own else \
-        f"{s.get('voice_on')}|{s['tts_engine']}|{s.get('_voice', '')}|{json.dumps(s.get('voice_map') or {}, sort_keys=True)}|{s.get('eleven_model', '')}"
+        f"{s.get('voice_on')}|{s['tts_engine']}|{s.get('_voice', '')}|{json.dumps(s.get('voice_map') or {}, sort_keys=True)}|{s.get('eleven_model', '')}|{bool(s.get('narrator_paid'))}"
     if state.get("tts_sig") and state["tts_sig"] != sig:
         shutil.rmtree(adir, ignore_errors=True)
         adir.mkdir()

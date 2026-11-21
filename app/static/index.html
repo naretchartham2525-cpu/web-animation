@@ -61,6 +61,7 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 .vfrow .small{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vfrow select.in{width:auto;max-width:200px;padding:4px 8px;font-size:12.5px;height:30px}
 .vfchip{align-items:flex-start}
+.vcnp{display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:14px}.vcnp input{margin-top:3px}.vcnp .small{display:block}
 .vcrow{display:grid;grid-template-columns:1fr 210px auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
 .vcrow b{font-weight:600}
 .vcrow .small{display:block}
@@ -922,7 +923,7 @@ function prettyVoice(v) {   // edge:th-TH-NiwatNeural|-8Hz → นิวัฒ�
 }
 const elRate = m => (EL.models.find(x => x.id === m) || {rate:1}).rate;
 // ---------- เสียงตัวละคร ----------
-let VC = {main: {map:{}, model:""}, nx: {map:{}, model:""}}, vcCtx = "main", vcSpk = [], vcAuto = {};
+let VC = {main: {map:{}, model:"", np:false}, nx: {map:{}, model:"", np:false}}, vcCtx = "main", vcSpk = [], vcAuto = {};
 let AUTO = {provider:"", credits:0};
 async function openVoices(k) {
   vcCtx = k; openM("mVoices"); $("#vcBody").innerHTML = '<div class="small">กำลังโหลดรายชื่อตัวละครจากบท…</div>';
@@ -937,13 +938,19 @@ async function openVoices(k) {
   vcSpk = r[0].speakers;
   if (k === "nx" && !Object.keys(VC.nx.map).length) {
     const p = await api("GET", `/api/projects/${enc(nx.project)}`).catch(() => null);
-    VC.nx = {map: {...(p?.options?.voice_map || {})}, model: p?.options?.eleven_model || ""};
+    VC.nx = {map: {...(p?.options?.voice_map || {})}, model: p?.options?.eleven_model || "", np: !!p?.options?.narrator_paid};
   }
-  // เติมเสียงที่ระบบเลือกให้อัตโนมัติ (ยังแก้ได้)
+  await vcAutoLoad();
+}
+// เติมเสียงที่ระบบเลือกให้อัตโนมัติ (ยังแก้ได้) + นับเครดิตตามที่เลือก
+async function vcAutoLoad() {
+  const k = vcCtx, text = vfText(k).trim();
   const a = await api("POST", "/api/voice-auto", {text: text || undefined, template: vfTpl(k), project: k === "nx" ? nx.project : undefined,
     voice: (k === "nx" ? $("#nxVoice").value : effVoice()) || undefined,
-    ep: !text && k === "nx" ? nx.lastEp : undefined, voice_map: VC[k].map, eleven_model: VC[k].model || undefined}).catch(() => null);
+    ep: !text && k === "nx" ? nx.lastEp : undefined, voice_map: VC[k].map, eleven_model: VC[k].model || undefined,
+    narrator_paid: VC[k].np}).catch(() => null);
   vcAuto = a ? a.voice_map : {};
+  if (a?.speakers) vcSpk = a.speakers;
   vcRender();
 }
 function vcRender() {
@@ -967,18 +974,20 @@ function vcRender() {
   const sub = EL.sub && EL.sub.left != null ? `เหลือ ${EL.sub.left.toLocaleString()} จาก ${EL.sub.limit.toLocaleString()} เครดิต` : "";
   setTimeout(() => document.querySelectorAll("#vcBody select[data-k]").forEach(vpick));
   $("#vcBody").innerHTML = `${rows || '<div class="small">ไม่พบตัวละครในบท</div>'}
-    ${el ? `<label class="f" style="margin-top:12px"><span>โมเดล ElevenLabs (อ่านภาษาไทยได้)</span><select class="in" id="vcModel">${EL.models.map(m => `<option value="${m.id}" ${m.id === model ? "selected" : ""}>${m.name}</option>`).join("")}</select></label>` :
+    ${el ? `<label class="vcnp"><input type="checkbox" id="vcNp" ${st.np ? "checked" : ""}><span>ผู้บรรยายใช้ ElevenLabs ด้วย<span class="small">เสียงทั้งคลิปเป็นแบบเดียวกัน แต่เสียเครดิตเพิ่มมากถ้าคลิปเล่าเรื่องเกือบทั้งหมด · ข้อความบนจอ/เสียงระบบยังฟรี</span></span></label>
+    <label class="f" style="margin-top:12px"><span>โมเดล ElevenLabs (อ่านภาษาไทยได้)</span><select class="in" id="vcModel">${EL.models.map(m => `<option value="${m.id}" ${m.id === model ? "selected" : ""}>${m.name}</option>`).join("")}</select></label>` :
       `<div class="note">ยังไม่ได้เชื่อม ElevenLabs: ใส่ ELEVENLABS_API_KEY ใน Colab Secrets แล้วรันช่องใหม่ (ตอนนี้เลือกได้แค่ Edge ฟรี)</div>`}
     <div class="vcsum">${credits ? `ใช้ ElevenLabs ≈ <b>${credits.toLocaleString()}</b> เครดิต/EP ${sub ? "· " + sub : ""}<br><span class="small">ระบบเลือกเสียงให้เองตามเพศ/วัย (My Voices ไม่พอ → หาเสียงไทยจาก Voice Library เพิ่มให้ตอนสร้าง) และจำไว้ทั้งเรื่องนี้และเรื่องใหม่ของเทมเพลตนี้ · ประโยคที่เคยสร้างแล้วไม่คิดซ้ำ · tag อารมณ์ใส่ให้อัตโนมัติ</span>` : "ใช้เสียงฟรีทั้งหมด"}</div>`;
   $("#vcBody").querySelectorAll("select[data-k]").forEach(x => x.onchange = () => { st.map[x.dataset.k] = x.value; vcRender(); });
   const m = $("#vcModel"); if (m) m.onchange = () => { st.model = m.value; vcRender(); };
+  const npc = $("#vcNp"); if (npc) npc.onchange = () => { st.np = npc.checked; vcAutoLoad(); };
 }
 async function saveVoices() {
   const st = VC[vcCtx];
   Object.keys(st.map).forEach(k => { if (!st.map[k]) delete st.map[k]; });
   if (Object.values(st.map).some(isEl) && !st.model) st.model = EL.default_model || "eleven_v4_turbo";
   if (vcCtx === "nx") {
-    const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/voices`, {voice_map: st.map, eleven_model: st.model}));
+    const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/voices`, {voice_map: st.map, eleven_model: st.model, narrator_paid: st.np}));
     if (!r) return;
     toast("บันทึกเสียงตัวละครของเรื่องนี้แล้ว (ใช้ทุก EP ต่อจากนี้)");
   } else toast("ตั้งเสียงตัวละครแล้ว");
@@ -1460,6 +1469,7 @@ function buildOpts() {
   const vf = vfOpt("main"); if (vf) o.voice_file = vf;
   if (Object.keys(VC.main.map).length) o.voice_map = {...VC.main.map};
   if (VC.main.model) o.eleven_model = VC.main.model;
+  if (VC.main.np) o.narrator_paid = true;
   const tw = tweakVal($("#twRow")); if (tw.tweaks) o.tweaks = tw.tweaks; if (tw.tweak_text) o.tweak_text = tw.tweak_text;
   if (O.rate) o.edge_rate = (O.rate > 0 ? "+" : "") + O.rate + "%";
   if (O.sub === "s") o.subtitle_size = O.q === "sd" ? 26 : O.q === "hd" ? 36 : 54;

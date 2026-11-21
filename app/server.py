@@ -524,6 +524,13 @@ def voice_auto():
     sv = {}
     if b.get("voice"):
         _apply_voice(sv, b["voice"])
+    np_ = b.get("narrator_paid")
+    if np_ is None:
+        np_ = ((p or {}).get("options") or {}).get("narrator_paid")
+    if np_:
+        sv["narrator_paid"] = True
+        from . import voicesheet as VS
+        spk = VS.speakers(sheets[0]["lines"], series, True)   # บรรยายคิดเครดิตด้วย
     provider = voicecast.provider_for(skill, sv)
     if skill and skill.get("engine") and provider == "edge":
         vm = pmap
@@ -538,7 +545,7 @@ def voice_auto():
     model = b.get("eleven_model") or ((p or {}).get("options") or {}).get("eleven_model") or eleven.DEFAULT_MODEL
     rate = eleven.model_info(model)[2]
     credits = sum(int(x.get("paid_chars", x["chars"]) * rate) for x in spk if str(vm.get(x["key"], "")).startswith("eleven:"))
-    return ok({"provider": provider, "voice_map": vm, "speakers": spk, "credits": credits, "model": model})
+    return ok({"provider": provider, "voice_map": vm, "speakers": spk, "credits": credits, "model": model, "narrator_paid": bool(np_)})
 
 
 @app.post("/api/projects/<name>/voices")
@@ -553,6 +560,8 @@ def project_voices(name):
         opts["voice_map"] = {k: v for k, v in (b.get("voice_map") or {}).items() if v}
     if b.get("eleven_model"):
         opts["eleven_model"] = b["eleven_model"]
+    if "narrator_paid" in b:
+        opts["narrator_paid"] = bool(b["narrator_paid"])
     core.update_project(name, {"options": opts})
     return ok({"options": opts})
 

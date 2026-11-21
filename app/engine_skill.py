@@ -326,7 +326,7 @@ def run_episode(ctx, proj, ep, s, skill):
             "voice_map": s.get("voice_map") or {},
             "voice_profile": skill.get("voice_profile") or core.voice_profile(skill.get("id") or ""),
             "project": name, "template": skill.get("id") or "",
-            "eleven_model": s.get("eleven_model") or "",
+            "eleven_model": s.get("eleven_model") or "", "narrator_paid": bool(s.get("narrator_paid")),
             "rate_add": int(str(s.get("edge_rate") or "+0%").replace("%", "") or 0),
             "mute": not s.get("voice_on", True),
             "sub_mode": sub_mode(s)}

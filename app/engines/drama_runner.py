@@ -52,7 +52,7 @@ def patch_free_lines(R):
     R.voice_track = voice_track
 
 
-def load_emotions(skill_dir, episode):
+def load_emotions(skill_dir, episode, narrator_paid=False):
     try:
         from app import voicesheet
         ep = json.loads(Path(episode).read_text(encoding="utf-8"))
@@ -60,7 +60,7 @@ def load_emotions(skill_dir, episode):
         for ln in voicesheet.lines_engine(skill_dir, series, ep):
             if ln.get("emo"):
                 EMO[ln["text"]] = ln["emo"]
-            if voicesheet.is_free_line(ln):
+            if voicesheet.is_free_line(ln, narrator_paid):
                 FREE.add(ln["text"])
     except Exception as ex:
         print(f"WARNING emotions: {ex}", flush=True)
@@ -222,7 +222,7 @@ def main():
     a = ap.parse_args()
     opts = json.loads(a.opts or "{}")
     R = load_engine(a.skill_dir)
-    load_emotions(a.skill_dir, a.episode)
+    load_emotions(a.skill_dir, a.episode, bool(opts.get("narrator_paid")))
     patch_voices(R, opts)
     patch_free_lines(R)
     patch_own_voice(R, opts)

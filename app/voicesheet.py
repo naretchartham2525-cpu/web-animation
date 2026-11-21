@@ -8,8 +8,11 @@ from pathlib import Path
 NARRATOR = "ผู้บรรยาย"
 
 
-def is_free_line(ln):
-    """ประโยคที่ตัวละครไม่ได้พูดเอง → ใช้เสียงฟรี (ข้อความบนจอ, เสียงระบบ, ผู้บรรยายของเทมเพลตทั่วไป)"""
+def is_free_line(ln, narrator_paid=False):
+    """ประโยคที่ตัวละครไม่ได้พูดเอง → ใช้เสียงฟรี (ข้อความบนจอ, เสียงระบบ, ผู้บรรยาย)
+    narrator_paid = ผู้ใช้เปิด "ผู้บรรยายใช้ ElevenLabs ด้วย" → บรรยายคิดเงินได้ (ข้อความบนจอ/เสียงระบบยังฟรี)"""
+    if narrator_paid:
+        return ln.get("note") == "ข้อความบนจอ" or ln.get("key") == "system"
     return ln.get("note") in ("ข้อความบนจอ", "บรรยาย") or ln.get("key") in ("system", NARRATOR)
 # สีหน้า/ท่าในบท → audio tag ของ ElevenLabs v3 (ภาษาอังกฤษในวงเล็บ)
 EMO = {"angry": "angry", "yell": "shouting", "rage": "furious", "sad": "sad", "cry": "crying", "happy": "happy",
@@ -71,14 +74,14 @@ def lines_engine(skill_dir, series, ep):
     return out
 
 
-def speakers(lines, series=None):
+def speakers(lines, series=None, narrator_paid=False):
     by = {c.get("id"): c for c in (series or {}).get("cast") or []}
     seen = {}
     for ln in lines:
         s = seen.setdefault(ln["key"], {"key": ln["key"], "name": ln["name"], "count": 0, "chars": 0, "paid_chars": 0, "aliases": set()})
         s["count"] += 1
         s["chars"] += len(ln["text"])
-        if not is_free_line(ln):
+        if not is_free_line(ln, narrator_paid):
             s["paid_chars"] += len(ln["text"])          # เฉพาะบทพูดของตัวละครที่จะใช้เสียงเสียเงินได้
         s["aliases"].update({ln["key"], ln["name"]})
         c = by.get(ln["key"])
