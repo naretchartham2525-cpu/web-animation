@@ -116,8 +116,11 @@ def _gender_age(arch):
     return ARCH.get(arch, ("male", ("middle_aged",)))
 
 
-def _pool(provider, el_voices, arch, profile=None, narrator_paid=False):
+def _pool(provider, el_voices, arch, profile=None, narrator_paid=False, en=False):
     g, ages = _gender_age(arch)
+    if en and (provider != "eleven" or arch == "system" or (arch == "narrator" and not narrator_paid)):
+        from .lang import EDGE_EN
+        return list(EDGE_EN.get(arch) or EDGE_EN["man"])      # พากย์อังกฤษ: เสียงฟรีต้องเป็นเสียงอังกฤษ
     if provider != "eleven" or arch == "system" or (arch == "narrator" and not narrator_paid):   # ผู้บรรยาย/ระบบ ไม่ใช่ตัวละคร → เสียงฟรีเสมอ
         mine = str(((profile or {}).get(arch) or {}).get("edge") or "")   # โทนเสียงของเทมเพลตมาก่อน
         base = list(EDGE_ARCH.get(arch) or EDGE_ARCH["man"])
@@ -183,12 +186,15 @@ def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, kno
             el_voices = eleven.voices()
         except Exception:
             el_voices, provider = [], "edge"
+    from .lang import dub_lang
+    en = dub_lang(s) == "en"
     mem = load_mem(sid)
-    pm = mem.setdefault(provider, {"names": {}, "slots": {}})
+    pm = mem.setdefault(mem_key(provider, en), {"names": {}, "slots": {}})   # เสียงอังกฤษจำแยกจากเสียงไทย
     out = {k: v for k, v in (project_map or {}).items() if v}
-    _ok = (lambda v: v.startswith("eleven:")) if provider == "eleven" else (lambda v: v.startswith("edge:"))
+    edge_ok = (lambda v: v.startswith("edge:en-")) if en else (lambda v: v.startswith("edge:"))
+    _ok = (lambda v: v.startswith("eleven:")) if provider == "eleven" else edge_ok
     np_ = bool((s or {}).get("narrator_paid"))
-    valid = lambda v, arch="": bool(v) and (_ok(v) or ((arch == "system" or (arch == "narrator" and not np_)) and v.startswith("edge:")))
+    valid = lambda v, arch="": bool(v) and (_ok(v) or ((arch == "system" or (arch == "narrator" and not np_)) and edge_ok(v)))
     used = set(out.values())
     slot_n = {}
     changed = False
@@ -207,7 +213,7 @@ def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, kno
             slot_n[arch] = i + 1
             v = slots[i] if i < len(slots) and valid(slots[i], arch) else None
             if not v:
-                pool = _pool(provider, el_voices or [], arch, (skill or {}).get("voice_profile"), bool((s or {}).get("narrator_paid")))
+                pool = _pool(provider, el_voices or [], arch, (skill or {}).get("voice_profile"), np_, en)
                 v = next((x for x in pool if x not in used and _fits(x, arch, el_voices)), None)
                 if not v and provider == "eleven" and not preview:
                     v = _from_library(arch, used, mem)       # My Voices ไม่มีที่เข้ากัน → หาเสียงไทยจาก Voice Library
@@ -230,6 +236,16 @@ def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, kno
     return out, provider
 
 
+def mem_key(provider, en=False):
+    return "edge_en" if en and provider == "edge" else provider
+
+
+def map_key(s):
+    """ช่องเก็บเสียงตัวละครของเรื่อง: พากย์ไทย/อังกฤษเก็บแยกกัน (สลับภาษาไปมาได้ เสียงไม่ปนกัน)"""
+    from .lang import dub_lang
+    return "voice_map_en" if dub_lang(s) == "en" else "voice_map"
+
+
 def remember(skill, voice_map, speakers):
     """ผู้ใช้เลือกเสียงเอง → จำชื่อตัวละครนั้นกับเทมเพลตด้วย (ใช้ข้ามเรื่อง)"""
     sid = (skill or {}).get("id") or ""
@@ -240,7 +256,7 @@ def remember(skill, voice_map, speakers):
     for k, v in (voice_map or {}).items():
         if not v:
             continue
-        prov = "eleven" if v.startswith("eleven:") else "edge"
+        prov = "eleven" if v.startswith("eleven:") else "edge_en" if v.startswith("edge:en-") else "edge"
         mem.setdefault(prov, {"names": {}, "slots": {}})["names"][names.get(k, k)] = v
     save_mem(sid, mem)
 
@@ -248,9 +264,13 @@ def remember(skill, voice_map, speakers):
 def resolve_for_episode(ctx, name, skill, s, speakers, series=None, engine=False, context=""):
     """ใช้ตอนเริ่มทำ EP: เติมเสียงตัวละครที่ยังไม่มี → บันทึกกับเรื่อง + เทมเพลต → คืน voice_map"""
     proj = core.get_project(name) or {}
-    pmap = dict((proj.get("options") or {}).get("voice_map") or {})
+    mk = map_key(s)
+    pmap = dict((proj.get("options") or {}).get(mk) or {})
     pmap.update({k: v for k, v in (s.get("voice_map") or {}).items() if v})   # ค่าที่เลือกตอนสร้าง/EP นี้
     main = str(s.get("_voice_full") or "")
+    if mk == "voice_map_en":
+        pmap = {k: v for k, v in pmap.items() if "th-TH" not in v}   # เสียงไทยอ่านอังกฤษไม่ได้
+        main = "" if "th-TH" in main else main
     hero_key = "hero" if engine else "ผู้บรรยาย"
     if main and hero_key not in pmap:
         pmap[hero_key] = main        # เสียงหลักที่เลือกในแถบพิมพ์ = พระเอก/ผู้บรรยาย
@@ -262,10 +282,10 @@ def resolve_for_episode(ctx, name, skill, s, speakers, series=None, engine=False
         vm = pmap                    # เอนจินมีการแคสต์เสียง Edge ของตัวเองอยู่แล้ว (ต่างระดับเสียงต่อตัวละคร)
     else:
         vm, provider = auto_map(speakers, skill, pmap, series, known=known, s=s)
-    new = {k: v for k, v in vm.items() if (proj.get("options") or {}).get("voice_map", {}).get(k) != v}
+    new = {k: v for k, v in vm.items() if (proj.get("options") or {}).get(mk, {}).get(k) != v}
     if new:
         opts = dict(proj.get("options") or {})
-        opts["voice_map"] = {**(opts.get("voice_map") or {}), **vm}
+        opts[mk] = {**(opts.get(mk) or {}), **vm}
         core.update_project(name, {"options": opts})
         names = {x["key"]: x.get("name") or x["key"] for x in speakers}
         ctx.log("เสียงตัวละคร (" + ("ElevenLabs" if provider == "eleven" else "Edge ฟรี") + "): " +

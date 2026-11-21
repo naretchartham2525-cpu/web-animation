@@ -411,6 +411,10 @@ def sync_bible(ctx, proj, ep, s):
 
 def ensure_english(ctx, script, s):
     """ขอซับอังกฤษแต่บทยังไม่มี → แปลด้วย AI ฟรี 1 ครั้ง/EP (ไม่เสียเครดิต)"""
+    from .lang import has_thai
+    for sc in script["scenes"]:
+        if not sc.get("subtitle_en") and sc.get("narration") and not has_thai(sc["narration"]):
+            sc["subtitle_en"] = sc["narration"]          # บทเป็นอังกฤษอยู่แล้ว ไม่ต้องแปล
     missing = [i for i, sc in enumerate(script["scenes"]) if not sc.get("subtitle_en")]
     if not missing:
         return False
@@ -459,13 +463,21 @@ NARRATOR_KEY = "ผู้บรรยาย"
 NARRATOR_KEYS = {"ผู้บรรยาย", "narrator", "narration", "system", "เสียงระบบ", "บรรยาย"}
 
 
+def spoken(sc, s):
+    """ข้อความที่พากย์: พากย์อังกฤษ = บทอังกฤษ · ไม่งั้นบทไทย"""
+    from .lang import dub_lang
+    return (sc.get("subtitle_en") or sc["narration"]) if dub_lang(s) == "en" else sc["narration"]
+
+
 def make_tts(ctx, text, out, s, speaker=""):
     from . import moss
+    from .lang import dub_lang, to_english_voice
     if moss.is_moss(s.get("_voice")) or moss.is_moss(voice_for(s, speaker)):
         try:
             from . import voicecast
             arch = voicecast.archetype_of({"key": speaker or "ผู้บรรยาย", "name": speaker or ""})
-            moss.speak(s.get("_project") or "", speaker or "ผู้บรรยาย", arch, text, out, ctx.log, template=s.get("_skill") or "")
+            moss.speak(s.get("_project") or "", speaker or "ผู้บรรยาย", arch, text, out, ctx.log, template=s.get("_skill") or "",
+                       lang="English" if dub_lang(s) == "en" else "Thai")
             return
         except Exception as e:  # noqa: BLE001  MOSS ใช้ไม่ได้ (ไม่มี GPU/โหลดโมเดลไม่ได้) → ใช้ Edge ฟรีแทน งานไม่พัง
             if not s.get("_moss_warned"):
@@ -477,6 +489,9 @@ def make_tts(ctx, text, out, s, speaker=""):
     if voice.startswith("eleven:") and spk_key in NARRATOR_KEYS and not (s.get("narrator_paid") and spk_key not in ("system", "เสียงระบบ")):
         # ผู้บรรยาย/เสียงระบบ ไม่ใช่ตัวละคร → ใช้เสียงฟรีเสมอ (ไม่เสียเครดิต ElevenLabs)
         voice = (s.get("voice_map") or {}).get("_free_narrator") or "edge:th-TH-NiwatNeural"
+    if dub_lang(s) == "en" and not voice.startswith("eleven:"):
+        from . import voicecast
+        voice = to_english_voice(voice, voicecast.archetype_of({"key": speaker or NARRATOR_KEY, "name": speaker or ""}))
     if voice.startswith("eleven:"):
         from . import eleven
         n = eleven.tts(text, voice[7:], s.get("eleven_model") or eleven.DEFAULT_MODEL, out)
@@ -571,13 +586,15 @@ def _render_html_engine(ctx, eng_dir, proj_name, ep, script, scenes, durations, 
     for i, (sc, dur) in enumerate(zip(scenes, durations), 1):
         seg = dur + gap
         tl_scenes.append({"i": i, "start": round(t, 3), "end": round(t + seg, 3), "dur": round(seg, 3),
-                          "speech": round(dur, 3), "text": sc["narration"], "speaker": (sc.get("speaker") or "").strip(),
+                          "speech": round(dur, 3), "text": spoken(sc, s), "speaker": (sc.get("speaker") or "").strip(),
                           "en": sc.get("subtitle_en") or "", "visual": sc.get("image_prompt") or ""})
         subs.append((t, dur, sc.get("subtitle") or sc["narration"], sc.get("subtitle_en") or ""))
         t += seg
     fps = min(30, int(s.get("fps") or 24))
-    tl = {"w": w, "h": h, "fps": fps, "duration": round(t, 3), "title": script.get("title") or proj_name,
-          "series": proj_name, "ep": ep, "lang": s.get("language", "ไทย"), "scenes": tl_scenes}
+    en = s.get("dub_lang") == "en"
+    tl = {"w": w, "h": h, "fps": fps, "duration": round(t, 3),
+          "title": (script.get("title_en") if en else "") or script.get("title") or proj_name,
+          "series": proj_name, "ep": ep, "lang": "English" if en else s.get("language", "ไทย"), "scenes": tl_scenes}
     core.write_json(edir / "timeline.json", tl)
     html_engine.ensure_playwright(ctx.log)
     ctx.log(f"เอนจินวาดภาพ {t:.0f} วิ ({round(t * fps)} เฟรม)")
@@ -654,7 +671,24 @@ def run_episode(ctx, proj_name, ep):
         script = _validate_script(core.read_json(script_f))
         core.write_json(script_f, script)
     state["approved"] = True
-    if s.get("sub_lang") in ("en", "both") and s.get("subtitles", True):
+    from .lang import dub_lang
+    if dub_lang(s) == "en":
+        # พากย์อังกฤษ: เสียงกับซับต้องเป็นภาษาเดียวกัน → แปลบทเป็นอังกฤษ (AI ฟรี) แปลไม่ได้ = หยุด (ไม่ปล่อยคลิปภาษาปนกัน)
+        if s.get("sub_lang") == "th":
+            s["sub_lang"] = "en"
+        if ensure_english(ctx, script, s):
+            core.write_json(script_f, script)
+        if any(not sc.get("subtitle_en") for sc in script["scenes"]):
+            raise RuntimeError("แปลบทเป็นอังกฤษไม่ครบ ลองสร้างใหม่อีกครั้ง")
+        if script.get("title") and not script.get("title_en"):
+            t = {"scenes": [{"narration": script["title"]}]}
+            try:
+                ensure_english(ctx, t, s)
+                script["title_en"] = t["scenes"][0].get("subtitle_en") or ""
+                core.write_json(script_f, script)
+            except Exception:  # noqa: BLE001
+                pass
+    elif s.get("sub_lang") in ("en", "both") and s.get("subtitles", True):
         try:
             if ensure_english(ctx, script, s):
                 core.write_json(script_f, script)
@@ -692,7 +726,7 @@ def run_episode(ctx, proj_name, ep):
     adir.mkdir(exist_ok=True)
     own = own_voices(s)
     sig = ("own:" + ",".join(f"{k}={v.name}" for k, v in sorted(own.items()))) if own else \
-        f"{s.get('voice_on')}|{s['tts_engine']}|{s.get('_voice', '')}|{json.dumps(s.get('voice_map') or {}, sort_keys=True)}|{s.get('eleven_model', '')}|{bool(s.get('narrator_paid'))}"
+        f"{s.get('voice_on')}|{s['tts_engine']}|{s.get('_voice', '')}|{json.dumps(s.get('voice_map') or {}, sort_keys=True)}|{s.get('eleven_model', '')}|{bool(s.get('narrator_paid'))}|{s.get('dub_lang') or 'th'}"
     if state.get("tts_sig") and state["tts_sig"] != sig:
         shutil.rmtree(adir, ignore_errors=True)
         adir.mkdir()
@@ -709,7 +743,7 @@ def run_episode(ctx, proj_name, ep):
                 ctx.log(f"ไม่มีไฟล์เสียงของ {key} → ใช้เสียง AI {len(idx)} ประโยค")
                 continue
             ctx.log(f"เสียงพากย์ที่อัป: {key} ({f.name}) ตัดเป็น {len(idx)} ท่อน")
-            cuts = voiceover.split(f, [scenes[i]["narration"] for i in idx], [adir / f"s{i + 1:02d}.mp3" for i in idx])
+            cuts = voiceover.split(f, [spoken(scenes[i], s) for i in idx], [adir / f"s{i + 1:02d}.mp3" for i in idx])
             ctx.log("จุดตัด (วินาที): " + ", ".join(f"{a:.1f}" for a, _ in cuts))
     durations = []
     for i, sc in enumerate(scenes, 1):
@@ -719,9 +753,9 @@ def run_episode(ctx, proj_name, ep):
             tmp = a.with_suffix(".part.mp3")
             if s.get("voice_on", True):
                 ctx.log(f"พากย์ฉาก {i}/{len(scenes)}")
-                make_tts(ctx, sc["narration"], tmp, s, (sc.get("speaker") or "").strip())
+                make_tts(ctx, spoken(sc, s), tmp, s, (sc.get("speaker") or "").strip())
             else:
-                ctx.run(video.silent_audio_cmd(tmp, video.estimate_speech_seconds(sc["narration"])), "เสียงเงียบ")
+                ctx.run(video.silent_audio_cmd(tmp, video.estimate_speech_seconds(spoken(sc, s))), "เสียงเงียบ")
             tmp.replace(a)
         durations.append(video.probe_duration(a))
         ctx.progress(35 + 15 * i / len(scenes))

@@ -158,7 +158,7 @@ def _tts(log):
     raise RuntimeError(f"โหลดตัวพากย์ MOSS ไม่ได้: {err}")
 
 
-def speak(project, speaker, arch, text, out_mp3, log, template=""):
+def speak(project, speaker, arch, text, out_mp3, log, template="", lang="Thai"):
     """พูดภาษาไทยด้วยเสียงต้นแบบของตัวละคร → mp3 · พังครั้งไหน = เลิกใช้ MOSS ทั้งงานนี้ (กลับไปใช้ Edge)"""
     if _state["failed"]:
         raise RuntimeError(_state["failed"])
@@ -172,7 +172,7 @@ def speak(project, speaker, arch, text, out_mp3, log, template=""):
             model, proc, dev, torch = _tts(log)
             wav = Path(out_mp3).with_suffix(".moss.wav")
             try:
-                msg = proc.build_user_message(text=text, reference=[str(ref)], language="Thai")
+                msg = proc.build_user_message(text=text, reference=[str(ref)], language=lang)
             except TypeError:
                 msg = proc.build_user_message(text=text, reference=[str(ref)])
             n = max(200, min(4000, int(len(text) * 2.2) + 150))   # ~12.5 โทเคน/วินาที · ไทยราว 6-8 ตัวอักษร/วินาที

@@ -637,6 +637,7 @@ select.vhide{position:absolute!important;opacity:0;pointer-events:none;width:1px
       <div class="grp noeng"><div class="seg" id="segMode" title="บท: วางเอง หรือให้ AI เขียน"><button data-v="manual" class="on">วางบท</button><button data-v="ai">AI เขียน</button></div></div>
       <div class="grp noeng"><div class="dur" title="ความยาวต่อ EP (กดค้างเพื่อเพิ่ม/ลดต่อเนื่อง)"><button class="stp" data-d="-1" aria-label="ลด 1 วินาที"><svg class="i"><use href="#i-minus"/></svg></button><input type="number" id="durNum" min="5" max="600" step="1" aria-label="วินาที"><span class="small">วิ</span><button class="stp" data-d="1" aria-label="เพิ่ม 1 วินาที"><svg class="i"><use href="#i-plus"/></svg></button></div></div>
       <div class="grp"><div class="seg" id="segQ" title="ความคมชัด"><button data-v="sd">SD</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div></div>
+      <div class="grp"><label class="chip subc" title="ภาษาพากย์ (เสียง ซับ และข้อความบนจอเป็นภาษาเดียวกัน)"><svg class="i"><use href="#i-mic"/></svg><select id="oDub"><option value="th">พากย์ไทย</option><option value="en">พากย์อังกฤษ</option></select></label></div>
       <div class="grp"><label class="chip subc" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ไทย</option><option value="en">อังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label></div>
       <div class="grp gv"><div class="gctl">
         <label class="chip" title="เสียงพากย์"><svg class="i"><use href="#i-mic"/></svg><select id="oVoice"></select></label>
@@ -900,14 +901,19 @@ async function call(fn) { try { return await fn(); } catch (e) { toast(e.message
 // ================= เสียง =================
 const VOICE_GROUPS = [
   ["Edge · ฟรี", [["edge:th-TH-PremwadeeNeural", "เปรมวดี · หญิง"], ["edge:th-TH-NiwatNeural", "นิวัฒน์ · ชาย"]]],
+  ["Edge อังกฤษ · ฟรี", [["edge:en-US-AndrewMultilingualNeural", "Andrew · ชาย นุ่ม เล่าเรื่อง"], ["edge:en-US-BrianMultilingualNeural", "Brian · ชาย สดใส"],
+    ["edge:en-US-GuyNeural", "Guy · ชาย"], ["edge:en-US-AvaMultilingualNeural", "Ava · หญิง สดใส"],
+    ["edge:en-US-EmmaMultilingualNeural", "Emma · หญิง"], ["edge:en-US-JennyNeural", "Jenny · หญิง"]]],
   ["MOSS · ฟรี ทดลอง (ต้องเปิด GPU)", [["moss:auto", "ออกแบบเสียงตัวละครเอง · จำโทนทุก EP"]]]];
 let EL = {enabled:false, voices:[], models:[], sub:null};
 function elGroup() { return EL.enabled && EL.voices.length ? [["ElevenLabs · เสียเครดิต", EL.voices.map(v => ["eleven:" + v.id, `${v.name}${v.gender ? " · " + (v.gender === "female" ? "หญิง" : v.gender === "male" ? "ชาย" : v.gender) : ""}`])]] : []; }
 let VOICES = [["", "เสียงตามเทมเพลต"]].concat(...VOICE_GROUPS.map(([g, vs]) => vs.map(([v, t]) => [v, `${t} (${g.split(" · ")[1]})`])));
 // ช่องเสียงหลัก: ElevenLabs รวมเป็นตัวเลือกเดียว (เสียงรายตัวละครดู/เปลี่ยนในปุ่ม 👥)
-const voiceOpts = (sel, first) => `<option value="" ${!sel ? "selected" : ""}>${first || VOICES[0][1]}</option>` +
+// กลุ่มเสียงตามภาษาพากย์: ไทยไม่โชว์เสียง Edge อังกฤษ · อังกฤษไม่โชว์เสียง Edge ไทย (ElevenLabs/MOSS พูดได้ทั้งสองภาษา)
+const vgFor = lang => VOICE_GROUPS.filter(([g, vs]) => !lang || !vs[0][0].startsWith("edge:") || vs[0][0].startsWith(lang === "en" ? "edge:en-" : "edge:th-"));
+const voiceOpts = (sel, first, lang) => `<option value="" ${!sel ? "selected" : ""}>${first || VOICES[0][1]}</option>` +
   (EL.enabled ? `<option value="eleven:auto" ${sel === "eleven:auto" || isEl(sel) ? "selected" : ""}>ElevenLabs · อัตโนมัติ</option>` : "") +
-  VOICE_GROUPS.map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t} · ${g.split(" · ")[1]}</option>`).join("")}</optgroup>`).join("");
+  vgFor(lang).map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t} · ${g.split(" · ")[1]}</option>`).join("")}</optgroup>`).join("");
 const voiceName = v => (VOICES.find(x => x[0] === v) || elGroup().flatMap(g => g[1]).find(x => x[0] === v) || [, v])[1];
 async function loadEleven() {
   try { EL = await api("GET", "/api/eleven"); } catch (e) { EL = {enabled:false, voices:[], models:[]}; }
@@ -938,17 +944,19 @@ async function openVoices(k) {
   vcSpk = r[0].speakers;
   if (k === "nx" && !Object.keys(VC.nx.map).length) {
     const p = await api("GET", `/api/projects/${enc(nx.project)}`).catch(() => null);
-    VC.nx = {map: {...(p?.options?.voice_map || {})}, model: p?.options?.eleven_model || "", np: !!p?.options?.narrator_paid};
+    const dub = p?.options?.dub_lang === "en" ? "en" : "th";
+    VC.nx = {map: {...(p?.options?.[dub === "en" ? "voice_map_en" : "voice_map"] || {})}, model: p?.options?.eleven_model || "", np: !!p?.options?.narrator_paid, dub};
   }
   await vcAutoLoad();
 }
 // เติมเสียงที่ระบบเลือกให้อัตโนมัติ (ยังแก้ได้) + นับเครดิตตามที่เลือก
+const vcDub = () => vcCtx === "nx" ? (VC.nx.dub || "th") : O.dub;
 async function vcAutoLoad() {
   const k = vcCtx, text = vfText(k).trim();
   const a = await api("POST", "/api/voice-auto", {text: text || undefined, template: vfTpl(k), project: k === "nx" ? nx.project : undefined,
     voice: (k === "nx" ? $("#nxVoice").value : effVoice()) || undefined,
     ep: !text && k === "nx" ? nx.lastEp : undefined, voice_map: VC[k].map, eleven_model: VC[k].model || undefined,
-    narrator_paid: VC[k].np}).catch(() => null);
+    narrator_paid: VC[k].np, dub_lang: vcDub()}).catch(() => null);
   vcAuto = a ? a.voice_map : {};
   if (a?.speakers) vcSpk = a.speakers;
   vcRender();
@@ -956,7 +964,7 @@ async function vcAutoLoad() {
 function vcRender() {
   const st = VC[vcCtx];
   const el = EL.enabled;
-  const all = VOICE_GROUPS.concat(elGroup());
+  const all = vgFor(vcDub()).concat(elGroup());
   const opts = (sel, auto) => `<option value="">อัตโนมัติ${auto ? ": " + esc(prettyVoice(auto)) : ""}</option>` +
     (sel && !all.some(g => g[1].some(x => x[0] === sel)) ? `<option value="${esc(sel)}" selected>${esc(prettyVoice(sel))}</option>` : "") +
     all.map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t}</option>`).join("")}</optgroup>`).join("");
@@ -987,7 +995,7 @@ async function saveVoices() {
   Object.keys(st.map).forEach(k => { if (!st.map[k]) delete st.map[k]; });
   if (Object.values(st.map).some(isEl) && !st.model) st.model = EL.default_model || "eleven_v4_turbo";
   if (vcCtx === "nx") {
-    const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/voices`, {voice_map: st.map, eleven_model: st.model, narrator_paid: st.np}));
+    const r = await call(() => api("POST", `/api/projects/${enc(nx.project)}/voices`, {voice_map: st.map, eleven_model: st.model, narrator_paid: st.np, dub_lang: vcDub()}));
     if (!r) return;
     toast("บันทึกเสียงตัวละครของเรื่องนี้แล้ว (ใช้ทุก EP ต่อจากนี้)");
   } else toast("ตั้งเสียงตัวละครแล้ว");
@@ -1004,7 +1012,7 @@ function tweakUI(el, sel, text, onchange) {
   el.querySelector(".twin").oninput = () => onchange && onchange();
 }
 const tweakVal = el => ({tweaks: [...el.querySelectorAll(".tw.on")].map(b => b.dataset.k).join(","), tweak_text: el.querySelector(".twin")?.value.trim() || ""});
-const O = {lang:"th", mode:"manual", dur:30, q:"hd", voice:"", wm:true, engine:"free", vis:"ai", rate:0, preset:"veryfast", fps:"30", sub:"0", font:"Loma"};
+const O = {dub:"th", lang:"th", mode:"manual", dur:30, q:"hd", voice:"", wm:true, engine:"free", vis:"ai", rate:0, preset:"veryfast", fps:"30", sub:"0", font:"Loma"};
 const TONES = ["#c98a6b,#6e3d2d","#8fa58a,#3e5446","#d4b483,#7a5530","#a68fb3,#4b3a5c","#e0a07c,#8c4a3c","#7f9cb0,#354b5c","#c7a9a0,#6b4a45","#b8b07a,#5e5a33"];
 const hashN = s => [...String(s)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 
@@ -1066,7 +1074,7 @@ $("#q").oninput = renderGrid;
 function useTemplate(id) {
   const t = T.find(x => x.id === id); if (!t) return;
   tplSel = tplSel?.id === id ? null : t;
-  if (tplSel) { const o = t.options || {}; if (o.duration && !t.engine) O.dur = +o.duration; if (o.quality) O.q = o.quality; if (o.sub_lang) O.lang = o.sub_lang; O.voice = ""; toast("ใช้เทมเพลต: " + t.name); }
+  if (tplSel) { const o = t.options || {}; if (o.duration && !t.engine) O.dur = +o.duration; if (o.quality) O.q = o.quality; if (o.sub_lang) O.lang = o.sub_lang; if (o.dub_lang) O.dub = o.dub_lang; O.voice = ""; toast("ใช้เทมเพลต: " + t.name); }
   showComposer(); renderGrid(); renderComposer(); $("#idea").focus();
 }
 // องค์ประกอบเสริมให้ภาพน่าสนใจ (ไม่เปลี่ยนลายเส้น/ตัวละครของสกิล) · เลือกได้หลายอัน
@@ -1259,7 +1267,9 @@ function renderComposer() {
   $("#durNum").value = O.dur;
   $("#oRate").value = O.rate; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%";
   $("#oFont").value = O.font; $("#oSub").value = O.lang;
-  $("#oVoice").innerHTML = voiceOpts(O.voice, tplVoice() === "eleven:auto" ? "ตามเทมเพลต · ElevenLabs" : tplSel?.engine ? "เสียงตามสกิล · Edge ฟรี" : tplSel && tplVoice() ? `ตามเทมเพลต · ${voiceName(tplVoice()).split(" ·")[0]}` : "Edge ฟรี · อัตโนมัติ");
+  $("#oDub").value = O.dub;
+  if (O.dub === "en" && O.voice.startsWith("edge:th-") || O.dub === "th" && O.voice.startsWith("edge:en-")) O.voice = "";
+  $("#oVoice").innerHTML = voiceOpts(O.voice, tplVoice() === "eleven:auto" ? "ตามเทมเพลต · ElevenLabs" : tplSel?.engine ? (O.dub === "en" ? "เสียงตามสกิล · Edge อังกฤษ ฟรี" : "เสียงตามสกิล · Edge ฟรี") : tplSel && tplVoice() && !(O.dub === "en" && tplVoice().startsWith("edge:th-")) ? `ตามเทมเพลต · ${voiceName(tplVoice()).split(" ·")[0]}` : O.dub === "en" ? "Edge อังกฤษ ฟรี · อัตโนมัติ" : "Edge ฟรี · อัตโนมัติ", O.dub);
   $("#oWm").classList.toggle("on", O.wm);
   $("#pickTpl").innerHTML = tplSel ? `<span class="pick">เทมเพลต <b>${esc(tplSel.name)}</b><button onclick="useTemplate(dq('${q(tplSel.id)}'))" title="เลิกใช้">${ic("x")}</button></span>`
     : `<span class="hint">เลือกเทมเพลตด้านบน หรือสร้างแบบอิสระ</span>`;
@@ -1289,6 +1299,12 @@ document.querySelectorAll(".stp").forEach(b => {
 $("#oRate").oninput = e => { O.rate = +e.target.value; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%"; };
 $("#oFont").onchange = e => O.font = e.target.value;
 $("#oSub").onchange = e => { O.lang = e.target.value; renderComposer(); };
+$("#oDub").onchange = e => {   // ภาษาเดียวกันทั้งคลิป: พากย์อังกฤษ → ซับอังกฤษ (เลือกไทย+อังกฤษ/ไม่มีซับได้)
+  O.dub = e.target.value;
+  if (O.dub === "en" && O.lang === "th") O.lang = "en";
+  if (O.dub === "th" && O.lang === "en") O.lang = "th";
+  VC.main.map = {}; renderComposer(); autoPreview && autoPreview();
+};
 $("#oVoice").onchange = e => { O.voice = e.target.value; renderComposer(); autoPreview(); };
 $("#oWm").onclick = () => { O.wm = !O.wm; renderComposer(); };
 tweakUI($("#twRow"), [], "", twCount);
@@ -1464,7 +1480,7 @@ function countEps(text, eng) {
   return n + (has ? 1 : 0);
 }
 function buildOpts() {
-  const o = {sub_lang:O.lang, duration:O.dur, quality:O.q, watermark:O.wm, script_engine:O.engine, visual_source:O.vis, preset:O.preset, fps:O.fps, subtitle_font:O.font};
+  const o = {dub_lang:O.dub, sub_lang:O.lang, duration:O.dur, quality:O.q, watermark:O.wm, script_engine:O.engine, visual_source:O.vis, preset:O.preset, fps:O.fps, subtitle_font:O.font};
   if (O.voice) o.voice = O.voice;
   const vf = vfOpt("main"); if (vf) o.voice_file = vf;
   if (Object.keys(VC.main.map).length) o.voice_map = {...VC.main.map};
@@ -1665,20 +1681,24 @@ function reInit(o) {
   dz.ondragleave = () => dz.classList.remove("over");
   dz.ondrop = e => { e.preventDefault(); e.stopPropagation(); dz.classList.remove("over"); rePick(e.dataTransfer.files[0]); };
 }
-async function reCast(o) {   // ตัวละครใน EP นี้ + เสียงที่ใช้อยู่ → เปลี่ยนรายตัว (ฟังตัวอย่างได้)
+async function reCast(o, lang) {   // ตัวละครใน EP นี้ + เสียงที่ใช้อยู่ → เปลี่ยนรายตัว (ฟังตัวอย่างได้)
   const [sh, p] = await Promise.all([api("GET", `/api/projects/${enc(o.project)}/episodes/${o.ep}/voice-sheet`).catch(() => null),
                                      api("GET", `/api/projects/${enc(o.project)}`).catch(() => null)]);
   const box = $("#reCast"); if (!box || vCur !== o) return;
   const spk = (sh && sh[0] && sh[0].speakers) || [{key: "ผู้บรรยาย", name: "ผู้บรรยาย"}];
-  const cur = (p && p.options && p.options.voice_map) || {};
+  RE.dub = p?.options?.dub_lang === "en" ? "en" : "th";     // ภาษาเดิมของเรื่อง
+  const dub = lang || RE.dub;
+  const cur = (p && p.options && p.options[dub === "en" ? "voice_map_en" : "voice_map"]) || {};
   RE.cur = cur;
   if (!EL.models.length) await loadEleven();
-  const castOpts = VOICE_GROUPS.concat(EL.enabled ? elGroup() : []).map(([g, vs]) => `<optgroup label="${esc(g)}">${vs.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join("")}</optgroup>`).join("");
-  const freeOpts = VOICE_GROUPS.map(([g, vs]) => `<optgroup label="${esc(g)}">${vs.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join("")}</optgroup>`).join("");
+  const castOpts = vgFor(dub).concat(EL.enabled ? elGroup() : []).map(([g, vs]) => `<optgroup label="${esc(g)}">${vs.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join("")}</optgroup>`).join("");
+  const freeOpts = vgFor(dub).map(([g, vs]) => `<optgroup label="${esc(g)}">${vs.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join("")}</optgroup>`).join("");
   const isNar = k => ["ผู้บรรยาย", "system", "narration"].includes(k);   // ไม่ใช่ตัวละคร → เสียงฟรีเท่านั้น
-  box.className = ""; box.innerHTML = spk.map(x => `<div class="rerow" style="margin-bottom:6px"><b style="min-width:90px" ${isNar(x.key) ? 'title="บรรยาย ใช้เสียงฟรีเท่านั้น"' : ""}>${esc(x.name || x.key)}${isNar(x.key) ? ' <span class="small">· ฟรี</span>' : ""}</b>
+  box.className = ""; box.innerHTML = `<div class="rerow" style="margin-bottom:8px"><b style="min-width:90px">ภาษาพากย์</b>
+    <select class="in" id="reDub"><option value="th" ${dub === "th" ? "selected" : ""}>ไทย</option><option value="en" ${dub === "en" ? "selected" : ""}>อังกฤษ (ซับและข้อความบนจอเป็นอังกฤษด้วย)</option></select></div>` + spk.map(x => `<div class="rerow" style="margin-bottom:6px"><b style="min-width:90px" ${isNar(x.key) ? 'title="บรรยาย ใช้เสียงฟรีเท่านั้น"' : ""}>${esc(x.name || x.key)}${isNar(x.key) ? ' <span class="small">· ฟรี</span>' : ""}</b>
     <select class="in" data-rk="${esc(x.key)}"><option value="">${esc("เสียงเดิม" + (cur[x.key] ? ": " + prettyVoice(cur[x.key]) : ""))}</option>${isNar(x.key) ? freeOpts : castOpts}</select></div>`).join("");
   box.querySelectorAll("select[data-rk]").forEach(sel => { sel.value = ""; vpick(sel); });
+  $("#reDub").onchange = e => reCast(o, e.target.value);   // เปลี่ยนภาษา → รายการเสียงของภาษานั้น
 }
 async function mossList(project) {   // เสียงต้นแบบ MOSS ของตัวละครในเรื่องนี้: ฟัง · ออกแบบใหม่
   const L = await api("GET", `/api/projects/${enc(project)}/moss-voices`).catch(() => []);
@@ -1700,13 +1720,14 @@ function rePick(f) {
 async function reGo() {
   const o = vCur, btn = $("#reGo"), vmap = {};
   document.querySelectorAll("#reCast select[data-rk]").forEach(sel => { if (sel.value && sel.value !== (RE.cur || {})[sel.dataset.rk]) vmap[sel.dataset.rk] = sel.value; });
-  if (!Object.keys(vmap).length && !RE.file) return toast("เปลี่ยนเสียงตัวละครอย่างน้อย 1 ตัว หรือใส่ไฟล์เสียงก่อน", true);
+  const dubNew = $("#reDub") && $("#reDub").value !== RE.dub ? $("#reDub").value : undefined;
+  if (!Object.keys(vmap).length && !RE.file && !dubNew) return toast("เปลี่ยนเสียงตัวละครอย่างน้อย 1 ตัว หรือใส่ไฟล์เสียงก่อน", true);
   btn.disabled = true;
   try {
     let vf = null;
     if (RE.file) { btn.textContent = "กำลังอัปไฟล์เสียง…"; vf = (await upForm("/api/voice-upload", RE.file, p => btn.textContent = `กำลังอัปไฟล์เสียง ${p}%`)).id; }
     btn.textContent = "กำลังส่งงาน…";
-    await api("POST", `/api/projects/${enc(o.project)}/episodes/${o.ep}/revoice`, {voice_map: Object.keys(vmap).length ? vmap : undefined, voice_file: vf ? {"*": vf} : undefined});
+    await api("POST", `/api/projects/${enc(o.project)}/episodes/${o.ep}/revoice`, {voice_map: Object.keys(vmap).length ? vmap : undefined, voice_file: vf ? {"*": vf} : undefined, dub_lang: dubNew});
   } catch (e) { btn.disabled = false; btn.innerHTML = ic("redo") + "พากย์ใหม่"; return toast(e.message, true); }
   closeAllM(); refreshJobs(); openDrawer();
 }

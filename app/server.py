@@ -277,12 +277,18 @@ def episode_revoice(name, ep):
         raise ValueError("เรื่องนี้มีงานกำลังทำอยู่ รอให้เสร็จก่อน")
     vf = _take_voice({"voice_file": b.get("voice_file")}) if b.get("voice_file") else None
     vmap = {k: v for k, v in (b.get("voice_map") or {}).items() if k and v}
-    if not vf and not b.get("voice") and not vmap:
+    lang_new = b.get("dub_lang") if b.get("dub_lang") in ("th", "en") else None
+    if not vf and not b.get("voice") and not vmap and not lang_new:
         raise ValueError("เปลี่ยนเสียงตัวละคร หรือใส่ไฟล์เสียงก่อน")
-    if vmap:                                       # เสียงตัวละครที่เปลี่ยน → จำไว้กับเรื่อง (EP ต่อไปใช้เสียงใหม่ด้วย)
+    if vmap or lang_new:                           # เสียงตัวละคร/ภาษาที่เปลี่ยน → จำไว้กับเรื่อง (EP ต่อไปใช้ด้วย)
+        from .voicecast import map_key
         p = core.get_project(name) or {}
         opts = dict(p.get("options") or {})
-        opts["voice_map"] = {**(opts.get("voice_map") or {}), **vmap}
+        if lang_new:
+            opts["dub_lang"] = lang_new
+        mk = map_key(opts)
+        if vmap:
+            opts[mk] = {**(opts.get(mk) or {}), **vmap}
         core.update_project(name, {"options": opts})
     keep = core.project_dir(name) / f"_old_ep{ep:02d}_{int(time.time())}"   # คลิปเดิม → อีกคลิปในคลัง
     keep.mkdir(parents=True)
@@ -298,6 +304,9 @@ def episode_revoice(name, ep):
     o.pop("voice_file", None)
     if b.get("voice"):
         o["voice"] = b["voice"]
+    if lang_new and lang_new != o.get("dub_lang"):
+        o["dub_lang"] = lang_new
+        o.pop("voice_map", None)                   # เปลี่ยนภาษา = ชุดเสียงของภาษานั้น
     if vmap:
         o["voice_map"] = {**(o.get("voice_map") or {}), **vmap}
     if vf:
@@ -450,6 +459,7 @@ def _voice_sheets(text=None, tpl=None, project=None, ep=None):
 
 
 PREVIEW_TEXT = "สวัสดีครับ นี่คือเสียงตัวอย่างสำหรับเล่าเรื่องในคลิปของคุณ"
+PREVIEW_EN = "Hi there. This is a sample voice for telling the story in your clip."
 
 
 @app.get("/api/voices/preview")
@@ -468,7 +478,7 @@ def voice_preview():
     if not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
         try:
-            pipeline.edge_say(name, PREVIEW_TEXT, out)
+            pipeline.edge_say(name, PREVIEW_EN if name.startswith("en-") else PREVIEW_TEXT, out)
         except Exception as e:  # noqa: BLE001
             out.unlink(missing_ok=True)
             return jsonify({"ok": False, "error": str(e)}), 502
@@ -517,11 +527,14 @@ def voice_auto():
         from . import engine_skill
         parsed = engine_skill.parse_paste(b.get("text")) if b.get("text") else {"series": None}
         series = parsed.get("series") or (core.read_json(engine_skill.engine_dir(p["name"]) / "series.json") if p else None)
-    pmap = dict(((p or {}).get("options") or {}).get("voice_map") or {})
+    from .voicecast import map_key
+    sv = {"dub_lang": b.get("dub_lang") or ((p or {}).get("options") or {}).get("dub_lang") or "th"}
+    pmap = dict(((p or {}).get("options") or {}).get(map_key(sv)) or {})
     pmap.update({k: v for k, v in (b.get("voice_map") or {}).items() if v})
+    if sv["dub_lang"] == "en":
+        pmap = {k: v for k, v in pmap.items() if "th-TH" not in v}
     spk = sheets[0]["speakers"]
     from .pipeline import _apply_voice
-    sv = {}
     if b.get("voice"):
         _apply_voice(sv, b["voice"])
     np_ = b.get("narrator_paid")
@@ -557,7 +570,8 @@ def project_voices(name):
     b = request.get_json(force=True)
     opts = dict(p.get("options") or {})
     if "voice_map" in b:
-        opts["voice_map"] = {k: v for k, v in (b.get("voice_map") or {}).items() if v}
+        from .voicecast import map_key
+        opts[map_key({"dub_lang": b.get("dub_lang") or opts.get("dub_lang")})] = {k: v for k, v in (b.get("voice_map") or {}).items() if v}
     if b.get("eleven_model"):
         opts["eleven_model"] = b["eleven_model"]
     if "narrator_paid" in b:

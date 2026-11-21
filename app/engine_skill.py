@@ -322,7 +322,22 @@ def run_episode(ctx, proj, ep, s, skill):
         s["voice_map"] = voicecast.resolve_for_episode(ctx, name, skill, s, spk, series_now, engine=True)
     except Exception as e:
         ctx.log(f"เลือกเสียงตัวละครอัตโนมัติไม่สำเร็จ: {e}")
+    # พากย์อังกฤษ: ใช้แค่สไตล์ภาพของเทมเพลต → แปลบททั้งหมด + ป้ายในเอนจิน เป็นอังกฤษ (เสียง ซับ ข้อความบนจอ ภาษาเดียวกัน)
+    from . import lang
+    render_json, i18n = ep_json, None
+    if lang.dub_lang(s) == "en":
+        series_en, ep_en, d = lang.translate_engine(name, core.read_json(sdir / "series.json") or {}, raw, ctx.log)
+        en_dir = sdir / "_en"
+        en_dir.mkdir(exist_ok=True)
+        core.write_json(en_dir / "series.json", series_en)
+        render_json = en_dir / ep_json.name
+        core.write_json(render_json, ep_en)
+        i18n = work / "i18n.json"
+        core.write_json(i18n, {**lang.engine_builtin(skill_dir, ctx.log), **d})
+        if sub_mode(s) != "none":
+            s["sub_lang"] = "th"      # ซับของเอนจินเอง (ตอนนี้เป็นอังกฤษแล้ว) · ไม่ต้องซ้อนซับอังกฤษอีกชั้น
     opts = {"voice": s.get("_voice_full") or (s.get("_voice") if str(s.get("_voice")).startswith("moss:") else ""),
+            "dub_lang": lang.dub_lang(s), "i18n": str(i18n) if i18n else "",
             "voice_map": s.get("voice_map") or {},
             "voice_profile": skill.get("voice_profile") or core.voice_profile(skill.get("id") or ""),
             "project": name, "template": skill.get("id") or "",
@@ -346,8 +361,16 @@ def run_episode(ctx, proj, ep, s, skill):
             ctx.log(line[:200])
 
     ctx.log(f"สกิล {skill['name']} กำลังเรนเดอร์ {total_shots} ช็อต (ใช้เวลาหลายนาที)")
-    ctx.run_stream([py, "-m", "app.engines.drama_runner", str(skill_dir), str(ep_json), "--out", str(rawmp4),
+    ctx.run_stream([py, "-m", "app.engines.drama_runner", str(skill_dir), str(render_json), "--out", str(rawmp4),
                     "--opts", json.dumps(opts, ensure_ascii=False)], "เรนเดอร์", cwd=str(CODE_DIR), on_line=on_line)
+
+    miss = core.read_json(rawmp4.with_suffix(".i18n_miss.json"), []) or []
+    if miss:
+        try:
+            n = lang.add_builtin(skill_dir, miss, ctx.log)
+            ctx.log(f"ข้อความบนจอยังเป็นไทย {len(miss)} จุด · แปลเก็บไว้แล้ว {n} คำ (EP ถัดไป/สร้างใหม่จะเป็นอังกฤษ)")
+        except Exception as e:  # noqa: BLE001
+            ctx.log(f"แปลข้อความบนจอที่หลุดไม่สำเร็จ: {e}")
 
     # 3) ลายน้ำ + ความคมชัด
     stage("post")

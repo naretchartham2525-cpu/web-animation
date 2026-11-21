@@ -73,14 +73,25 @@ def patch_voices(R, opts):
         main_voice = ""   # เสียงเสียเงินตัดออกแล้ว
     rate_add = int(opts.get("rate_add") or 0)
     profile = opts.get("voice_profile") or {}   # โทนเสียงประจำเทมเพลต (ใช้เมื่อผู้ใช้ไม่ได้เลือกเสียงเอง)
-    all_moss = main_voice.startswith("moss:")   # เลือก MOSS เป็นเสียงหลัก = ทุกตัวละครใช้ MOSS
+    all_moss = main_voice.startswith("moss:")
+    en = opts.get("dub_lang") == "en"
+    if en and "th-TH" in main_voice:
+        main_voice = ""          # เสียงไทยอ่านอังกฤษไม่ได้ → ใช้เสียงอังกฤษตามประเภท
+    voice_map = {k: v for k, v in voice_map.items() if not (en and "th-TH" in v)}   # เลือก MOSS เป็นเสียงหลัก = ทุกตัวละครใช้ MOSS
     orig_voice = R.Cast.voice
 
     def voice(self, cid):
         v, pitch, rate = orig_voice(self, cid)
         c = (self.by.get(cid) or {}) if hasattr(self, "by") else {}
         arch = {"narration": "narrator", "hero": "hero", "system": "system"}.get(cid) or str(c.get("voice") or "")
-        mine = str((profile.get(arch) or {}).get("edge") or "")
+        mine = "" if en else str((profile.get(arch) or {}).get("edge") or "")
+        if en and "th-TH" in str(v):     # พากย์อังกฤษ: เสียงไทยของเอนจิน → เสียงอังกฤษประเภทเดียวกัน (ตัวละครคนละเสียง)
+            from app import lang
+            pool = lang.EDGE_EN.get(arch) or lang.EDGE_EN["man"]
+            import hashlib
+            n = int(hashlib.md5(str(cid).encode()).hexdigest(), 16) if arch not in ("narrator", "hero", "system") else 0
+            v, _, p = pool[n % len(pool)][5:].partition("|")
+            pitch = p or "+0Hz"
         if mine.startswith("edge:"):
             v, _, p = mine[5:].partition("|")
             pitch = p or pitch
@@ -123,7 +134,8 @@ def patch_voices(R, opts):
                 m = MOSS.get(it["voice"][5:]) or {"name": "", "arch": "man", "edge": ("th-TH-NiwatNeural", "+0Hz")}
                 try:
                     moss.speak(opts.get("project") or "", m["name"], m["arch"], it["tts"], Path(outdir) / f"{it['key']}.mp3",
-                               lambda t: print(t, flush=True), template=opts.get("template") or "")
+                               lambda t: print(t, flush=True), template=opts.get("template") or "",
+                               lang="English" if opts.get("dub_lang") == "en" else "Thai")
                     done += 1
                 except Exception as ex:   # ไม่มี GPU/โหลดไม่ได้ → ประโยคที่เหลือใช้ Edge ฟรี งานไม่พัง
                     if not MOSS.get("_warned"):
@@ -151,6 +163,37 @@ def patch_voices(R, opts):
             except Exception as ex:
                 print(f"WARNING AI voice failed for {len(rest)} lines (they stay silent): {str(ex)[:150]}", flush=True)
     R._synth_all = synth
+
+
+def patch_lang(R, opts):
+    """พากย์อังกฤษ: ข้อความไทยทุกตัวที่เอนจินวาด (ป้ายของ/หน้าจอแชต/ตอนต่อไป) → อังกฤษ
+    (บท JSON แปลมาก่อนแล้ว · ตรงนี้กันป้ายสำเร็จรูปในโค้ดเอนจิน) · ข้อความที่หลุด → จดไว้ให้ระบบแปลเก็บ"""
+    if opts.get("dub_lang") != "en":
+        return None
+    from PIL import ImageDraw, ImageFont
+    from app.lang import Translator
+    tr = Translator(json.loads(Path(opts["i18n"]).read_text(encoding="utf-8")) if opts.get("i18n") else {})
+
+    def wrap1(cls, name, pos):
+        f = getattr(cls, name, None)
+        if not f or getattr(f, "_tr", False):
+            return
+
+        def g(*a, **k):
+            if len(a) > pos:
+                a = a[:pos] + (tr(a[pos]),) + a[pos + 1:]
+            return f(*a, **k)
+        g._tr = True
+        setattr(cls, name, g)
+    for cls, name, pos in ((ImageDraw.ImageDraw, "text", 2), (ImageDraw.ImageDraw, "textbbox", 2),
+                           (ImageDraw.ImageDraw, "textlength", 1), (ImageFont.FreeTypeFont, "getlength", 1),
+                           (ImageFont.FreeTypeFont, "getbbox", 1), (R.T.Draw, "text", 2)):
+        wrap1(cls, name, pos)
+    for name in ("wrap", "width", "measure", "subtitle", "block"):
+        wrap1(R.T, name, {"wrap": 0, "width": 0, "measure": 0, "subtitle": 1, "block": 4}[name])
+    orig_name = R.Cast.name
+    R.Cast.name = lambda self, cid: tr(orig_name(self, cid))
+    return tr
 
 
 def patch_subs(R, opts):
@@ -224,6 +267,7 @@ def main():
     R = load_engine(a.skill_dir)
     load_emotions(a.skill_dir, a.episode, bool(opts.get("narrator_paid")))
     patch_voices(R, opts)
+    tr = patch_lang(R, opts)
     patch_free_lines(R)
     patch_own_voice(R, opts)
     captured = patch_subs(R, opts)
@@ -233,6 +277,10 @@ def main():
     except PaidVoiceError as ex:
         print(f"ERROR ElevenLabs: {ex}", flush=True)
         sys.exit(3)
+    finally:
+        if tr is not None and tr.miss:     # ข้อความไทยที่ยังหลุด → ระบบแปลเก็บไว้ (EP ถัดไปถูก)
+            Path(a.out).with_suffix(".i18n_miss.json").write_text(json.dumps(sorted(tr.miss), ensure_ascii=False), encoding="utf-8")
+            print(f"WARNING English: {len(tr.miss)} on-screen texts still Thai", flush=True)
     dump_timeline(captured, a.out)
 
 
