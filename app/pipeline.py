@@ -87,6 +87,9 @@ def _apply_voice(s, v):
     v = str(v).strip()
     if v.startswith("gemini:"):
         v = ""
+    if v.startswith("moss:"):                    # MOSS ฟรี (GPU): ทุกตัวละครออกแบบเสียงเอง + จำโทนไว้
+        s["voice_provider"], s["_voice"], s["_voice_full"] = "edge", v, ""
+        return
     if v in ("eleven:auto", "edge:auto"):
         s["voice_provider"] = v.split(":")[0]   # เลือกค่าย แล้วให้ระบบเลือกเสียงรายตัวละครเอง
         s["_voice_full"] = ""
@@ -452,6 +455,18 @@ def voice_for(s, speaker=""):
 
 
 def make_tts(ctx, text, out, s, speaker=""):
+    from . import moss
+    if moss.is_moss(s.get("_voice")):
+        try:
+            from . import voicecast
+            arch = voicecast.archetype_of({"key": speaker or "ผู้บรรยาย", "name": speaker or ""})
+            moss.speak(s.get("_project") or "", speaker or "ผู้บรรยาย", arch, text, out, ctx.log)
+            return
+        except Exception as e:  # noqa: BLE001  MOSS ใช้ไม่ได้ (ไม่มี GPU/โหลดโมเดลไม่ได้) → ใช้ Edge ฟรีแทน งานไม่พัง
+            if not s.get("_moss_warned"):
+                ctx.log(f"{e} → ใช้เสียง Edge ฟรีแทน")
+                s["_moss_warned"] = True
+            s = {**s, "_voice": ""}
     voice = voice_for(s, speaker)
     if voice.startswith("eleven:"):
         from . import eleven
@@ -572,6 +587,10 @@ def run_episode(ctx, proj_name, ep):
     state_f = edir / "state.json"
     state = core.read_json(state_f, {}) or {}
     s = effective_settings(proj, skill, state.get("opts"))
+    s["_project"] = proj_name
+    from . import moss
+    if moss.is_moss(s.get("_voice")):
+        moss.reset_failure()          # งานใหม่ → ลอง MOSS อีกครั้ง (เผื่อรอบก่อนไม่มี GPU)
     if skill and skill.get("engine"):
         from . import engine_skill        # สกิลมีเอนจินของตัวเอง → ให้สกิลเรนเดอร์ ระบบคุมเสียง/ลายน้ำ
         ctx.episode = ep

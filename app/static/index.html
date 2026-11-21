@@ -898,7 +898,8 @@ async function call(fn) { try { return await fn(); } catch (e) { toast(e.message
 
 // ================= เสียง =================
 const VOICE_GROUPS = [
-  ["Edge · ฟรี", [["edge:th-TH-PremwadeeNeural", "เปรมวดี · หญิง"], ["edge:th-TH-AcharaNeural", "อัจฉรา · หญิง"], ["edge:th-TH-NiwatNeural", "นิวัฒน์ · ชาย"]]]];
+  ["Edge · ฟรี", [["edge:th-TH-PremwadeeNeural", "เปรมวดี · หญิง"], ["edge:th-TH-AcharaNeural", "อัจฉรา · หญิง"], ["edge:th-TH-NiwatNeural", "นิวัฒน์ · ชาย"]]],
+  ["MOSS · ฟรี ทดลอง (ต้องเปิด GPU)", [["moss:auto", "ออกแบบเสียงตัวละครเอง · จำโทนทุก EP"]]]];
 let EL = {enabled:false, voices:[], models:[], sub:null};
 function elGroup() { return EL.enabled && EL.voices.length ? [["ElevenLabs · เสียเครดิต", EL.voices.map(v => ["eleven:" + v.id, `${v.name}${v.gender ? " · " + (v.gender === "female" ? "หญิง" : v.gender === "male" ? "ชาย" : v.gender) : ""}`])]] : []; }
 let VOICES = [["", "เสียงตามเทมเพลต"]].concat(...VOICE_GROUPS.map(([g, vs]) => vs.map(([v, t]) => [v, `${t} (${g.split(" · ")[1]})`])));
@@ -1636,12 +1637,25 @@ function reInit(o) {
     <div class="rerow"><select class="in" id="reVoice">${voiceOpts("", "เสียงเดิม")}</select></div>
     <label class="vdrop" id="reDrop"><input type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.opus,.flac" hidden onchange="rePick(this.files[0]); this.value=''">
       ${ic("mic")}<span id="reFile"><b>ใส่ไฟล์เสียงที่อัดเอง</b> · กดหรือลากไฟล์มาวาง (ทั้ง EP ไฟล์เดียว)</span></label>
+    <div id="reMoss"></div>
     <div class="rerow"><button class="sb dark" id="reGo" onclick="reGo()">${ic("redo")}พากย์ใหม่</button><span class="small">ใช้บทและภาพเดิม · คลิปเดิมยังอยู่ในคลัง</span></div>`;
   vpick($("#reVoice"));
+  mossList(o.project);
   const dz = $("#reDrop");
   dz.ondragover = e => { e.preventDefault(); e.stopPropagation(); dz.classList.add("over"); };
   dz.ondragleave = () => dz.classList.remove("over");
   dz.ondrop = e => { e.preventDefault(); e.stopPropagation(); dz.classList.remove("over"); rePick(e.dataTransfer.files[0]); };
+}
+async function mossList(project) {   // เสียงต้นแบบ MOSS ของตัวละครในเรื่องนี้: ฟัง · ออกแบบใหม่
+  const L = await api("GET", `/api/projects/${enc(project)}/moss-voices`).catch(() => []);
+  const box = $("#reMoss"); if (!box || !L.length) return;
+  box.innerHTML = `<div class="small" style="margin-bottom:6px">เสียงตัวละคร MOSS ที่ออกแบบไว้ (ใช้ซ้ำทุก EP)</div>` + L.map(v => `<div class="rerow" style="margin-bottom:6px">
+    <b style="min-width:90px">${esc(v.speaker)}</b><audio controls preload="none" src="/api/projects/${enc(project)}/moss-voices/${enc(v.file)}" style="height:32px;flex:1;min-width:160px"></audio>
+    <button class="sb" title="ลบเสียงนี้ ให้ระบบออกแบบใหม่ตอนพากย์ครั้งหน้า" onclick="mossRedo(dq('${q(project)}'), dq('${q(v.file)}'))">${ic("redo")}ออกแบบใหม่</button></div>`).join("");
+}
+async function mossRedo(project, file) {
+  if (!ask("ลบเสียงต้นแบบนี้? ตอนพากย์ครั้งหน้าระบบจะออกแบบเสียงใหม่ให้ตัวละครนี้")) return;
+  if (await call(() => api("DELETE", `/api/projects/${enc(project)}/moss-voices/${enc(file)}`))) mossList(project).then(() => { if (!$("#reMoss audio")) $("#reMoss").innerHTML = ""; });
 }
 function rePick(f) {
   if (!f) return;

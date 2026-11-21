@@ -292,6 +292,26 @@ def episode_revoice(name, ep):
     return ok(jobs.submit(name, 1))
 
 
+@app.get("/api/projects/<name>/moss-voices")
+def moss_voices(name):
+    from . import moss
+    return ok(moss.list_refs(name))
+
+
+@app.route("/api/projects/<name>/moss-voices/<fname>", methods=["GET", "DELETE"])
+def moss_voice_file(name, fname):
+    """ฟังเสียงต้นแบบของตัวละคร · ลบ = ให้ระบบออกแบบเสียงใหม่ตอนพากย์ครั้งถัดไป"""
+    from . import moss
+    f = moss.ref_dir(name) / fname
+    if not moss.safe_file(fname) or not f.exists():
+        abort(404)
+    if request.method == "DELETE":
+        f.unlink()
+        f.with_suffix(".json").unlink(missing_ok=True)
+        return ok()
+    return send_file(f, mimetype="audio/wav", max_age=0)
+
+
 @app.get("/media/<name>/<path:rel>")
 def media(name, rel):
     d = core.project_dir(name)
