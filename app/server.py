@@ -3,6 +3,9 @@ import argparse
 import hashlib
 import hmac
 import os
+import sys
+import subprocess
+import re
 import shutil
 import threading
 import time
@@ -377,6 +380,40 @@ def _voice_sheets(text=None, tpl=None, project=None, ep=None):
     if not out:
         raise ValueError("ไม่พบบทพากย์")
     return out
+
+
+PREVIEW_TEXT = "สวัสดีครับ นี่คือเสียงตัวอย่างสำหรับเล่าเรื่องในคลิปของคุณ"
+
+
+@app.get("/api/voices/preview")
+def voice_preview():
+    """ฟังเสียงตัวอย่าง: Edge ฟรี (สร้างครั้งเดียวแล้วเก็บไว้) · ElevenLabs ใช้ตัวอย่างของเขาเอง (ไม่เสียเครดิต)"""
+    v = request.args.get("v", "")
+    if v.startswith("eleven:"):
+        from . import eleven
+        url = next((x.get("preview") for x in eleven.voices() if x.get("id") == v[7:]), "")
+        return ok({"url": url}) if url else (jsonify({"ok": False, "error": "เสียงนี้ไม่มีตัวอย่างให้ฟัง"}), 404)
+    name = v.removeprefix("edge:").split("|")[0]
+    if not re.fullmatch(r"[a-z]{2}-[A-Z]{2}-\w+Neural", name):
+        abort(400)
+    out = core.WORK_DIR / "voice-preview" / f"{name}.mp3"
+    if not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        r = subprocess.run([sys.executable, "-m", "edge_tts", "--voice", name, "--text", PREVIEW_TEXT, "--write-media", str(out)],
+                           capture_output=True, text=True, timeout=60)
+        if r.returncode != 0 or not out.exists():
+            out.unlink(missing_ok=True)
+            return jsonify({"ok": False, "error": "สร้างเสียงตัวอย่างไม่ได้ ลองใหม่อีกครั้ง"}), 502
+    return ok({"url": f"/api/voices/preview.mp3?v={name}"})
+
+
+@app.get("/api/voices/preview.mp3")
+def voice_preview_file():
+    name = request.args.get("v", "")
+    f = core.WORK_DIR / "voice-preview" / f"{name}.mp3"
+    if not re.fullmatch(r"[a-z]{2}-[A-Z]{2}-\w+Neural", name) or not f.exists():
+        abort(404)
+    return send_file(f, mimetype="audio/mpeg", max_age=86400)
 
 
 @app.get("/api/eleven")

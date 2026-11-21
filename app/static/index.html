@@ -515,9 +515,30 @@ html[data-mode=dark] .toast{color:#FF6B6B!important}
 .toast.td{position:absolute;left:16px;right:16px;bottom:14px;text-align:center;z-index:3}
 @media (max-width:640px){.toast.tb{left:6px;transform:translateY(-50%);max-width:calc(100% - 190px)}}
 @media (prefers-reduced-motion: reduce){.rv{opacity:1;transform:none;filter:none}.nb svg,.ib svg,.pop,.mbox,.drawer *{animation:none!important}}
+/* ===== ตัวเลือกเสียง: รายการเอง (ไม่มีแถบหัวกลุ่มสีขาวของเบราว์เซอร์) + ปุ่มฟังตัวอย่าง ===== */
+select.vhide{position:absolute!important;opacity:0;pointer-events:none;width:1px!important;height:1px}
+.vbtn{flex:1;min-width:0;display:flex;align-items:center;gap:6px;border:none;background:none;color:inherit;font:inherit;padding:0;cursor:pointer;text-align:left}
+.vbtn span{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.vbtn:focus{outline:none}.vbtn:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:4px}
+.vbtn svg{width:13px!important;height:13px!important;opacity:.6;flex-shrink:0}
+.in.vwrap{display:flex;align-items:center}
+#vMenu{position:fixed;z-index:140;min-width:240px;max-width:min(92vw,340px);max-height:min(60vh,420px);overflow:auto;padding:6px;border-radius:14px;
+  background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--gline);box-shadow:0 18px 40px -16px rgba(0,0,0,.45);display:none}
+#vMenu.on{display:block;animation:popin .25s cubic-bezier(.3,1.4,.5,1)}
+#vMenu .vh{font-size:11px;font-weight:600;color:var(--muted);padding:8px 10px 4px;letter-spacing:.3px}
+#vMenu .vo{display:flex;align-items:center;gap:8px;padding:7px 8px 7px 10px;border-radius:9px;cursor:pointer;font-size:13.5px}
+#vMenu .vo:hover{background:var(--soft)}
+#vMenu .vo.sel{background:color-mix(in srgb,var(--ink) 9%,transparent);font-weight:600}
+#vMenu .vo span{flex:1;min-width:0}
+#vMenu .vo button{width:28px;height:28px;border-radius:50%;border:1px solid var(--gline);background:var(--paper);color:var(--ink);display:grid;place-items:center;cursor:pointer;flex-shrink:0;box-shadow:0 2px 6px -3px rgba(0,0,0,.35);transition:transform .15s}
+#vMenu .vo button:hover{transform:scale(1.08)}
+#vMenu .vo button svg{width:12px;height:12px}
+#vMenu .vo button.play{background:var(--ink);color:var(--bg)}
+#vMenu .vo button.wait svg{animation:dpulse .8s ease-in-out infinite}
 </style>
 </head>
 <body>
+<div id="vMenu" role="listbox" aria-label="เลือกเสียง"></div>
 <!-- ไอคอนเส้นเรียบ (วาดเอง ไม่ใช้อีโมจิ) -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -935,6 +956,7 @@ function vcRender() {
       <select class="in" data-k="${esc(p.key)}">${opts(st.map[p.key] || "", vcAuto[p.key] || "")}</select>${pv ? `<audio controls preload="none" src="${pv}"></audio>` : "<span></span>"}</div>`;
   }).join("");
   const sub = EL.sub && EL.sub.left != null ? `เหลือ ${EL.sub.left.toLocaleString()} จาก ${EL.sub.limit.toLocaleString()} เครดิต` : "";
+  setTimeout(() => document.querySelectorAll("#vcBody select[data-k]").forEach(vpick));
   $("#vcBody").innerHTML = `${rows || '<div class="small">ไม่พบตัวละครในบท</div>'}
     ${el ? `<label class="f" style="margin-top:12px"><span>โมเดล ElevenLabs (อ่านภาษาไทยได้)</span><select class="in" id="vcModel">${EL.models.map(m => `<option value="${m.id}" ${m.id === model ? "selected" : ""}>${m.name}</option>`).join("")}</select></label>` :
       `<div class="note">ยังไม่ได้เชื่อม ElevenLabs: ใส่ ELEVENLABS_API_KEY ใน Colab Secrets แล้วรันช่องใหม่ (ตอนนี้เลือกได้แค่ Edge ฟรี)</div>`}
@@ -1935,6 +1957,58 @@ new MutationObserver(revealGrid).observe($("#grid"), {childList: true});
 $("#modeBtn").addEventListener("click", () => { const b = $("#modeBtn"); b.classList.remove("flip"); void b.offsetWidth; b.classList.add("flip"); });
 ["#jobCnt", "#clipCnt"].forEach(id => new MutationObserver(() => { const c = $(id); if (c.dataset.v === c.textContent) return; const first = c.dataset.v === undefined; c.dataset.v = c.textContent;
   if (!first) { c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); } }).observe($(id), {childList: true}));
+
+// ===== ตัวเลือกเสียง: แทน <select> ของเบราว์เซอร์ด้วยรายการที่มีปุ่ม ▶ ฟังตัวอย่าง =====
+let vmSel = null, vmAudio = null, vmBtn = null;
+const PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>', STOP = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+const canHear = v => /^edge:|^eleven:(?!auto$)/.test(v);
+function vpick(sel) {                     // ใช้กับ <select> ที่เป็นรายการเสียง
+  if (sel.dataset.vp) return vpLabel(sel);
+  sel.dataset.vp = 1; sel.classList.add("vhide");
+  const b = document.createElement("button"); b.type = "button"; b.className = "vbtn"; b.innerHTML = `<span></span>${ic("chevron")}`;
+  sel.after(b); b.onclick = e => { e.preventDefault(); e.stopPropagation(); vmOpen(sel, b); };
+  if (sel.classList.contains("in")) { sel.classList.remove("in"); const w = document.createElement("div"); w.className = "in vwrap"; b.before(w); w.append(sel, b); }
+  new MutationObserver(() => vpLabel(sel)).observe(sel, {childList: true, subtree: true});
+  sel.addEventListener("change", () => vpLabel(sel)); vpLabel(sel);
+}
+function vpLabel(sel) { const o = sel.options[sel.selectedIndex]; const b = sel.parentNode.querySelector(".vbtn span"); if (b) b.textContent = o ? o.textContent : ""; }
+function vmOpen(sel, btn) {
+  const m = $("#vMenu"); if (m.classList.contains("on") && vmSel === sel) return vmClose();
+  vmSel = sel; let h = "";
+  [...sel.children].forEach(n => {
+    const row = o => `<div class="vo${o.value === sel.value ? " sel" : ""}" role="option" data-v="${esc(o.value)}"><span>${esc(o.textContent)}</span>${canHear(o.value) ? `<button type="button" title="ฟังตัวอย่าง" aria-label="ฟังตัวอย่าง ${esc(o.textContent)}" data-p="${esc(o.value)}">${PLAY}</button>` : ""}</div>`;
+    if (n.tagName === "OPTGROUP") h += `<div class="vh">${esc(n.label)}</div>` + [...n.children].map(row).join(""); else h += row(n);
+  });
+  m.innerHTML = h; m.classList.add("on");
+  const r = btn.getBoundingClientRect(), mh = m.offsetHeight, up = r.top > innerHeight - r.bottom;
+  m.style.left = Math.max(8, Math.min(r.left - 10, innerWidth - m.offsetWidth - 8)) + "px";
+  m.style.top = (up ? Math.max(8, r.top - mh - 8) : Math.min(innerHeight - mh - 8, r.bottom + 8)) + "px";
+  m.querySelector(".vo.sel")?.scrollIntoView({block: "nearest"});
+}
+function vmClose() { $("#vMenu").classList.remove("on"); vmStop(); vmSel = null; }
+function vmStop() { if (vmAudio) { vmAudio.pause(); vmAudio = null; } if (vmBtn) { vmBtn.className = ""; vmBtn.innerHTML = PLAY; vmBtn = null; } }
+$("#vMenu").addEventListener("click", async e => {
+  const pb = e.target.closest("button[data-p]");
+  if (pb) {                               // ▶ ฟังตัวอย่าง (ไม่เปลี่ยนเสียงที่เลือก)
+    e.stopPropagation();
+    if (vmBtn === pb) return vmStop();
+    vmStop(); vmBtn = pb; pb.className = "wait";
+    try {
+      const r = await api("GET", "/api/voices/preview?v=" + encodeURIComponent(pb.dataset.p));
+      if (vmBtn !== pb) return;
+      vmAudio = new Audio(r.url); vmAudio.onended = vmStop;
+      await vmAudio.play(); pb.className = "play"; pb.innerHTML = STOP;
+    } catch (err) { if (vmBtn === pb) vmStop(); toast(err.message || "เล่นเสียงตัวอย่างไม่ได้", true); }
+    return;
+  }
+  const o = e.target.closest(".vo"); if (!o || !vmSel) return;
+  vmSel.value = o.dataset.v; vmSel.dispatchEvent(new Event("change", {bubbles: true})); vmClose();
+});
+document.addEventListener("click", e => { if ($("#vMenu").classList.contains("on") && !e.target.closest("#vMenu")) vmClose(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#vMenu").classList.contains("on")) { e.stopPropagation(); vmClose(); } }, true);
+addEventListener("resize", () => vmSel && vmClose());
+addEventListener("scroll", e => { if (vmSel && !e.target.closest?.("#vMenu")) vmClose(); }, true);
+vpick($("#oVoice"));
 boot();
 </script>
 </body>
