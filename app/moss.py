@@ -3,7 +3,8 @@
 ตัวละครแต่ละตัว:
   1) ครั้งแรก: MOSS-VoiceGenerator ออกแบบเสียงจากคำบรรยาย (เพศ/วัย/นิสัย) → เก็บเป็น "เสียงต้นแบบ" ของตัวละคร
   2) ทุกประโยค ทุก EP: MOSS-TTS v1.5 พูดภาษาไทยโดยอิงเสียงต้นแบบนั้น → โทนเสียงเหมือนเดิมทุกตอน
-เสียงต้นแบบเก็บที่ AutoClip/voices/moss/<เรื่อง>/<ตัวละคร>.wav (ลบไฟล์ = ให้ระบบออกแบบใหม่)
+เสียงต้นแบบผูกกับเทมเพลต: AutoClip/voices/moss/tpl/<เทมเพลต>/<ประเภท>-<n>.wav → ทุกเรื่องในเทมเพลตเดียวกันใช้เสียงชุดเดียวกัน
+(ลบไฟล์ = ให้ระบบออกแบบใหม่ · มีผลกับทุกเรื่องในเทมเพลตนั้น)
 สัญญาอนุญาตโมเดล: Apache-2.0 (ใช้เชิงพาณิชย์ได้) · เป็นเสียงที่สร้างใหม่ ไม่ได้ลอกเสียงใคร
 """
 import os
@@ -40,12 +41,38 @@ _lock = threading.Lock()
 _state = {"tts": None, "proc": None, "repo": None, "dev": None, "dtype": None, "failed": None}
 
 
-def ref_dir(project):
-    return core.ROOT / "voices" / "moss" / core.safe_name(project or "_")
+def tpl_dir(template):
+    return core.ROOT / "voices" / "moss" / "tpl" / core.safe_name(template or "_none")
 
 
-def ref_path(project, speaker):
-    return ref_dir(project) / f"{core.safe_name(speaker or 'ผู้บรรยาย')[:60]}.wav"
+def ref_for(project, template, speaker, arch):
+    """เสียงต้นแบบของตัวละคร — ผูกกับเทมเพลต (ใช้ข้ามเรื่องได้):
+    เรื่องนี้เคยใช้แล้ว → ไฟล์เดิม · ชื่อนี้เคยมีในเทมเพลต → ไฟล์เดิม · ไม่งั้นใช้ช่องเสียงตามประเภท (ผู้หญิงคนที่ 1 = เสียงเดียวกันทุกเรื่อง)
+    คืน (path, ต้องออกแบบใหม่ไหม)"""
+    d = tpl_dir(template)
+    mem = core.read_json(d / "moss.json", {}) or {}
+    names, slots = mem.setdefault("names", {}), mem.setdefault("slots", {})
+    proj = core.get_project(project) or {}
+    pmap = dict((proj.get("options") or {}).get("moss_map") or {})
+    key = speaker or "ผู้บรรยาย"
+    f = pmap.get(key)
+    used = set(pmap.values())
+    if not f and names.get(key) and names[key] not in used:
+        f = names[key]
+    if not f:
+        lst = slots.setdefault(arch, [])
+        f = next((x for x in lst if x not in used), None)
+        if not f:
+            f = f"{arch}-{len(lst) + 1}.wav"
+            lst.append(f)
+    names[key] = f
+    core.write_json(d / "moss.json", mem)
+    if pmap.get(key) != f and project:
+        opts = dict(proj.get("options") or {})
+        opts["moss_map"] = {**pmap, key: f}
+        core.update_project(project, {"options": opts})
+    p = d / f
+    return p, not p.exists()
 
 
 def _ensure_deps(log):
@@ -97,9 +124,9 @@ def _gen(model, proc, dev, torch, msg, out_wav, max_new=1500):
     torchaudio.save(str(out_wav), audio.unsqueeze(0).float().cpu(), proc.model_config.sampling_rate)
 
 
-def design(project, speaker, arch, log, instruction=None):
-    """ออกแบบเสียงต้นแบบของตัวละคร (ครั้งเดียว) → wav"""
-    out = ref_path(project, speaker)
+def design(out, speaker, arch, log, instruction=None):
+    """ออกแบบเสียงต้นแบบ (ครั้งเดียวต่อช่องเสียงของเทมเพลต) → wav"""
+    out = Path(out)
     inst = instruction or DESC.get(arch) or DESC["man"]
     if _state["tts"]:                       # GPU ฟรี (T4 15GB) ใส่สองโมเดลพร้อมกันไม่สบาย → ปล่อยตัวพากย์ก่อน
         import torch
@@ -112,7 +139,7 @@ def design(project, speaker, arch, log, instruction=None):
         del model
         torch.cuda.empty_cache()            # ปล่อย GPU ให้ตัวพากย์
     core.write_json(out.with_suffix(".json"), {"speaker": speaker, "arch": arch, "instruction": inst})
-    log(f"MOSS: ออกแบบเสียง \"{speaker or 'ผู้บรรยาย'}\" แล้ว ({arch}) · ใช้เสียงนี้ทุก EP")
+    log(f"MOSS: ออกแบบเสียง \"{speaker or 'ผู้บรรยาย'}\" แล้ว ({arch}) · ใช้ซ้ำทุก EP และทุกเรื่องในเทมเพลตนี้")
     return out
 
 
@@ -131,7 +158,7 @@ def _tts(log):
     raise RuntimeError(f"โหลดตัวพากย์ MOSS ไม่ได้: {err}")
 
 
-def speak(project, speaker, arch, text, out_mp3, log):
+def speak(project, speaker, arch, text, out_mp3, log, template=""):
     """พูดภาษาไทยด้วยเสียงต้นแบบของตัวละคร → mp3 · พังครั้งไหน = เลิกใช้ MOSS ทั้งงานนี้ (กลับไปใช้ Edge)"""
     if _state["failed"]:
         raise RuntimeError(_state["failed"])
@@ -139,9 +166,9 @@ def speak(project, speaker, arch, text, out_mp3, log):
         try:
             _device()                          # ไม่มี GPU → รู้ทันที ไม่ต้องติดตั้งอะไร
             _ensure_deps(log)
-            ref = ref_path(project, speaker)
-            if not ref.exists():
-                design(project, speaker, arch, log)
+            ref, fresh = ref_for(project, template, speaker, arch)
+            if fresh:
+                design(ref, speaker, arch, log)
             model, proc, dev, torch = _tts(log)
             wav = Path(out_mp3).with_suffix(".moss.wav")
             try:
@@ -163,13 +190,21 @@ def reset_failure():
 
 
 def list_refs(project):
-    d = ref_dir(project)
+    """เสียงต้นแบบที่เรื่องนี้ใช้ (ไฟล์อยู่กับเทมเพลต → เรื่องอื่นในเทมเพลตเดียวกันใช้ร่วม)"""
+    proj = core.get_project(project) or {}
+    d = tpl_dir(proj.get("skill") or "")
     out = []
-    for w in sorted(d.glob("*.wav")) if d.exists() else []:
-        meta = core.read_json(w.with_suffix(".json"), {}) or {}
-        out.append({"file": w.name, "speaker": meta.get("speaker") or w.stem, "arch": meta.get("arch", ""),
-                    "instruction": meta.get("instruction", "")})
+    for spk, f in ((proj.get("options") or {}).get("moss_map") or {}).items():
+        w = d / f
+        if w.exists():
+            meta = core.read_json(w.with_suffix(".json"), {}) or {}
+            out.append({"file": f, "speaker": spk, "arch": meta.get("arch", ""), "instruction": meta.get("instruction", "")})
     return out
+
+
+def ref_file(project, fname):
+    proj = core.get_project(project) or {}
+    return tpl_dir(proj.get("skill") or "") / fname
 
 
 def is_moss(v):
@@ -180,4 +215,4 @@ def safe_file(name):
     return bool(re.fullmatch(r"[^/\\]+\.wav", name or ""))
 
 
-__all__ = ["speak", "design", "list_refs", "ref_path", "ref_dir", "is_moss", "reset_failure"]
+__all__ = ["speak", "design", "list_refs", "ref_for", "ref_file", "is_moss", "reset_failure"]

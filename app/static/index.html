@@ -1673,12 +1673,12 @@ async function reCast(o) {   // ตัวละครใน EP นี้ + เ�
 async function mossList(project) {   // เสียงต้นแบบ MOSS ของตัวละครในเรื่องนี้: ฟัง · ออกแบบใหม่
   const L = await api("GET", `/api/projects/${enc(project)}/moss-voices`).catch(() => []);
   const box = $("#reMoss"); if (!box || !L.length) return;
-  box.innerHTML = `<div class="small" style="margin-bottom:6px">เสียงตัวละคร MOSS ที่ออกแบบไว้ (ใช้ซ้ำทุก EP)</div>` + L.map(v => `<div class="rerow" style="margin-bottom:6px">
+  box.innerHTML = `<div class="small" style="margin-bottom:6px">เสียงตัวละคร MOSS ของเทมเพลตนี้ (ใช้ซ้ำทุก EP และทุกเรื่องในเทมเพลตเดียวกัน)</div>` + L.map(v => `<div class="rerow" style="margin-bottom:6px">
     <b style="min-width:90px">${esc(v.speaker)}</b><audio controls preload="none" src="/api/projects/${enc(project)}/moss-voices/${enc(v.file)}" style="height:32px;flex:1;min-width:160px"></audio>
     <button class="sb" title="ลบเสียงนี้ ให้ระบบออกแบบใหม่ตอนพากย์ครั้งหน้า" onclick="mossRedo(dq('${q(project)}'), dq('${q(v.file)}'))">${ic("redo")}ออกแบบใหม่</button></div>`).join("");
 }
 async function mossRedo(project, file) {
-  if (!ask("ลบเสียงต้นแบบนี้? ตอนพากย์ครั้งหน้าระบบจะออกแบบเสียงใหม่ให้ตัวละครนี้")) return;
+  if (!ask("ลบเสียงต้นแบบนี้? ตอนพากย์ครั้งหน้าระบบจะออกแบบเสียงใหม่\n(เสียงนี้ผูกกับเทมเพลต: เรื่องอื่นที่ใช้เทมเพลตเดียวกันจะได้เสียงใหม่ด้วย)")) return;
   if (await call(() => api("DELETE", `/api/projects/${enc(project)}/moss-voices/${enc(file)}`))) mossList(project).then(() => { if (!$("#reMoss audio")) $("#reMoss").innerHTML = ""; });
 }
 function rePick(f) {

@@ -316,7 +316,7 @@ def moss_voices(name):
 def moss_voice_file(name, fname):
     """ฟังเสียงต้นแบบของตัวละคร · ลบ = ให้ระบบออกแบบเสียงใหม่ตอนพากย์ครั้งถัดไป"""
     from . import moss
-    f = moss.ref_dir(name) / fname
+    f = moss.ref_file(name, fname)
     if not moss.safe_file(fname) or not f.exists():
         abort(404)
     if request.method == "DELETE":

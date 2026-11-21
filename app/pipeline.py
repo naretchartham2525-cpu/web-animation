@@ -465,7 +465,7 @@ def make_tts(ctx, text, out, s, speaker=""):
         try:
             from . import voicecast
             arch = voicecast.archetype_of({"key": speaker or "ผู้บรรยาย", "name": speaker or ""})
-            moss.speak(s.get("_project") or "", speaker or "ผู้บรรยาย", arch, text, out, ctx.log)
+            moss.speak(s.get("_project") or "", speaker or "ผู้บรรยาย", arch, text, out, ctx.log, template=s.get("_skill") or "")
             return
         except Exception as e:  # noqa: BLE001  MOSS ใช้ไม่ได้ (ไม่มี GPU/โหลดโมเดลไม่ได้) → ใช้ Edge ฟรีแทน งานไม่พัง
             if not s.get("_moss_warned"):
@@ -611,6 +611,7 @@ def run_episode(ctx, proj_name, ep):
     state = core.read_json(state_f, {}) or {}
     s = effective_settings(proj, skill, state.get("opts"))
     s["_project"] = proj_name
+    s["_skill"] = (skill or {}).get("id") or ""
     from . import moss
     if moss.is_moss(s.get("_voice")):
         moss.reset_failure()          # งานใหม่ → ลอง MOSS อีกครั้ง (เผื่อรอบก่อนไม่มี GPU)
