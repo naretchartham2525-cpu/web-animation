@@ -259,6 +259,39 @@ def episode_reset(name, ep):
     return ok()
 
 
+@app.post("/api/projects/<name>/episodes/<int:ep>/revoice")
+def episode_revoice(name, ep):
+    """พากย์ EP ที่เสร็จแล้วใหม่: เปลี่ยนเสียง และ/หรือ ใช้ไฟล์เสียงที่อัปเอง · ใช้บทและภาพเดิม
+    คลิปเดิมเก็บไว้เป็นอีกคลิปในคลัง (ไม่ลบทิ้ง) · ไม่มีงานรันอยู่ในเรื่องเดียวกันก่อน"""
+    b = request.get_json(force=True) or {}
+    d = core.ep_dir(name, ep)
+    if not (d / "final.mp4").exists():
+        abort(404)
+    if any(j["project"] == name and j["status"] in ("queued", "running", "review") for j in jobs.list()):
+        raise ValueError("เรื่องนี้มีงานกำลังทำอยู่ รอให้เสร็จก่อน")
+    vf = _take_voice({"voice_file": b.get("voice_file")}) if b.get("voice_file") else None
+    if not vf and not b.get("voice"):
+        raise ValueError("เลือกเสียงใหม่ หรือใส่ไฟล์เสียงก่อน")
+    keep = core.project_dir(name) / f"_old_ep{ep:02d}_{int(time.time())}"   # คลิปเดิม → อีกคลิปในคลัง
+    keep.mkdir(parents=True)
+    for f in ("final.mp4", "thumb.jpg", "subs.srt", "subs_en.srt", "script.json", "caption.txt"):
+        if (d / f).exists():
+            shutil.copy2(d / f, keep / f)
+    for f in ("final.mp4", "subs.srt", "subs_en.srt", "final_nosound.mp4", "caption.txt"):
+        (d / f).unlink(missing_ok=True)
+    shutil.rmtree(d / "audio", ignore_errors=True)
+    st = core.read_json(d / "state.json", {}) or {}
+    st["stage"] = "reset"
+    o = st.setdefault("opts", {})
+    o.pop("voice_file", None)
+    if b.get("voice"):
+        o["voice"] = b["voice"]
+    if vf:
+        o["voice_file"] = vf
+    core.write_json(d / "state.json", st)
+    return ok(jobs.submit(name, 1))
+
+
 @app.get("/media/<name>/<path:rel>")
 def media(name, rel):
     d = core.project_dir(name)
