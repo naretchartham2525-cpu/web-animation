@@ -469,8 +469,18 @@ def spoken(sc, s):
     return (sc.get("subtitle_en") or sc["narration"]) if dub_lang(s) == "en" else sc["narration"]
 
 
+def _edge_sample(name, log):
+    """เสียงตัวอย่างอังกฤษของเสียง Edge (เป็นเสียงต้นแบบให้ MOSS พูดไทยโทนเดียวกัน)"""
+    from .kokoro_tts import SAMPLE
+    out = core.ROOT / "voices" / "edge" / f"{name}.mp3"
+    if not out.exists():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        edge_say(name, SAMPLE, out, log=log)
+    return out
+
+
 def make_tts(ctx, text, out, s, speaker=""):
-    from . import moss
+    from . import moss, kokoro_tts
     from .lang import dub_lang, to_english_voice
     if moss.is_moss(s.get("_voice")) or moss.is_moss(voice_for(s, speaker)):
         try:
@@ -487,11 +497,32 @@ def make_tts(ctx, text, out, s, speaker=""):
     voice = voice_for(s, speaker)
     spk_key = speaker or NARRATOR_KEY
     if voice.startswith("eleven:") and spk_key in NARRATOR_KEYS and not (s.get("narrator_paid") and spk_key not in ("system", "เสียงระบบ")):
-        # ผู้บรรยาย/เสียงระบบ ไม่ใช่ตัวละคร → ใช้เสียงฟรีเสมอ (ไม่เสียเครดิต ElevenLabs)
-        voice = (s.get("voice_map") or {}).get("_free_narrator") or "edge:th-TH-NiwatNeural"
+        # ผู้บรรยาย/เสียงระบบ ไม่ใช่ตัวละคร → ใช้เสียงฟรีเสมอ (ไม่เสียเครดิต ElevenLabs) · เทมเพลตมีเสียงต้นฉบับ → ใช้เสียงนั้น
+        from . import voicematch
+        voice = ((voicematch.profile(s.get("_skill") or "").get("narrator") or {}).get("voice")
+                 or (s.get("voice_map") or {}).get("_free_narrator") or "edge:th-TH-NiwatNeural")
     if dub_lang(s) == "en" and not voice.startswith("eleven:"):
         from . import voicecast
         voice = to_english_voice(voice, voicecast.archetype_of({"key": speaker or NARRATOR_KEY, "name": speaker or ""}))
+    if kokoro_tts.is_kokoro(voice) or (voice.startswith("edge:en-") and dub_lang(s) == "th"):
+        if dub_lang(s) == "en":
+            if kokoro_tts.is_kokoro(voice):
+                kokoro_tts.say(voice, text, out, ctx.log)        # เสียงต้นฉบับของสกิล (ฟรี · CPU)
+                return
+        else:
+            # พากย์ไทยด้วยโทนเสียงต้นฉบับ: MOSS พูดไทยโดยอิงเสียงตัวอย่างของเสียงนั้น (ต้องมี GPU) → ไม่ได้ = Edge ไทยเพศเดียวกัน
+            try:
+                moss.check()
+                ref = kokoro_tts.sample(voice, ctx.log) if kokoro_tts.is_kokoro(voice) else _edge_sample(voice[5:].split("|")[0], ctx.log)
+                moss.speak_ref(ref, text, out, ctx.log)
+                return
+            except Exception as e:  # noqa: BLE001
+                if not s.get("_moss_warned"):
+                    ctx.log(f"{e} → พากย์ไทยด้วยเสียง Edge แทน (เปิด GPU เพื่อให้โทนเสียงเหมือนต้นฉบับ)")
+                    s["_moss_warned"] = True
+                fem = kokoro_tts.gender(voice) == "female" if kokoro_tts.is_kokoro(voice) else any(
+                    n in voice for n in ("Ava", "Emma", "Aria", "Jenny", "Michelle", "Sonia", "Libby", "Natasha", "Ana", "Maisie"))
+                voice = "edge:th-TH-PremwadeeNeural" if fem else "edge:th-TH-NiwatNeural"
     if voice.startswith("eleven:"):
         from . import eleven
         n = eleven.tts(text, voice[7:], s.get("eleven_model") or eleven.DEFAULT_MODEL, out)
@@ -631,8 +662,7 @@ def run_episode(ctx, proj_name, ep):
     s["_project"] = proj_name
     s["_skill"] = (skill or {}).get("id") or ""
     from . import moss
-    if moss.is_moss(s.get("_voice")):
-        moss.reset_failure()          # งานใหม่ → ลอง MOSS อีกครั้ง (เผื่อรอบก่อนไม่มี GPU)
+    moss.reset_failure()              # งานใหม่ → ลอง MOSS อีกครั้ง (เผื่อรอบก่อนพังชั่วคราว)
     if skill and skill.get("engine"):
         from . import engine_skill        # สกิลมีเอนจินของตัวเอง → ให้สกิลเรนเดอร์ ระบบคุมเสียง/ลายน้ำ
         ctx.episode = ep
@@ -715,7 +745,8 @@ def run_episode(ctx, proj_name, ep):
     # 4) เสียงพากย์ (หรือเสียงเงียบตามความยาวที่ควรอ่าน)
     set_stage("tts")
     if not own_voices(s) and s.get("voice_on", True):
-        from . import voicecast, voicesheet
+        from . import voicecast, voicesheet, voicematch
+        voicematch.ensure(s.get("_skill") or "", ctx.log)     # เทมเพลตชุด Opuscar: หาเสียงต้นฉบับครั้งแรก
         try:
             spk = voicesheet.speakers(voicesheet.lines_manual(scenes))
             ctxt = "\n".join(f"[{sc.get('speaker') or 'ผู้บรรยาย'}] {sc['narration']}" for sc in scenes)

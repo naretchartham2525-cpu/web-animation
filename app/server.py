@@ -475,6 +475,18 @@ def voice_preview():
         from . import eleven
         url = next((x.get("preview") for x in eleven.voices() if x.get("id") == v[7:]), "")
         return ok({"url": url}) if url else (jsonify({"ok": False, "error": "เสียงนี้ไม่มีตัวอย่างให้ฟัง"}), 404)
+    if v.startswith("kokoro:"):                 # เสียงต้นฉบับของสกิล (Kokoro ฟรี) · ครั้งแรกติดตั้ง/โหลดโมเดลราว 1-2 นาที
+        from . import kokoro_tts
+        parts, speed = kokoro_tts.parse(v)
+        clean = kokoro_tts.spec(parts, speed)
+        if not kokoro_tts.ready(clean):   # ครั้งแรก: ติดตั้ง/โหลดนานเกินลิงก์ Cloudflare รอได้ → ทำเบื้องหลัง แล้วให้กดฟังใหม่
+            threading.Thread(target=kokoro_tts.sample, args=(clean,), daemon=True).start()
+            return jsonify({"ok": False, "error": "กำลังเตรียมเสียง Kokoro ครั้งแรก (1-2 นาที) แล้วกดฟังอีกครั้ง"}), 503
+        try:
+            kokoro_tts.sample(clean)
+        except Exception as e:  # noqa: BLE001
+            return jsonify({"ok": False, "error": f"Kokoro: {str(e)[:200]}"}), 502
+        return ok({"url": "/api/voices/kokoro.wav?v=" + requests_quote(clean)})
     name = v.removeprefix("edge:").split("|")[0]
     if not re.fullmatch(r"[a-z]{2}-[A-Z]{2}-\w+Neural", name):
         abort(400)
@@ -488,6 +500,19 @@ def voice_preview():
             out.unlink(missing_ok=True)
             return jsonify({"ok": False, "error": str(e)}), 502
     return ok({"url": f"/api/voices/preview.mp3?v={name}"})
+
+
+@app.get("/api/voices/kokoro.wav")
+def voice_preview_kokoro():
+    from . import kokoro_tts
+    parts, speed = kokoro_tts.parse(request.args.get("v", ""))
+    f = kokoro_tts.sample(kokoro_tts.spec(parts, speed))
+    return send_file(f, mimetype="audio/wav", max_age=86400)
+
+
+def requests_quote(t):
+    from urllib.parse import quote
+    return quote(t, safe="")
 
 
 @app.get("/api/voices/preview.mp3")
@@ -1048,6 +1073,8 @@ def _opuscar_demos():
         finally:
             tmp.unlink(missing_ok=True)
             core.write_json(mark, {k: v for k, v in done.items() if v == "ok" or v.startswith("HTTP 404")})
+    from . import voicematch                  # แล้วหาเสียงต้นฉบับของแต่ละสไตล์ (เทียบกับเสียงในหนังเดโม)
+    voicematch.match_all(lambda: bool(jobs and jobs.busy()))
 
 
 def _auto_covers():

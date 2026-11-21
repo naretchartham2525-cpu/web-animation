@@ -14,7 +14,7 @@ import sys
 import threading
 from pathlib import Path
 
-from . import core
+from . import core, voicematch
 
 GEN_REPO = os.environ.get("MOSS_VOICEGEN_REPO", "OpenMOSS-Team/MOSS-VoiceGenerator")
 # รุ่น v1.5 รองรับภาษาไทย (รุ่นก่อนหน้าไม่มีไทย) · เปลี่ยนได้ด้วย MOSS_TTS_REPO
@@ -168,7 +168,7 @@ def speak(project, speaker, arch, text, out_mp3, log, template="", lang="Thai"):
             _ensure_deps(log)
             ref, fresh = ref_for(project, template, speaker, arch)
             if fresh:
-                design(ref, speaker, arch, log, instruction=(core.voice_profile(template).get(arch) or {}).get("desc"))
+                design(ref, speaker, arch, log, instruction=(voicematch.profile(template).get(arch) or {}).get("desc"))
             model, proc, dev, torch = _tts(log)
             wav = Path(out_mp3).with_suffix(".moss.wav")
             try:
@@ -177,6 +177,40 @@ def speak(project, speaker, arch, text, out_mp3, log, template="", lang="Thai"):
                 msg = proc.build_user_message(text=text, reference=[str(ref)])
             n = max(200, min(4000, int(len(text) * 2.2) + 150))   # ~12.5 โทเคน/วินาที · ไทยราว 6-8 ตัวอักษร/วินาที
             _gen(model, proc, dev, torch, msg, wav, n)
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav), "-af", "silenceremove=start_periods=1:start_threshold=-50dB",
+                            "-c:a", "libmp3lame", "-q:a", "3", str(out_mp3)], check=True)
+            wav.unlink(missing_ok=True)
+        except Exception as e:  # noqa: BLE001
+            _state["failed"] = f"MOSS ใช้ไม่ได้: {str(e)[:160]}"
+            raise RuntimeError(_state["failed"]) from e
+
+
+def check():
+    """ใช้ MOSS ได้ไหม (เช็กก่อนเตรียมเสียงต้นแบบ จะได้ไม่เสียเวลาเมื่อไม่มี GPU)"""
+    if _state["failed"]:
+        raise RuntimeError(_state["failed"])
+    try:
+        _device()
+    except Exception as e:  # noqa: BLE001
+        _state["failed"] = f"MOSS ใช้ไม่ได้: {e}"
+        raise RuntimeError(_state["failed"]) from e
+
+
+def speak_ref(ref, text, out_mp3, log, lang="Thai"):
+    """พูดด้วยโทนของเสียงต้นแบบที่ให้มา (เช่น เสียงต้นฉบับของสกิลจาก Kokoro) → mp3 · ใช้กับพากย์ไทยให้เสียงคล้ายต้นฉบับ"""
+    if _state["failed"]:
+        raise RuntimeError(_state["failed"])
+    with _lock:
+        try:
+            _device()
+            _ensure_deps(log)
+            model, proc, dev, torch = _tts(log)
+            wav = Path(out_mp3).with_suffix(".moss.wav")
+            try:
+                msg = proc.build_user_message(text=text, reference=[str(ref)], language=lang)
+            except TypeError:
+                msg = proc.build_user_message(text=text, reference=[str(ref)])
+            _gen(model, proc, dev, torch, msg, wav, max(200, min(4000, int(len(text) * 2.2) + 150)))
             subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav), "-af", "silenceremove=start_periods=1:start_threshold=-50dB",
                             "-c:a", "libmp3lame", "-q:a", "3", str(out_mp3)], check=True)
             wav.unlink(missing_ok=True)
@@ -215,4 +249,4 @@ def safe_file(name):
     return bool(re.fullmatch(r"[^/\\]+\.wav", name or ""))
 
 
-__all__ = ["speak", "design", "list_refs", "ref_for", "ref_file", "is_moss", "reset_failure"]
+__all__ = ["speak", "speak_ref", "design", "list_refs", "ref_for", "ref_file", "is_moss", "reset_failure"]

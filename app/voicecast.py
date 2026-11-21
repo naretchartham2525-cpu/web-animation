@@ -118,13 +118,14 @@ def _gender_age(arch):
 
 def _pool(provider, el_voices, arch, profile=None, narrator_paid=False, en=False):
     g, ages = _gender_age(arch)
+    orig = str(((profile or {}).get(arch) or {}).get("voice") or "")   # เสียงต้นฉบับของสกิล (Kokoro/Edge อังกฤษ) มาก่อนเสมอ
     if en and (provider != "eleven" or arch == "system" or (arch == "narrator" and not narrator_paid)):
         from .lang import EDGE_EN
-        return list(EDGE_EN.get(arch) or EDGE_EN["man"])      # พากย์อังกฤษ: เสียงฟรีต้องเป็นเสียงอังกฤษ
+        return ([orig] if orig else []) + list(EDGE_EN.get(arch) or EDGE_EN["man"])      # พากย์อังกฤษ: เสียงฟรีต้องเป็นเสียงอังกฤษ
     if provider != "eleven" or arch == "system" or (arch == "narrator" and not narrator_paid):   # ผู้บรรยาย/ระบบ ไม่ใช่ตัวละคร → เสียงฟรีเสมอ
         mine = str(((profile or {}).get(arch) or {}).get("edge") or "")   # โทนเสียงของเทมเพลตมาก่อน
         base = list(EDGE_ARCH.get(arch) or EDGE_ARCH["man"])
-        return ([mine] if mine.startswith("edge:") else []) + [v for v in base if v != mine]
+        return ([orig] if orig else []) + ([mine] if mine.startswith("edge:") else []) + [v for v in base if v != mine]
     def score(v):
         s = 0
         if (v.get("gender") or "").lower() == g:
@@ -191,13 +192,25 @@ def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, kno
     mem = load_mem(sid)
     pm = mem.setdefault(mem_key(provider, en), {"names": {}, "slots": {}})   # เสียงอังกฤษจำแยกจากเสียงไทย
     out = {k: v for k, v in (project_map or {}).items() if v}
-    edge_ok = (lambda v: v.startswith("edge:en-")) if en else (lambda v: v.startswith("edge:"))
+    from .voicematch import profile as tpl_profile
+    prof = tpl_profile(sid)
+    changed_prof = False
+    # เสียงต้นฉบับ (Kokoro / Edge อังกฤษของสกิล) ใช้ได้ทั้งพากย์ไทย (ผ่าน MOSS) และอังกฤษ
+    edge_ok = (lambda v: v.startswith(("edge:en-", "kokoro:"))) if en else (lambda v: v.startswith(("edge:", "kokoro:")))
+    for arch_, pv in ((a, str(v.get("voice"))) for a, v in prof.items() if v.get("voice")):
+        mark = pm.setdefault("_orig", {})
+        if mark.get(arch_) != pv:           # เพิ่งได้เสียงต้นฉบับ/เปลี่ยน → เลิกใช้ช่องเสียงที่ระบบเคยเดาไว้ของประเภทนี้
+            old = set(pm["slots"].get(arch_) or [])
+            pm["slots"][arch_] = []
+            pm["names"] = {n: v for n, v in pm["names"].items() if v not in old}
+            mark[arch_] = pv
+            changed_prof = True
     _ok = (lambda v: v.startswith("eleven:")) if provider == "eleven" else edge_ok
     np_ = bool((s or {}).get("narrator_paid"))
     valid = lambda v, arch="": bool(v) and (_ok(v) or ((arch == "system" or (arch == "narrator" and not np_)) and edge_ok(v)))
     used = set(out.values())
     slot_n = {}
-    changed = False
+    changed = changed_prof
     for spk in speakers:
         key = spk["key"]
         arch = archetype_of(spk, series, known)
@@ -213,7 +226,7 @@ def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, kno
             slot_n[arch] = i + 1
             v = slots[i] if i < len(slots) and valid(slots[i], arch) else None
             if not v:
-                pool = _pool(provider, el_voices or [], arch, (skill or {}).get("voice_profile"), np_, en)
+                pool = _pool(provider, el_voices or [], arch, prof, np_, en)
                 v = next((x for x in pool if x not in used and _fits(x, arch, el_voices)), None)
                 if not v and provider == "eleven" and not preview:
                     v = _from_library(arch, used, mem)       # My Voices ไม่มีที่เข้ากัน → หาเสียงไทยจาก Voice Library

@@ -904,7 +904,13 @@ const VOICE_GROUPS = [
   ["Edge อังกฤษ · ฟรี", [["edge:en-US-AndrewMultilingualNeural", "Andrew · ชาย นุ่ม เล่าเรื่อง"], ["edge:en-US-BrianMultilingualNeural", "Brian · ชาย สดใส"],
     ["edge:en-US-GuyNeural", "Guy · ชาย"], ["edge:en-US-AvaMultilingualNeural", "Ava · หญิง สดใส"],
     ["edge:en-US-EmmaMultilingualNeural", "Emma · หญิง"], ["edge:en-US-JennyNeural", "Jenny · หญิง"]]],
-  ["MOSS · ฟรี ทดลอง (ต้องเปิด GPU)", [["moss:auto", "ออกแบบเสียงตัวละครเอง · จำโทนทุก EP"]]]];
+  ["MOSS · ฟรี ทดลอง (ต้องเปิด GPU)", [["moss:auto", "ออกแบบเสียงตัวละครเอง · จำโทนทุก EP"]]],
+  // Kokoro = เสียงที่สกิลชุด Opuscar ใช้ทำหนังต้นฉบับ · พากย์อังกฤษได้ตรงๆ · พากย์ไทยใช้โทนนี้ผ่าน MOSS (ต้องเปิด GPU)
+  ["Kokoro · ฟรี", [["af_heart","หญิง US · Heart"],["af_bella","หญิง US · Bella"],["af_nicole","หญิง US · Nicole"],["af_sarah","หญิง US · Sarah"],["af_sky","หญิง US · Sky"],
+    ["af_nova","หญิง US · Nova"],["af_river","หญิง US · River"],["af_jessica","หญิง US · Jessica"],["af_kore","หญิง US · Kore"],["af_aoede","หญิง US · Aoede"],["af_alloy","หญิง US · Alloy"],
+    ["am_michael","ชาย US · Michael"],["am_adam","ชาย US · Adam"],["am_liam","ชาย US · Liam"],["am_eric","ชาย US · Eric"],["am_echo","ชาย US · Echo"],["am_fenrir","ชาย US · Fenrir"],
+    ["am_onyx","ชาย US · Onyx"],["am_puck","ชาย US · Puck"],["am_santa","ชาย US · Santa"],["bf_emma","หญิง UK · Emma"],["bf_alice","หญิง UK · Alice"],["bf_isabella","หญิง UK · Isabella"],
+    ["bf_lily","หญิง UK · Lily"],["bm_george","ชาย UK · George"],["bm_daniel","ชาย UK · Daniel"],["bm_fable","ชาย UK · Fable"],["bm_lewis","ชาย UK · Lewis"]].map(([v, t]) => ["kokoro:" + v, t])]];
 let EL = {enabled:false, voices:[], models:[], sub:null};
 function elGroup() { return EL.enabled && EL.voices.length ? [["ElevenLabs · เสียเครดิต", EL.voices.map(v => ["eleven:" + v.id, `${v.name}${v.gender ? " · " + (v.gender === "female" ? "หญิง" : v.gender === "male" ? "ชาย" : v.gender) : ""}`])]] : []; }
 let VOICES = [["", "เสียงตามเทมเพลต"]].concat(...VOICE_GROUPS.map(([g, vs]) => vs.map(([v, t]) => [v, `${t} (${g.split(" · ")[1]})`])));
@@ -922,6 +928,11 @@ async function loadEleven() {
 }
 const isEl = v => String(v || "").startsWith("eleven:");
 function prettyVoice(v) {   // edge:th-TH-NiwatNeural|-8Hz → นิวัฒน์ · เสียงต่ำ
+  if (/^kokoro:/.test(v)) {   // เสียงต้นฉบับของสกิล: kokoro:am_liam:0.6,bm_george:0.4|1.17
+    const [b, sp] = v.slice(7).split("|");
+    const names = b.split(",").map(x => (voiceName("kokoro:" + x.split(":")[0]) || x).split(" · ").pop().replace(/ \(.*\)$/, ""));
+    return `Kokoro ${names.join(" + ")}${sp ? " · เร็ว " + sp + "x" : ""} · ฟรี`;
+  }
   const [base, p] = String(v || "").split("|");
   const n = (voiceName(base) || base).split(" ·")[0];
   if (!p) return voiceName(base) || base;
@@ -2087,7 +2098,7 @@ $("#modeBtn").addEventListener("click", () => { const b = $("#modeBtn"); b.class
 // ===== ตัวเลือกเสียง: แทน <select> ของเบราว์เซอร์ด้วยรายการที่มีปุ่ม ▶ ฟังตัวอย่าง =====
 let vmSel = null, vmAudio = null, vmBtn = null;
 const PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>', STOP = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
-const canHear = v => /^edge:|^eleven:(?!auto$)/.test(v);
+const canHear = v => /^edge:|^kokoro:|^eleven:(?!auto$)/.test(v);
 function vpick(sel) {                     // ใช้กับ <select> ที่เป็นรายการเสียง
   if (sel.dataset.vp) return vpLabel(sel);
   sel.dataset.vp = 1; sel.classList.add("vhide");
