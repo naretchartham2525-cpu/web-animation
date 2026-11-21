@@ -455,6 +455,10 @@ def voice_for(s, speaker=""):
     return str(v)
 
 
+NARRATOR_KEY = "ผู้บรรยาย"
+NARRATOR_KEYS = {"ผู้บรรยาย", "narrator", "narration", "system", "เสียงระบบ", "บรรยาย"}
+
+
 def make_tts(ctx, text, out, s, speaker=""):
     from . import moss
     if moss.is_moss(s.get("_voice")) or moss.is_moss(voice_for(s, speaker)):
@@ -469,6 +473,9 @@ def make_tts(ctx, text, out, s, speaker=""):
                 s["_moss_warned"] = True
             s = {**s, "_voice": ""}
     voice = voice_for(s, speaker)
+    if voice.startswith("eleven:") and (speaker or NARRATOR_KEY) in NARRATOR_KEYS:
+        # ผู้บรรยาย/เสียงระบบ ไม่ใช่ตัวละคร → ใช้เสียงฟรีเสมอ (ไม่เสียเครดิต ElevenLabs)
+        voice = (s.get("voice_map") or {}).get("_free_narrator") or "edge:th-TH-NiwatNeural"
     if voice.startswith("eleven:"):
         from . import eleven
         n = eleven.tts(text, voice[7:], s.get("eleven_model") or eleven.DEFAULT_MODEL, out)
