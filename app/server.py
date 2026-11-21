@@ -13,7 +13,7 @@ from pathlib import Path
 
 from flask import Flask, abort, jsonify, request, send_file, send_from_directory
 
-from . import core, llm
+from . import core, llm, pipeline
 from .jobs import JobManager
 
 VERSION = "0.2.0"
@@ -128,6 +128,11 @@ def _thumb(src, w):
         return src
 
 
+@app.delete("/api/skills/<sid>")
+def skill_delete(sid):
+    return ok(core.delete_skill(sid))
+
+
 @app.post("/api/skills/<sid>/media")
 def skill_media(sid):
     f = request.files.get("file")
@@ -138,7 +143,8 @@ def skill_media(sid):
 
 @app.get("/skill-sample/<sid>")
 def skill_sample(sid):
-    f = core.SKILLS_DIR / sid / "sample.mp4"
+    d = core.SKILLS_DIR / sid
+    f = d / "card.mp4" if request.args.get("card") and (d / "card.mp4").exists() else d / "sample.mp4"
     if not core.get_skill(sid) or not f.exists():
         abort(404)
     return send_file(f, max_age=300, conditional=True)
@@ -449,14 +455,15 @@ def voice_preview():
     name = v.removeprefix("edge:").split("|")[0]
     if not re.fullmatch(r"[a-z]{2}-[A-Z]{2}-\w+Neural", name):
         abort(400)
+    name = pipeline.EDGE_FIX.get(name, name)
     out = core.WORK_DIR / "voice-preview" / f"{name}.mp3"
     if not out.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
-        r = subprocess.run([sys.executable, "-m", "edge_tts", "--voice", name, "--text", PREVIEW_TEXT, "--write-media", str(out)],
-                           capture_output=True, text=True, timeout=60)
-        if r.returncode != 0 or not out.exists():
+        try:
+            pipeline.edge_say(name, PREVIEW_TEXT, out)
+        except Exception as e:  # noqa: BLE001
             out.unlink(missing_ok=True)
-            return jsonify({"ok": False, "error": "สร้างเสียงตัวอย่างไม่ได้ ลองใหม่อีกครั้ง"}), 502
+            return jsonify({"ok": False, "error": str(e)}), 502
     return ok({"url": f"/api/voices/preview.mp3?v={name}"})
 
 
@@ -1057,6 +1064,7 @@ def main():
     jobs = JobManager()
     threading.Thread(target=_auto_covers, daemon=True).start()
     threading.Thread(target=_opuscar_demos, daemon=True).start()
+    threading.Thread(target=core.make_card_clips, daemon=True).start()
     print(f"AutoClip {VERSION} | root={core.ROOT} | http://{a.host}:{a.port}", flush=True)
     app.run(host=a.host, port=a.port, threaded=True, use_reloader=False)
 

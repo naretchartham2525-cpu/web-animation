@@ -690,7 +690,7 @@ select.vhide{position:absolute!important;opacity:0;pointer-events:none;width:1px
   <label class="f"><span>สกิล / คำสั่งเขียนบท (วางสกิลของคุณตรงนี้)</span><textarea class="in" id="tContent" style="min-height:200px" placeholder="# สไตล์&#10;- โทน...&#10;## ตัวละคร&#10;- ...&#10;## กฎบทพากย์&#10;- ประโยคสั้น ไม่มีวงเล็บ"></textarea></label>
   <div class="engbox" id="tEng"></div>
   <div class="note">บันทึกเป็นไฟล์ใน Drive: AutoClip/skills/&lt;ชื่อ&gt;/</div>
-  <div class="mfoot"><button class="sb" onclick="closeM('mTpl')">ยกเลิก</button><button class="sb dark" onclick="saveTemplate()"><svg class="i"><use href="#i-check"/></svg>บันทึก</button></div>
+  <div class="mfoot"><button class="sb red" id="tDel" style="margin-right:auto" onclick="delTemplate()"><svg class="i"><use href="#i-trash"/></svg>ลบเทมเพลตนี้</button><button class="sb" onclick="closeM('mTpl')">ยกเลิก</button><button class="sb dark" onclick="saveTemplate()"><svg class="i"><use href="#i-check"/></svg>บันทึก</button></div>
 </div></div>
 
 <!-- คลังข้อความ -->
@@ -898,7 +898,7 @@ async function call(fn) { try { return await fn(); } catch (e) { toast(e.message
 
 // ================= เสียง =================
 const VOICE_GROUPS = [
-  ["Edge · ฟรี", [["edge:th-TH-PremwadeeNeural", "เปรมวดี · หญิง"], ["edge:th-TH-AcharaNeural", "อัจฉรา · หญิง"], ["edge:th-TH-NiwatNeural", "นิวัฒน์ · ชาย"]]],
+  ["Edge · ฟรี", [["edge:th-TH-PremwadeeNeural", "เปรมวดี · หญิง"], ["edge:th-TH-NiwatNeural", "นิวัฒน์ · ชาย"]]],
   ["MOSS · ฟรี ทดลอง (ต้องเปิด GPU)", [["moss:auto", "ออกแบบเสียงตัวละครเอง · จำโทนทุก EP"]]]];
 let EL = {enabled:false, voices:[], models:[], sub:null};
 function elGroup() { return EL.enabled && EL.voices.length ? [["ElevenLabs · เสียเครดิต", EL.voices.map(v => ["eleven:" + v.id, `${v.name}${v.gender ? " · " + (v.gender === "female" ? "หญิง" : v.gender === "male" ? "ชาย" : v.gender) : ""}`])]] : []; }
@@ -1038,7 +1038,7 @@ function cardHtml(t) {
     const o = t.options || {}, sel = tplSel?.id === t.id;
     return `<div class="card ${sel ? "sel" : ""}">
       <div class="cover" onclick="viewTemplate(dq('${q(t.id)}'))">
-        <div class="bgi" ${coverAttrs(t)}></div>${t.card_v && !DEMO ? `<video class="cvid" muted loop playsinline preload="none" data-src="/skill-sample/${enc(t.id)}?v=${t.card_v}"></video><div class="vshade"></div>` : ""}
+        <div class="bgi" ${coverAttrs(t)}></div>${t.card_v && !DEMO ? `<video class="cvid" muted loop playsinline preload="none" data-src="/skill-sample/${enc(t.id)}?card=1&v=${t.card_v}"></video><div class="vshade"></div>` : ""}
         <div class="meta">${t.engine || t.html_engine ? `<span class="tagx engtag">${ic("sliders")}มีเอนจิน</span>` : ""}${o.duration ? `<span class="tagx">${ic("clock")}${esc(fmtSec(+o.duration))}</span>` : ""}${o.voice ? `<span class="tagx">${ic("mic")}${esc(voiceName(o.voice).split(" ·")[0])}</span>` : ""}</div>
         <div class="ttl">${esc(t.name)}</div></div>
       <div class="cfoot"><div class="d" title="${esc(t.description)}">${esc(t.description || "")}</div>
@@ -1087,6 +1087,7 @@ function tplForm(t) {
   const o = (t && t.options) || {};
   $("#tName").value = t ? t.name : ""; $("#tContent").value = t ? t.content || "" : "";
   PEND = {skill: null, media: null}; showPicked();
+  $("#tDel").style.display = t && !DEMO ? "" : "none";
   if (t && t.sample) mediaPrev(`/skill-sample/${enc(t.id)}`, true, "คลิปตัวอย่าง");
   else if (t && t.cover && !DEMO) mediaPrev(coverUrl(t, 360), false, "รูปการ์ด");
   else mediaPrev("");
@@ -1171,6 +1172,14 @@ async function viewTemplate(id) {
 function editTemplate() {
   editingId = null; editingTpl = null; $("#tplTitle").textContent = "เพิ่มเทมเพลต";
   tplForm(null); openM("mTpl");
+}
+async function delTemplate() {   // ลบทั้งเทมเพลต: ไปถังขยะ (กู้คืนได้) · ลบถาวรในถังขยะ = หายจาก Drive · ไม่ดึงกลับจาก GitHub
+  const t = editingTpl; if (!t) return;
+  if (!ask(`ลบเทมเพลต "${t.name}" ทั้งหมด (รูป คลิป ไฟล์) ?\nย้ายไปถังขยะก่อน กู้คืนได้ · เปิด Colab ใหม่ก็ไม่กลับมา`)) return;
+  if (!await call(() => api("DELETE", "/api/skills/" + enc(t.id)))) return;
+  closeM("mTpl");
+  T = await api("GET", "/api/skills"); if (tplSel && tplSel.id === t.id) tplSel = null;
+  renderGrid(); renderComposer();
 }
 function upForm(url, f, onPct) {   // อัปไฟล์ + บอกเปอร์เซ็นต์ (ใช้ XHR เพราะ fetch บอกความคืบหน้าการอัปไม่ได้)
   return new Promise((res, rej) => {
@@ -1854,7 +1863,7 @@ async function openUsage() {
 const MOCK = {
   skills: [
     {id:"thai-drama-script", name:"ละครสั้นดราม่า (ตัวการ์ตูน)", description:"ดราม่าแนวตั้ง ตัวการ์ตูนขยับท่า มีเอนจินเรนเดอร์ของตัวเอง", engine:"drama-json", options:{}},
-    {id:"cloud-girl", name:"เด็กหญิงซ่อมเมฆ", description:"แฟนตาซีอบอุ่น ภาพสีพาสเทล", options:{duration:"30", voice:"edge:th-TH-AcharaNeural"}},
+    {id:"cloud-girl", name:"เด็กหญิงซ่อมเมฆ", description:"แฟนตาซีอบอุ่น ภาพสีพาสเทล", options:{duration:"30", voice:"edge:th-TH-PremwadeeNeural"}},
     {id:"night-ghost", name:"หลอนกลางดึก", description:"หลอนเบาๆ หักมุมท้ายเรื่อง", options:{duration:"60", voice:"edge:th-TH-NiwatNeural"}},
     {id:"cat-office", name:"แมวมนุษย์เงินเดือน", description:"ตลกสั้น แมวทำงานออฟฟิศ", options:{duration:"20", voice:"edge:th-TH-NiwatNeural"}},
     {id:"moral-tale", name:"นิทานก่อนนอน", description:"นิทานมีข้อคิด เสียงนุ่ม", options:{duration:"90"}},

@@ -197,7 +197,7 @@ def _skill_from(p):
         "cover": cover,
         "cover_v": int((p / cover).stat().st_mtime) if cover and cover != "sample" else 0,   # เปลี่ยนรูปการ์ด → URL ใหม่ (ไม่ติดแคชเก่า)
         "sample": p.is_dir() and (p / "sample.mp4").exists(),   # คลิปตัวอย่างที่ผู้ใช้ใส่เอง (หน้าเพิ่ม/แก้เทมเพลต)
-        "card_v": int((p / "sample.mp4").stat().st_mtime) if p.is_dir() and (p / "sample.mp4").exists() else 0,   # คลิปที่อัปไว้โชว์ → เล่นวนบนการ์ด
+        "card_v": next((int(f.stat().st_mtime) for f in (p / "card.mp4", p / "sample.mp4") if p.is_dir() and f.exists()), 0),   # คลิปเล่นบนการ์ด (คลิปเล็กที่ย่อจากคลิปตัวอย่าง)
         "options": opts,
         "file": str(f.relative_to(ROOT)),
         "chars": len(body),
@@ -316,6 +316,7 @@ def save_skill_media(sid, fileobj):
                           "-movflags", "+faststart", str(out)], 900)
             if ok2 and out.exists():
                 shutil.move(str(out), str(d / "sample.mp4"))
+                make_card_clip(sid)
             reload_skills()
             tmp.unlink(missing_ok=True)
         threading.Thread(target=convert, daemon=True).start()
@@ -323,6 +324,29 @@ def save_skill_media(sid, fileobj):
         raise ValueError("ใส่ได้เฉพาะรูป (.jpg .png .webp) หรือคลิป (.mp4 .mov .webm .mkv)")
     reload_skills()
     return get_skill(sid)
+
+
+def make_card_clip(sid):
+    """คลิปเล็กสำหรับเล่นบนการ์ด (ย่อจากคลิปตัวอย่าง: กว้าง 360 · 8 วิ · ไม่มีเสียง · ราว 0.3 MB) → โหลดเร็วผ่านลิงก์"""
+    d = SKILLS_DIR / sid
+    src, out = d / "sample.mp4", WORK_DIR / f"card-{sid}.mp4"
+    if not src.exists():
+        return False
+    WORK_DIR.mkdir(parents=True, exist_ok=True)
+    ok_, _ = _ff(["-i", str(src), "-t", "8", "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "32",
+                  "-vf", "scale=w='min(360,iw)':h=-2,fps=24", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(out)], 300)
+    if ok_ and out.exists():
+        shutil.move(str(out), str(d / "card.mp4"))
+        return True
+    return False
+
+
+def make_card_clips():
+    """เทมเพลตที่มีคลิปตัวอย่างแต่ยังไม่มีคลิปการ์ด → ทำให้ครบ (เบื้องหลัง)"""
+    n = sum(make_card_clip(d.name) for d in SKILLS_DIR.iterdir()
+            if d.is_dir() and (d / "sample.mp4").exists() and not (d / "card.mp4").exists())
+    if n:
+        reload_skills()
 
 
 def set_skill_clip(sid, src, max_sec=None, audio=True):
@@ -341,6 +365,7 @@ def set_skill_clip(sid, src, max_sec=None, audio=True):
             c.unlink()
         shutil.move(str(frame), str(d / "cover.jpg"))
     shutil.move(str(out), str(d / "sample.mp4"))
+    make_card_clip(sid)
     reload_skills()
 
 
@@ -431,6 +456,22 @@ def _trash_box(tid):
     return b
 
 
+DELETED_SKILLS = lambda: SKILLS_DIR / "_deleted.json"   # เทมเพลตที่ผู้ใช้ลบ → Colab ไม่ดึงกลับมาจาก GitHub
+
+
+def delete_skill(sid):
+    """ลบเทมเพลตทั้งอัน (รูป คลิป ไฟล์ทั้งหมด) → ถังขยะในเว็บ · จดไว้ไม่ให้ซิงก์กลับมา"""
+    d = SKILLS_DIR / sid
+    if not sid or sid.startswith(("_", ".")) or not d.is_dir():
+        raise ValueError("ไม่พบเทมเพลต")
+    sk = get_skill(sid) or {}
+    dl = set(read_json(DELETED_SKILLS(), []) or [])
+    write_json(DELETED_SKILLS(), sorted(dl | {sid}))
+    tid = trash_move(d, "template", f"เทมเพลต · {sk.get('name') or sid}")
+    reload_skills()
+    return tid
+
+
 def trash_restore(tid):
     b = _trash_box(tid)
     m = read_json(b / "meta.json")
@@ -442,6 +483,9 @@ def trash_restore(tid):
     dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(str(b / "data"), str(dst))
     shutil.rmtree(b, ignore_errors=True)
+    if m.get("kind") == "template":          # กู้เทมเพลตคืน → เอาออกจากรายการที่ลบ
+        write_json(DELETED_SKILLS(), sorted(set(read_json(DELETED_SKILLS(), []) or []) - {dst.name}))
+        reload_skills()
     return m
 
 

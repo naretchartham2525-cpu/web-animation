@@ -2,6 +2,7 @@
 import json
 import re
 import shutil
+import subprocess
 import sys
 import time
 import zlib
@@ -480,9 +481,24 @@ def make_tts(ctx, text, out, s, speaker=""):
         voice, pitch = voice.split("|", 1)
     if voice and not voice.startswith(("th-", "en-")):
         voice = ""  # ไม่ใช่ชื่อเสียง Edge → เสียงฟรีหลัก
-    cmd = [sys.executable, "-m", "edge_tts", "--voice", voice or s["edge_voice"],
-           f"--rate={s.get('edge_rate', '+0%')}"] + ([f"--pitch={pitch}"] if pitch else []) + ["--text", text, "--write-media", str(out)]
-    ctx.run(cmd, "edge-tts")
+    edge_say(voice or s["edge_voice"], text, out, rate=s.get("edge_rate", "+0%"), pitch=pitch, log=ctx.log)
+
+
+EDGE_FIX = {"th-TH-AcharaNeural": "th-TH-PremwadeeNeural"}   # อัจฉราไม่มีใน Edge ฟรี (มีแค่ Azure) → เปรมวดี
+
+
+def edge_say(voice, text, out, rate="+0%", pitch="", log=print, tries=3):
+    """Edge ฟรี: บางครั้งเซิร์ฟเวอร์ไม่ส่งเสียงกลับ (NoAudioReceived) → ลองใหม่ · ยังไม่ได้ → แจ้งสาเหตุจริง"""
+    voice = EDGE_FIX.get(voice, voice)
+    err = ""
+    for i in range(tries):
+        r = subprocess.run([sys.executable, "-m", "edge_tts", "--voice", voice, f"--rate={rate}"] + ([f"--pitch={pitch}"] if pitch else [])
+                           + ["--text", text, "--write-media", str(out)], capture_output=True, text=True, timeout=120)
+        if r.returncode == 0 and Path(out).exists() and Path(out).stat().st_size > 0:
+            return
+        err = ((r.stderr or r.stdout or "").strip().splitlines() or ["ไม่ทราบสาเหตุ"])[-1][:200]
+        time.sleep(1.5 * (i + 1))
+    raise RuntimeError(f"เสียง Edge ({voice}) ใช้ไม่ได้ตอนนี้: {err}")
 
 
 # ---------------- ภาพ ----------------

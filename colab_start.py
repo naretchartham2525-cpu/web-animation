@@ -1,6 +1,6 @@
 """สตูดิโอเถื่อน: ขั้นตอนเปิดเว็บทั้งหมด (notebook เรียกไฟล์นี้หลังดึงโค้ดล่าสุด)
 แก้ขั้นตอนที่นี่ได้เลย ไม่ต้องให้ผู้ใช้คัดลอก notebook ใหม่"""
-import os, subprocess, shutil
+import os, subprocess, shutil, json
 CODE = globals().get('CODE', '/content/web-animation')
 print('✅ โค้ด:', subprocess.run(f'git -C {CODE} log -1 --format="%h %s (%cr)"', shell=True, capture_output=True, text=True).stdout.strip())
 
@@ -19,7 +19,11 @@ for d in ('skills', 'projects', 'fonts'):
     os.makedirs(f'{ROOT}/{d}', exist_ok=True)
 # เทมเพลตใหม่ใน GitHub → เพิ่มลง Drive อัตโนมัติ (ไม่ทับของที่มีอยู่/ที่แก้เองในเว็บ)
 added = []
+_del = f'{ROOT}/skills/_deleted.json'      # เทมเพลตที่ลบในเว็บ → ไม่ดึงกลับมา
+deleted = set(json.load(open(_del))) if os.path.exists(_del) else set()
 for d in sorted(os.listdir(f'{CODE}/skills')):
+    if d in deleted:
+        continue
     if not os.path.exists(f'{ROOT}/skills/{d}'):
         shutil.copytree(f'{CODE}/skills/{d}', f'{ROOT}/skills/{d}')
         added.append(d)

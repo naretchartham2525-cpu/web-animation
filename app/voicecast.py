@@ -14,16 +14,16 @@ from . import core
 ARCH = {"man": ("male", ("middle_aged", "young")), "woman": ("female", ("middle_aged", "young")),
         "oldman": ("male", ("old", "middle_aged")), "oldwoman": ("female", ("old", "middle_aged")),
         "boy": ("male", ("young",)), "girl": ("female", ("young",))}
-# Edge ไทยมีเสียงน้อย (ชาย 1 หญิง 2) → แยกตัวละครด้วยระดับเสียง (pitch) "edge:<voice>|<pitch>"
+# Edge ไทยมีเสียงน้อย (ชาย 1 หญิง 1 · อัจฉรามีแค่ใน Azure เสียเงิน) → แยกตัวละครด้วยระดับเสียง (pitch) "edge:<voice>|<pitch>"
 EDGE_ARCH = {
     "hero": ["edge:th-TH-NiwatNeural"], "narrator": ["edge:th-TH-NiwatNeural"], "system": ["edge:th-TH-NiwatNeural|+6Hz"],
     "hero_f": ["edge:th-TH-PremwadeeNeural"],
     "man": ["edge:th-TH-NiwatNeural|-8Hz", "edge:th-TH-NiwatNeural|+8Hz", "edge:th-TH-NiwatNeural|-16Hz"],
     "oldman": ["edge:th-TH-NiwatNeural|-20Hz", "edge:th-TH-NiwatNeural|-26Hz"],
     "boy": ["edge:th-TH-NiwatNeural|+22Hz", "edge:th-TH-NiwatNeural|+16Hz"],
-    "woman": ["edge:th-TH-AcharaNeural", "edge:th-TH-PremwadeeNeural|-8Hz", "edge:th-TH-AcharaNeural|+8Hz"],
-    "oldwoman": ["edge:th-TH-AcharaNeural|-14Hz", "edge:th-TH-PremwadeeNeural|-18Hz"],
-    "girl": ["edge:th-TH-PremwadeeNeural|+14Hz", "edge:th-TH-AcharaNeural|+18Hz"],
+    "woman": ["edge:th-TH-PremwadeeNeural|-6Hz", "edge:th-TH-PremwadeeNeural|+6Hz", "edge:th-TH-PremwadeeNeural|-12Hz"],
+    "oldwoman": ["edge:th-TH-PremwadeeNeural|-16Hz", "edge:th-TH-PremwadeeNeural|-22Hz"],
+    "girl": ["edge:th-TH-PremwadeeNeural|+14Hz", "edge:th-TH-PremwadeeNeural|+20Hz"],
 }
 FEMALE_CUE = ("เจ๊", "ป้า", "แม่", "ยาย", "นาง", "พี่สาว", "น้องสาว", "คุณนาย", "หญิง", "สาว", "เมีย", "ภรรยา", "ย่า")
 MALE_CUE = ("ลุง", "ตา", "พ่อ", "นาย", "เฮีย", "พี่ชาย", "น้องชาย", "ปู่", "ชาย", "ผัว", "สามี", "หนุ่ม", "ผม")
