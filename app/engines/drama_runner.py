@@ -34,6 +34,7 @@ class PaidVoiceError(BaseException):
 EMO = {}   # ข้อความที่อ่าน → tag อารมณ์ (ElevenLabs v3/v4)
 FREE = set()   # ข้อความที่ตัวละครไม่ได้พูดเอง (ข้อความบนจอ/เสียงระบบ) → เสียงฟรีเสมอ
 FREE_VOICE = {}   # ข้อความ → (เสียง Edge เดิมของสกิล, pitch)
+MOSS = {}   # cast_id → {"name", "arch", "edge": (เสียง Edge สำรอง, pitch)}
 
 
 def patch_free_lines(R):
@@ -67,19 +68,30 @@ def load_emotions(skill_dir, episode):
 
 def patch_voices(R, opts):
     main_voice = str(opts.get("voice") or "")          # เสียงพระเอก/ผู้บรรยาย
-    voice_map = {k: v for k, v in (opts.get("voice_map") or {}).items() if str(v).startswith(("edge:", "eleven:"))}  # {cast_id: "edge:..."|"eleven:<id>"}
+    voice_map = {k: v for k, v in (opts.get("voice_map") or {}).items() if str(v).startswith(("edge:", "eleven:", "moss:"))}  # {cast_id: "edge:..."|"eleven:<id>"|"moss:auto"}
     if main_voice.startswith("gemini:"):
         main_voice = ""   # เสียงเสียเงินตัดออกแล้ว
     rate_add = int(opts.get("rate_add") or 0)
+    profile = opts.get("voice_profile") or {}   # โทนเสียงประจำเทมเพลต (ใช้เมื่อผู้ใช้ไม่ได้เลือกเสียงเอง)
+    all_moss = main_voice.startswith("moss:")   # เลือก MOSS เป็นเสียงหลัก = ทุกตัวละครใช้ MOSS
     orig_voice = R.Cast.voice
 
     def voice(self, cid):
         v, pitch, rate = orig_voice(self, cid)
         c = (self.by.get(cid) or {}) if hasattr(self, "by") else {}
+        arch = {"narration": "narrator", "hero": "hero", "system": "system"}.get(cid) or str(c.get("voice") or "")
+        mine = str((profile.get(arch) or {}).get("edge") or "")
+        if mine.startswith("edge:"):
+            v, _, p = mine[5:].partition("|")
+            pitch = p or pitch
         from app.voicesheet import engine_key
         chosen = voice_map.get(engine_key(cid, getattr(self, "by", None))) or voice_map.get(cid) or voice_map.get(c.get("voice") or "")
         if not chosen and cid in ("hero", "narration") and main_voice:
             chosen = main_voice
+        if (all_moss or str(chosen).startswith("moss:")) and cid != "system":   # เสียงระบบ = Edge เสมอ
+            MOSS[cid] = {"name": "ผู้บรรยาย" if cid == "narration" else self.name(cid) if cid != "hero" else "hero",
+                         "arch": arch or "man", "edge": (v, pitch)}
+            return "moss:" + cid, pitch, _rate(rate, rate_add)
         if chosen and chosen.startswith("edge:"):
             v = chosen[5:]
             if "|" in v:
@@ -103,8 +115,25 @@ def patch_voices(R, opts):
                 free_moved += 1
         if free_moved:
             print(f"voice: {free_moved} on-screen/system lines use free voice", flush=True)
+        mo = [it for it in items if str(it["voice"]).startswith("moss:")]
+        if mo:
+            from app import moss
+            done = 0
+            for it in mo:
+                m = MOSS.get(it["voice"][5:]) or {"name": "", "arch": "man", "edge": ("th-TH-NiwatNeural", "+0Hz")}
+                try:
+                    moss.speak(opts.get("project") or "", m["name"], m["arch"], it["tts"], Path(outdir) / f"{it['key']}.mp3",
+                               lambda t: print(t, flush=True), template=opts.get("template") or "")
+                    done += 1
+                except Exception as ex:   # ไม่มี GPU/โหลดไม่ได้ → ประโยคที่เหลือใช้ Edge ฟรี งานไม่พัง
+                    if not MOSS.get("_warned"):
+                        print(f"WARNING {str(ex)[:150]} → ใช้เสียง Edge ฟรีแทน", flush=True)
+                        MOSS["_warned"] = True
+                    it["voice"], it["pitch"] = m["edge"]
+            if done:
+                print(f"voice: MOSS {done} lines", flush=True)
         el = [it for it in items if str(it["voice"]).startswith("eleven:")]
-        rest = [it for it in items if not str(it["voice"]).startswith("eleven:")]
+        rest = [it for it in items if not str(it["voice"]).startswith(("eleven:", "moss:"))]
         if el:
             from app import eleven
             model = opts.get("eleven_model") or eleven.DEFAULT_MODEL

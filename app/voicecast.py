@@ -116,10 +116,12 @@ def _gender_age(arch):
     return ARCH.get(arch, ("male", ("middle_aged",)))
 
 
-def _pool(provider, el_voices, arch):
+def _pool(provider, el_voices, arch, profile=None):
     g, ages = _gender_age(arch)
     if provider != "eleven" or arch in ("narrator", "system"):   # ผู้บรรยาย/ระบบ ไม่ใช่ตัวละคร → เสียงฟรีเสมอ
-        return list(EDGE_ARCH.get(arch) or EDGE_ARCH["man"])
+        mine = str(((profile or {}).get(arch) or {}).get("edge") or "")   # โทนเสียงของเทมเพลตมาก่อน
+        base = list(EDGE_ARCH.get(arch) or EDGE_ARCH["man"])
+        return ([mine] if mine.startswith("edge:") else []) + [v for v in base if v != mine]
     def score(v):
         s = 0
         if (v.get("gender") or "").lower() == g:
@@ -204,7 +206,7 @@ def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, kno
             slot_n[arch] = i + 1
             v = slots[i] if i < len(slots) and valid(slots[i], arch) else None
             if not v:
-                pool = _pool(provider, el_voices or [], arch)
+                pool = _pool(provider, el_voices or [], arch, (skill or {}).get("voice_profile"))
                 v = next((x for x in pool if x not in used and _fits(x, arch, el_voices)), None)
                 if not v and provider == "eleven" and not preview:
                     v = _from_library(arch, used, mem)       # My Voices ไม่มีที่เข้ากัน → หาเสียงไทยจาก Voice Library

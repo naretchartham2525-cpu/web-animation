@@ -56,5 +56,32 @@
       ]
     }
   ],
-  "category": "การ์ตูน"
+  "category": "การ์ตูน",
+  "voice_profile": {
+    "_about": "โทนเสียงประจำเทมเพลต (ทำตามคลิปตัวอย่าง ประธานล้างจาน) · desc = คำสั่งออกแบบเสียง MOSS (อังกฤษ) · edge = เสียง Edge ฟรี|ระดับเสียง",
+    "narrator": {
+      "desc": "An adult Thai man with a deep, low, calm voice. Steady, rhythmic storytelling pace, dry and composed, never shouting.",
+      "edge": "edge:th-TH-NiwatNeural|-10Hz"
+    },
+    "hero": {
+      "desc": "A young adult man in his late twenties with a mid-range, confident, clear voice. Calm but sharp, slightly teasing, natural and expressive.",
+      "edge": "edge:th-TH-NiwatNeural|+2Hz"
+    },
+    "woman": {
+      "desc": "A Thai woman in her thirties with a high, sharp, quick-tempered voice. Fast, dramatic, scolding delivery full of attitude.",
+      "edge": "edge:th-TH-PremwadeeNeural|+6Hz"
+    },
+    "oldwoman": {
+      "desc": "A loud Thai woman in her fifties with a high, sharp, bossy voice. Dramatic, quick-tempered, likes to play the victim.",
+      "edge": "edge:th-TH-PremwadeeNeural|+2Hz"
+    },
+    "man": {
+      "desc": "An adult man with a firm, mid-range, confident voice, natural and expressive.",
+      "edge": "edge:th-TH-NiwatNeural|-4Hz"
+    },
+    "oldman": {
+      "desc": "A man in his sixties with a deep, slightly raspy, slow voice, gullible but fair.",
+      "edge": "edge:th-TH-NiwatNeural|-14Hz"
+    }
+  }
 }

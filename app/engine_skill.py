@@ -322,7 +322,10 @@ def run_episode(ctx, proj, ep, s, skill):
         s["voice_map"] = voicecast.resolve_for_episode(ctx, name, skill, s, spk, series_now, engine=True)
     except Exception as e:
         ctx.log(f"เลือกเสียงตัวละครอัตโนมัติไม่สำเร็จ: {e}")
-    opts = {"voice": s.get("_voice_full") or "", "voice_map": s.get("voice_map") or {},
+    opts = {"voice": s.get("_voice_full") or (s.get("_voice") if str(s.get("_voice")).startswith("moss:") else ""),
+            "voice_map": s.get("voice_map") or {},
+            "voice_profile": skill.get("voice_profile") or core.voice_profile(skill.get("id") or ""),
+            "project": name, "template": skill.get("id") or "",
             "eleven_model": s.get("eleven_model") or "",
             "rate_add": int(str(s.get("edge_rate") or "+0%").replace("%", "") or 0),
             "mute": not s.get("voice_on", True),

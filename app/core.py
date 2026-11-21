@@ -199,6 +199,7 @@ def _skill_from(p):
         "sample": p.is_dir() and (p / "sample.mp4").exists(),   # คลิปตัวอย่างที่ผู้ใช้ใส่เอง (หน้าเพิ่ม/แก้เทมเพลต)
         "card_v": next((int(f.stat().st_mtime) for f in (p / "card.mp4", p / "sample.mp4") if p.is_dir() and f.exists()), 0),   # คลิปเล่นบนการ์ด (คลิปเล็กที่ย่อจากคลิปตัวอย่าง)
         "options": opts,
+        "voice_profile": {k: v for k, v in ((engine or {}).get("voice_profile") or {}).items() if isinstance(v, dict)},   # โทนเสียงประจำเทมเพลต
         "file": str(f.relative_to(ROOT)),
         "chars": len(body),
         "mtime": f.stat().st_mtime,
@@ -223,6 +224,11 @@ def reload_skills():
 
 def list_skills():
     return _skills_cache if _skills_cache is not None else reload_skills()
+
+
+def voice_profile(sid):
+    """โทนเสียงประจำเทมเพลต {ประเภทเสียง: {"desc": คำสั่งออกแบบเสียง MOSS, "edge": "edge:<เสียง>|<pitch>"}}"""
+    return next((s.get("voice_profile") or {} for s in list_skills() if s["id"] == sid), {})
 
 
 def get_skill(sid):

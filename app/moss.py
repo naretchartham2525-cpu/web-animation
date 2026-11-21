@@ -168,7 +168,7 @@ def speak(project, speaker, arch, text, out_mp3, log, template=""):
             _ensure_deps(log)
             ref, fresh = ref_for(project, template, speaker, arch)
             if fresh:
-                design(ref, speaker, arch, log)
+                design(ref, speaker, arch, log, instruction=(core.voice_profile(template).get(arch) or {}).get("desc"))
             model, proc, dev, torch = _tts(log)
             wav = Path(out_mp3).with_suffix(".moss.wav")
             try:
