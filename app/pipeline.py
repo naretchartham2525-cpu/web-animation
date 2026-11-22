@@ -91,7 +91,7 @@ def _apply_voice(s, v):
     if v.startswith("moss:"):                    # MOSS ฟรี (GPU): ทุกตัวละครออกแบบเสียงเอง + จำโทนไว้
         s["voice_provider"], s["_voice"], s["_voice_full"] = "edge", v, ""
         return
-    if v in ("eleven:auto", "edge:auto"):
+    if v in ("eleven:auto", "edge:auto", "kokoro:auto"):
         s["voice_provider"] = v.split(":")[0]   # เลือกค่าย แล้วให้ระบบเลือกเสียงรายตัวละครเอง
         s["_voice_full"] = ""
         return

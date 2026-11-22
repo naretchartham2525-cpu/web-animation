@@ -35,6 +35,7 @@ EMO = {}   # ข้อความที่อ่าน → tag อารมณ�
 FREE = set()   # ข้อความที่ตัวละครไม่ได้พูดเอง (ข้อความบนจอ/เสียงระบบ) → เสียงฟรีเสมอ
 FREE_VOICE = {}   # ข้อความ → (เสียง Edge เดิมของสกิล, pitch)
 MOSS = {}   # cast_id → {"name", "arch", "edge": (เสียง Edge สำรอง, pitch)}
+KOKORO_FB = {}   # เสียง Kokoro → (เสียง Edge สำรอง, pitch)
 
 
 def patch_free_lines(R):
@@ -68,7 +69,7 @@ def load_emotions(skill_dir, episode, narrator_paid=False):
 
 def patch_voices(R, opts):
     main_voice = str(opts.get("voice") or "")          # เสียงพระเอก/ผู้บรรยาย
-    voice_map = {k: v for k, v in (opts.get("voice_map") or {}).items() if str(v).startswith(("edge:", "eleven:", "moss:"))}  # {cast_id: "edge:..."|"eleven:<id>"|"moss:auto"}
+    voice_map = {k: v for k, v in (opts.get("voice_map") or {}).items() if str(v).startswith(("edge:", "eleven:", "moss:", "kokoro:"))}  # {cast_id: "edge:..."|"eleven:<id>"|"moss:auto"}
     if main_voice.startswith("gemini:"):
         main_voice = ""   # เสียงเสียเงินตัดออกแล้ว
     rate_add = int(opts.get("rate_add") or 0)
@@ -99,6 +100,9 @@ def patch_voices(R, opts):
         chosen = voice_map.get(engine_key(cid, getattr(self, "by", None))) or voice_map.get(cid) or voice_map.get(c.get("voice") or "")
         if not chosen and cid in ("hero", "narration") and main_voice:
             chosen = main_voice
+        if str(chosen).startswith("kokoro:") and cid != "system":     # Kokoro ฟรี (ไทย = MOSS พูดด้วยโทนนี้ · ไม่ได้ = Edge เดิม)
+            KOKORO_FB[chosen] = (v, pitch)
+            return chosen, pitch, _rate(rate, rate_add)
         if (all_moss or str(chosen).startswith("moss:")) and cid != "system":   # เสียงระบบ = Edge เสมอ
             MOSS[cid] = {"name": "ผู้บรรยาย" if cid == "narration" else self.name(cid) if cid != "hero" else "hero",
                          "arch": arch or "man", "edge": (v, pitch)}
@@ -144,8 +148,30 @@ def patch_voices(R, opts):
                     it["voice"], it["pitch"] = m["edge"]
             if done:
                 print(f"voice: MOSS {done} lines", flush=True)
+        ko = [it for it in items if str(it["voice"]).startswith("kokoro:")]
+        if ko:
+            from app import kokoro_tts, moss
+            en = opts.get("dub_lang") == "en"
+            log = lambda t: print(t, flush=True)
+            n = 0
+            for it in ko:
+                out = Path(outdir) / f"{it['key']}.mp3"
+                try:
+                    if en:
+                        kokoro_tts.say(it["voice"], it["tts"], out, log)
+                    else:
+                        moss.check()
+                        moss.speak_ref(kokoro_tts.sample(it["voice"], log), it["tts"], out, log)
+                    n += 1
+                except Exception as ex:  # noqa: BLE001
+                    if not KOKORO_FB.get("_warned"):
+                        print(f"WARNING {str(ex)[:150]} → ใช้เสียง Edge แทน", flush=True)
+                        KOKORO_FB["_warned"] = True
+                    it["voice"], it["pitch"] = KOKORO_FB.get(it["voice"]) or ("th-TH-NiwatNeural", "+0Hz")
+            if n:
+                print(f"voice: Kokoro {n} lines", flush=True)
         el = [it for it in items if str(it["voice"]).startswith("eleven:")]
-        rest = [it for it in items if not str(it["voice"]).startswith(("eleven:", "moss:"))]
+        rest = [it for it in items if not str(it["voice"]).startswith(("eleven:", "moss:", "kokoro:"))]
         if el:
             from app import eleven
             model = opts.get("eleven_model") or eleven.DEFAULT_MODEL

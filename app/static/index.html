@@ -917,9 +917,12 @@ let VOICES = [["", "เสียงตามเทมเพลต"]].concat(...V
 // ช่องเสียงหลัก: ElevenLabs รวมเป็นตัวเลือกเดียว (เสียงรายตัวละครดู/เปลี่ยนในปุ่ม 👥)
 // กลุ่มเสียงตามภาษาพากย์: ไทยไม่โชว์เสียง Edge อังกฤษ · อังกฤษไม่โชว์เสียง Edge ไทย (ElevenLabs/MOSS พูดได้ทั้งสองภาษา)
 const vgFor = lang => VOICE_GROUPS.filter(([g, vs]) => !lang || !vs[0][0].startsWith("edge:") || vs[0][0].startsWith(lang === "en" ? "edge:en-" : "edge:th-"));
+// เสียงหลัก = เลือกค่าย แล้วระบบเลือกเสียงรายตัวละครให้ (เลือกเสียงทีละตัวได้ที่ปุ่มเสียงตัวละคร)
+const PROVIDERS = [["kokoro:auto", "Kokoro · ฟรี · อัตโนมัติ (เสียงต้นฉบับสกิล)"], ["moss:auto", "MOSS · ฟรี ทดลอง · อัตโนมัติ (ต้องเปิด GPU)"]];
 const voiceOpts = (sel, first, lang) => `<option value="" ${!sel ? "selected" : ""}>${first || VOICES[0][1]}</option>` +
-  (EL.enabled ? `<option value="eleven:auto" ${sel === "eleven:auto" || isEl(sel) ? "selected" : ""}>ElevenLabs · อัตโนมัติ</option>` : "") +
-  vgFor(lang).map(([g, vs]) => `<optgroup label="${g}">${vs.map(([v, t]) => `<option value="${v}" ${v === sel ? "selected" : ""}>${t} · ${g.split(" · ")[1]}</option>`).join("")}</optgroup>`).join("");
+  (EL.enabled ? `<option value="eleven:auto" ${sel === "eleven:auto" || isEl(sel) ? "selected" : ""}>ElevenLabs · เสียเครดิต · อัตโนมัติ</option>` : "") +
+  PROVIDERS.map(([v, t]) => `<option value="${v}" ${v === sel || (v === "kokoro:auto" && /^kokoro:/.test(sel || "")) ? "selected" : ""}>${t}</option>`).join("") +
+  (sel && !isEl(sel) && !/^(eleven|kokoro|moss):/.test(sel) ? `<option value="${esc(sel)}" selected>${esc(prettyVoice(sel))}</option>` : "");   // เสียงที่เคยเลือกไว้ (แบบเดิม)
 const voiceName = v => (VOICES.find(x => x[0] === v) || elGroup().flatMap(g => g[1]).find(x => x[0] === v) || [, v])[1];
 async function loadEleven() {
   try { EL = await api("GET", "/api/eleven"); } catch (e) { EL = {enabled:false, voices:[], models:[]}; }
@@ -2098,7 +2101,7 @@ $("#modeBtn").addEventListener("click", () => { const b = $("#modeBtn"); b.class
 // ===== ตัวเลือกเสียง: แทน <select> ของเบราว์เซอร์ด้วยรายการที่มีปุ่ม ▶ ฟังตัวอย่าง =====
 let vmSel = null, vmAudio = null, vmBtn = null;
 const PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>', STOP = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
-const canHear = v => /^edge:|^kokoro:|^eleven:(?!auto$)/.test(v);
+const canHear = v => /^edge:|^kokoro:(?!auto$)|^eleven:(?!auto$)/.test(v);
 function vpick(sel) {                     // ใช้กับ <select> ที่เป็นรายการเสียง
   if (sel.dataset.vp) return vpLabel(sel);
   sel.dataset.vp = 1; sel.classList.add("vhide");

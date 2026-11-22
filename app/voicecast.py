@@ -116,9 +116,20 @@ def _gender_age(arch):
     return ARCH.get(arch, ("male", ("middle_aged",)))
 
 
+KOKORO_ARCH = {   # เสียง Kokoro ต่อประเภทเสียง (เมื่อเลือกค่าย Kokoro · ตัวละครคนละเสียง)
+    "narrator": ["am_michael", "bm_george"], "hero": ["am_liam", "am_adam"], "hero_f": ["af_heart", "af_bella"],
+    "system": ["af_nova"], "man": ["am_adam", "am_eric", "am_onyx", "bm_daniel", "am_echo"],
+    "woman": ["af_bella", "af_nicole", "af_sarah", "bf_emma", "af_jessica"], "oldman": ["bm_george", "am_santa", "bm_fable"],
+    "oldwoman": ["bf_alice", "af_kore"], "boy": ["am_puck"], "girl": ["af_sky"],
+}
+
+
 def _pool(provider, el_voices, arch, profile=None, narrator_paid=False, en=False):
     g, ages = _gender_age(arch)
     orig = str(((profile or {}).get(arch) or {}).get("voice") or "")   # เสียงต้นฉบับของสกิล (Kokoro/Edge อังกฤษ) มาก่อนเสมอ
+    if provider == "kokoro":
+        pool = ["kokoro:" + v for v in KOKORO_ARCH.get(arch) or KOKORO_ARCH["man"]]
+        return ([orig] if orig.startswith("kokoro:") else []) + [v for v in pool if v != orig]
     if en and (provider != "eleven" or arch == "system" or (arch == "narrator" and not narrator_paid)):
         from .lang import EDGE_EN
         return ([orig] if orig else []) + list(EDGE_EN.get(arch) or EDGE_EN["man"])      # พากย์อังกฤษ: เสียงฟรีต้องเป็นเสียงอังกฤษ
@@ -141,6 +152,8 @@ def provider_for(skill, s=None):
     """ค่ายเสียงอัตโนมัติ: ค่าเริ่มต้น = Edge ฟรี (หลักประหยัดที่สุด) · ElevenLabs เมื่อเลือก "eleven:auto" และมี key"""
     from . import eleven
     pref = (s or {}).get("voice_provider") or ((skill or {}).get("options") or {}).get("voice_provider") or "edge"
+    if pref == "kokoro":
+        return "kokoro"                            # Kokoro ฟรี (เสียงแบบสกิลชุด Opuscar)
     return "eleven" if pref == "eleven" and eleven.enabled() else "edge"
 
 
@@ -205,7 +218,8 @@ def auto_map(speakers, skill, project_map=None, series=None, el_voices=None, kno
             pm["names"] = {n: v for n, v in pm["names"].items() if v not in old}
             mark[arch_] = pv
             changed_prof = True
-    _ok = (lambda v: v.startswith("eleven:")) if provider == "eleven" else edge_ok
+    _ok = (lambda v: v.startswith("eleven:")) if provider == "eleven" else (
+        (lambda v: v.startswith("kokoro:")) if provider == "kokoro" else edge_ok)
     np_ = bool((s or {}).get("narrator_paid"))
     valid = lambda v, arch="": bool(v) and (_ok(v) or ((arch == "system" or (arch == "narrator" and not np_)) and edge_ok(v)))
     used = set(out.values())
