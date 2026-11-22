@@ -628,7 +628,7 @@ select.vhide{position:absolute!important;opacity:0;pointer-events:none;width:1px
       <button class="ib noeng" title="ให้ AI ช่วยคิดไอเดีย" onclick="aiIdea()" id="ideaBtn"><svg class="i"><use href="#i-spark"/></svg></button>
       <span class="tsep"></span>
       <button class="ib" title="เปิดไฟล์บท (.txt .json .md .py) หรือไฟล์เสียงพากย์ (.mp3 .wav .m4a) · ลากมาวางที่หน้าเว็บก็ได้" onclick="$('#fileIn').click()"><svg class="i"><use href="#i-clip"/></svg></button>
-      <input type="file" id="fileIn" multiple accept=".txt,.md,.json,.py,text/plain,application/json,audio/*,.mp3,.wav,.m4a,.aac,.ogg,.opus,.flac" hidden onchange="loadFiles([...this.files]); this.value=''">
+      <input type="file" id="fileIn" multiple hidden onchange="loadFiles([...this.files]); this.value=''">
       <button class="ib" title="หยิบจากคลังข้อความ" onclick="openLib(true)"><svg class="i"><use href="#i-book"/></svg></button>
       <button class="ib" title="เก็บข้อความนี้ลงคลัง" onclick="saveToLib()"><svg class="i"><use href="#i-save"/></svg></button>
     </div>
@@ -1331,7 +1331,7 @@ function toggleComposer() { const c = $("#composer"); c.classList.toggle("min");
 // ================= ลากไฟล์มาวาง / เปิดไฟล์ =================
 const FILE_OK = /\.(txt|md|json|py)$/i;
 async function filesToText(files) {
-  files = files.filter(f => FILE_OK.test(f.name) || (f.type || "").startsWith("text/"));
+  files = files.filter(f => f._text || FILE_OK.test(f.name) || (f.type || "").startsWith("text/"));
   if (!files.length) throw new Error("รองรับเฉพาะไฟล์ .txt .md .json .py");
   if (files.some(f => f.size > 2e6)) throw new Error("ไฟล์ใหญ่เกิน 2 MB");
   // เรียง: series.json ก่อน → epNN → อื่นๆ → ฉากหลัง .py
@@ -1427,10 +1427,19 @@ function downloadText(name, text) {
   a.download = name.replace(/[\\/:*?"<>|]/g, "_"); a.style.display = "none";
   document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
 }
+// แยกไฟล์บท/ไฟล์เสียงจากเนื้อไฟล์จริง (มือถือบางรุ่นส่งไฟล์มาโดยไม่มีนามสกุล/ชนิดไฟล์)
+async function isTextFile(f) {
+  if (FILE_OK.test(f.name) || /^text\/|json/.test(f.type || "")) return true;
+  if (AUDIO_OK.test(f.name) || /^(audio|video)\//.test(f.type || "") || f.size > 2e6) return false;
+  const b = new Uint8Array(await f.slice(0, 4096).arrayBuffer());
+  if (b.includes(0)) return false;
+  try { new TextDecoder("utf-8", {fatal: true}).decode(b.length === 4096 ? b.slice(0, 4000) : b); return true; } catch (e) { return false; }
+}
 async function loadFiles(files) {
   const nx = $("#mNext").classList.contains("on");
-  const aud = files.filter(f => AUDIO_OK.test(f.name) || (f.type || "").startsWith("audio/"));
-  files = files.filter(f => !aud.includes(f));
+  for (const f of files) f._text = await isTextFile(f);
+  const aud = files.filter(f => !f._text);
+  files = files.filter(f => f._text);
   if (aud.length) {
     const k = nx ? "nx" : "main";
     try {

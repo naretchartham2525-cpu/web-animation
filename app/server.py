@@ -380,6 +380,10 @@ def voice_upload():
     if not f or not f.filename:
         raise ValueError("ไม่พบไฟล์เสียง")
     ext = Path(f.filename).suffix.lower()
+    if not ext:                                    # มือถือบางรุ่นส่งไฟล์มาไม่มีนามสกุล → ดูจากชนิดไฟล์ (ffmpeg อ่านจากเนื้อไฟล์อยู่แล้ว)
+        import mimetypes
+        ext = mimetypes.guess_extension(f.mimetype or "") or ".mp3"
+        ext = ext if ext in AUDIO_EXT else ".mp3"
     if ext not in AUDIO_EXT:
         raise ValueError("รองรับไฟล์เสียง " + " ".join(sorted(AUDIO_EXT)))
     VOICE_DIR.mkdir(parents=True, exist_ok=True)
