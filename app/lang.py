@@ -93,6 +93,11 @@ def translate_engine(project, series, ep, log):
     """series.json + epNN.json → ฉบับอังกฤษ · คืน (series_en, ep_en, คำแปลทั้งหมดของเรื่อง)"""
     f = _dict_path(project)
     d = core.read_json(f, {}) or {}
+    # คำแปลที่ผู้เขียนบทใส่มาเอง (line_en / ask_en / text_en) ดีกว่า AI ฟรี → ใช้ก่อน
+    for o in [ep] + list(ep.get("shots") or []):
+        for k in ("line", "ask", "text", "title", "teaser"):
+            if has_thai(o.get(k)) and str(o.get(k + "_en") or "").strip():
+                d[o[k]] = str(o[k + "_en"]).strip()
     todo = []
     _walk([series, ep], lambda t: todo.append(t) or t)
     names = [c.get("name") for c in series.get("cast") or [] if has_thai(c.get("name"))]
