@@ -1282,6 +1282,7 @@ function renderComposer() {
   $("#oRate").value = O.rate; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%";
   $("#oFont").value = O.font; $("#oSub").value = O.lang;
   $("#oDub").value = O.dub;
+  $("#oSub option[value=both]").textContent = O.dub === "en" ? "อังกฤษ + ไทย" : "ไทย + อังกฤษ";   // ภาษาพากย์เป็นซับหลัก (บน) อีกภาษาเป็นคำแปลบรรทัดล่าง
   if (O.dub === "en" && O.voice.startsWith("edge:th-") || O.dub === "th" && O.voice.startsWith("edge:en-")) O.voice = "";
   $("#oVoice").innerHTML = voiceOpts(O.voice, tplVoice() === "eleven:auto" ? "ตามเทมเพลต · ElevenLabs" : tplSel?.engine ? (O.dub === "en" ? "เสียงตามสกิล · Edge อังกฤษ ฟรี" : "เสียงตามสกิล · Edge ฟรี") : tplSel && tplVoice() && !(O.dub === "en" && tplVoice().startsWith("edge:th-")) ? `ตามเทมเพลต · ${voiceName(tplVoice()).split(" ·")[0]}` : O.dub === "en" ? "Edge อังกฤษ ฟรี · อัตโนมัติ" : "Edge ฟรี · อัตโนมัติ", O.dub);
   $("#oWm").classList.toggle("on", O.wm);
