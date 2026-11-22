@@ -200,9 +200,10 @@ def timeline_subs(ctx, ep, rawmp4, s):
         k = r.get("shot")
         sh = shots[k] if isinstance(k, int) and k < len(shots) else None
         en = (sh or {}).get("line_en") if sh else ep.get("ask_en")
+        src = (sh or {}).get("line") if sh else ep.get("ask")    # ข้อความไทยต้นฉบับ (ใช้เป็นซับไทยใต้ซับอังกฤษตอนพากย์อังกฤษ)
         out.append({"t0": r["t0"], "t1": r["t0"] + r["dur"] + GAP_END, "th": r["text"], "en": str(en or "").strip(),
-                    "typ": (sh or {}).get("type") or "end"})
-    if out and sub_mode(s) in ("en", "both") and any(not x["en"] for x in out):
+                    "src": str(src or "").strip(), "typ": (sh or {}).get("type") or "end"})
+    if out and sub_mode(s) in ("en", "both") and not s.get("_sub2_th") and any(not x["en"] for x in out):
         from .pipeline import ensure_english
         sc = {"scenes": [{"narration": x["th"], "subtitle_en": x["en"]} for x in out]}
         try:
@@ -224,25 +225,26 @@ def _srt(items):
     return "\n".join(f"{i}\n{_t(a, False)} --> {_t(b, False)}\n{t}\n" for i, (a, b, t) in enumerate(items, 1))
 
 
-def english_ass(subs, mode):
-    """ซับอังกฤษ: both = ใต้ซับไทยของเอนจิน · en = แทนที่ซับไทย"""
+def english_ass(subs, mode, field="en", font="Liberation Sans", main_cw=34):
+    """ซับภาษาที่ 2: both = ใต้ซับหลักของเอนจิน · en = แทนที่ซับหลัก
+    field = ข้อความที่ใช้ (en = อังกฤษ · src = ไทยต้นฉบับตอนพากย์อังกฤษ) · main_cw = ความกว้างตัวอักษรของซับหลัก (px)"""
     size = 46 if mode == "both" else 60
     head = ("[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nWrapStyle: 0\n\n[V4+ Styles]\n"
             "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, "
             "Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
-            f"Style: EN,Liberation Sans,{size},&H00FFFFFF,&H00FFFFFF,&H000C0A0A,&H00000000,1,0,0,0,100,100,0,0,1,{5 if mode == 'both' else 6},0,2,90,90,60,1\n\n"
+            f"Style: EN,{font},{size},&H00FFFFFF,&H00FFFFFF,&H000C0A0A,&H00000000,1,0,0,0,100,100,0,0,1,{5 if mode == 'both' else 6},0,2,90,90,60,1\n\n"
             "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n")
     ev = []
     for x in subs:
-        if not x.get("en"):
+        if not x.get(field):
             continue
         y = SUB_Y.get(x["typ"], 1700)
-        if mode == "both":   # ใต้ซับไทย: ประมาณจำนวนบรรทัดไทย (กว้าง 900px, ~34px/ตัว, สูงสุด 3 บรรทัด)
-            lines = max(1, min(3, -(-len(x["th"]) * 34 // 900)))
+        if mode == "both":   # ใต้ซับหลัก: ประมาณจำนวนบรรทัดของซับหลัก (กว้าง 900px, สูงสุด 3 บรรทัด)
+            lines = max(1, min(3, -(-len(x["th"]) * main_cw // 900)))
             pos = f"{{\\an8\\pos(540,{min(1840, y + lines * 43 + 18)})}}"
         else:
             pos = f"{{\\an5\\pos(540,{y})}}"
-        txt = x["en"].replace("\n", " ").replace("{", "(").replace("}", ")")
+        txt = x[field].replace("\n", " ").replace("{", "(").replace("}", ")")
         ev.append(f"Dialogue: 0,{_t(x['t0'])},{_t(x['t1'])},EN,,0,0,0,,{pos}{txt}")
     return head + "\n".join(ev) + "\n"
 
@@ -334,6 +336,8 @@ def run_episode(ctx, proj, ep, s, skill):
         core.write_json(render_json, ep_en)
         i18n = work / "i18n.json"
         core.write_json(i18n, {**lang.engine_builtin(skill_dir, ctx.log), **d})
+        if sub_mode(s) == "both":
+            s["_sub2_th"] = True      # อังกฤษ + ไทย: ซับหลักอังกฤษของเอนจิน + ซับไทยต้นฉบับบรรทัดล่าง
         if sub_mode(s) != "none":
             s["sub_lang"] = "th"      # ซับของเอนจินเอง (ตอนนี้เป็นอังกฤษแล้ว) · ไม่ต้องซ้อนซับอังกฤษอีกชั้น
     opts = {"voice": s.get("_voice_full") or (s.get("_voice") if str(s.get("_voice")).startswith("moss:") else ""),
@@ -383,7 +387,11 @@ def run_episode(ctx, proj, ep, s, skill):
         (work / "wm.ass").write_text(ass, encoding="utf-8")
         vf.append("ass=wm.ass")
     subs = timeline_subs(ctx, raw, rawmp4, s)
-    if subs and sub_mode(s) in ("en", "both"):
+    if subs and s.get("_sub2_th"):            # พากย์อังกฤษ + ซับไทยบรรทัดล่าง (แปลเนื้อเรื่อง)
+        (work / "th.ass").write_text(english_ass(subs, "both", "src", "IBM Plex Sans Thai", 24), encoding="utf-8")
+        shutil.copytree(skill_dir / "engine" / "fonts", work / "fonts_th", dirs_exist_ok=True)
+        vf.append("ass=th.ass:fontsdir=fonts_th")
+    elif subs and sub_mode(s) in ("en", "both"):
         (work / "en.ass").write_text(english_ass(subs, sub_mode(s)), encoding="utf-8")
         vf.append("ass=en.ass")
     ctx.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", "raw.mp4", "-vf", ",".join(vf),
@@ -397,6 +405,8 @@ def run_episode(ctx, proj, ep, s, skill):
     # ซับ .srt: จากไทม์ไลน์เสียงจริง (แม่นกว่า) · ไม่มีไทม์ไลน์ → ตัว export ของสกิล
     if subs:
         (edir / "subs.srt").write_text(_srt([(x["t0"], x["t1"], x["th"]) for x in subs]), encoding="utf-8")
+        if s.get("_sub2_th") and any(x.get("src") for x in subs):
+            (edir / "subs_th.srt").write_text(_srt([(x["t0"], x["t1"], x["src"]) for x in subs if x.get("src")]), encoding="utf-8")
         if any(x.get("en") for x in subs):
             (edir / "subs_en.srt").write_text(_srt([(x["t0"], x["t1"], x["en"]) for x in subs if x.get("en")]), encoding="utf-8")
     else:

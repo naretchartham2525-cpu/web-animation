@@ -826,7 +826,13 @@ def run_episode(ctx, proj_name, ep):
 
     wm = (s.get("watermark_text") or "AutoClip") if s.get("watermark") else ""
     mode = s.get("sub_lang", "th") if s.get("subtitles", True) else "none"
-    ass, srt_th, srt_en = video.build_subs(subs, w, h, s, watermark=wm, total=t, mode=mode)
+    if s.get("dub_lang") == "en" and mode == "both":
+        # พากย์อังกฤษ + ซับไทย: อังกฤษเป็นซับหลัก (ใหญ่ บน) ไทยเป็นคำแปลบรรทัดล่าง
+        swap = [(a, b, en or th, th) for a, b, th, en in subs]
+        s2 = {**s, "subtitle_max_chars": s.get("subtitle_max_chars") or (30 if h > w else 52)}
+        ass, srt_en, srt_th = video.build_subs(swap, w, h, s2, watermark=wm, total=t, mode=mode)
+    else:
+        ass, srt_th, srt_en = video.build_subs(subs, w, h, s, watermark=wm, total=t, mode=mode)
     (work / "subs.ass").write_text(ass, encoding="utf-8")
     (edir / "subs.srt").write_text(srt_th, encoding="utf-8")
     if srt_en.strip():
