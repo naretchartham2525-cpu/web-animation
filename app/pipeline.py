@@ -704,8 +704,6 @@ def run_episode(ctx, proj_name, ep):
     from .lang import dub_lang
     if dub_lang(s) == "en":
         # พากย์อังกฤษ: เสียงกับซับต้องเป็นภาษาเดียวกัน → แปลบทเป็นอังกฤษ (AI ฟรี) แปลไม่ได้ = หยุด (ไม่ปล่อยคลิปภาษาปนกัน)
-        if s.get("sub_lang") == "th":
-            s["sub_lang"] = "en"
         if ensure_english(ctx, script, s):
             core.write_json(script_f, script)
         if any(not sc.get("subtitle_en") for sc in script["scenes"]):
@@ -829,44 +827,30 @@ def run_episode(ctx, proj_name, ep):
     if s.get("dub_lang") == "en" and mode == "both":
         # พากย์อังกฤษ + ซับไทย: อังกฤษเป็นซับหลัก (ใหญ่ บน) ไทยเป็นคำแปลบรรทัดล่าง
         swap = [(a, b, en or th, th) for a, b, th, en in subs]
-        s2 = {**s, "subtitle_max_chars": s.get("subtitle_max_chars") or (30 if h > w else 52)}
+        s2 = {**s, "subtitle_max_chars": s.get("subtitle_max_chars") or (30 if h > w else 52), "_sub2_scale": 0.9}   # อักษรไทยดูเล็กกว่าอังกฤษที่ขนาดเท่ากัน
         ass, srt_en, srt_th = video.build_subs(swap, w, h, s2, watermark=wm, total=t, mode=mode)
     else:
         ass, srt_th, srt_en = video.build_subs(subs, w, h, s, watermark=wm, total=t, mode=mode)
-    (work / "subs.ass").write_text(ass, encoding="utf-8")
     (edir / "subs.srt").write_text(srt_th, encoding="utf-8")
     if srt_en.strip():
         (edir / "subs_en.srt").write_text(srt_en, encoding="utf-8")
 
-    # 6) ซับ + ลายน้ำ + เพลงประกอบ (encode ครั้งสุดท้าย)
+    # 6) ซับ + ลายน้ำ + เพลงประกอบ (encode ครั้งสุดท้าย) · เก็บวิดีโอก่อนใส่ซับไว้ ปรับซับทีหลังได้ไม่ต้องทำใหม่
     ctx.check()
+    from . import substyle
     music_dir = core.project_dir(proj_name) / "music"
     music = sorted(p for p in music_dir.glob("*") if p.suffix.lower() in core.AUDIO_EXT) if music_dir.exists() else []
-    cmd = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", "joined.mp4"]
-    vf = "null"
-    if (mode != "none" and subs) or wm:
-        if core.FONTS_DIR.exists() and any(core.FONTS_DIR.iterdir()):
-            shutil.copytree(core.FONTS_DIR, work / "fonts", dirs_exist_ok=True)
-            vf = "ass=subs.ass:fontsdir=fonts"
-        else:
-            vf = "ass=subs.ass"
-    if music:
-        bgm = music[(ep - 1) % len(music)]
-        cmd += ["-stream_loop", "-1", "-i", str(bgm)]
-        fc = (f"[0:v]{vf}[v];[1:a]volume={float(s['bgm_volume'])}[b];"
-              f"[0:a][b]amix=inputs=2:duration=first:dropout_transition=0,volume=2[a]")
-        cmd += ["-filter_complex", fc, "-map", "[v]", "-map", "[a]"]
+    bgm = music[(ep - 1) % len(music)] if music else None
+    if bgm:
         ctx.log(f"ใส่เพลง {bgm.name}")
-    else:
-        cmd += ["-vf", vf, "-map", "0:v", "-map", "0:a"]
-    cmd += ["-c:v", "libx264", "-preset", s["preset"], "-crf", str(s["crf"]),
-            "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "final.mp4"]
+    shutil.copyfile(work / "joined.mp4", edir / "_clean.mp4")
+    meta = {"kind": "normal", "items": [list(x) for x in subs], "mode": mode, "dub": s.get("dub_lang") or "th",
+            "w": w, "h": h, "total": t, "wm": wm, "music": str(bgm) if bgm else "", "bgm_volume": float(s["bgm_volume"]),
+            "preset": s["preset"], "crf": s["crf"], "style": s.get("sub_style") or {},
+            "s": {k: s.get(k) for k in ("subtitle_font", "subtitle_max_chars", "subtitle_size") if s.get(k)}}
+    substyle.save(edir, meta)
     ctx.log(f"export {video.QUALITY_TH.get(s.get('quality'), '')} {w}x{h}" + (" + ลายน้ำ" if wm else ""))
-    ctx.run(cmd, "export", cwd=work)
-
-    tmp_final = edir / "final.part.mp4"
-    shutil.copyfile(work / "final.mp4", tmp_final)
-    tmp_final.replace(edir / "final.mp4")
+    substyle.export(edir, meta, ctx.log)
     first_img = next((p for k, p in picks if k == "image" and p), None)
     if first_img:
         shutil.copyfile(first_img, edir / "thumb.jpg")

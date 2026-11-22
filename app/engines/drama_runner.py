@@ -288,6 +288,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--opts", default="{}")
     ap.add_argument("--mute", action="store_true")
+    ap.add_argument("--still", default="")      # ตรวจหน้าตา: บันทึกภาพนิ่งของช็อต N (ใช้ตอนทดสอบ)
     a = ap.parse_args()
     opts = json.loads(a.opts or "{}")
     R = load_engine(a.skill_dir)
@@ -297,7 +298,8 @@ def main():
     patch_free_lines(R)
     patch_own_voice(R, opts)
     captured = patch_subs(R, opts)
-    sys.argv = ["render_ep.py", a.episode, "--out", a.out] + (["--mute"] if a.mute or opts.get("mute") else [])
+    sys.argv = ["render_ep.py", a.episode, "--out", a.out] + (["--mute"] if a.mute or opts.get("mute") else []) \
+        + (["--still", a.still] if a.still else [])
     try:
         R.main()
     except PaidVoiceError as ex:

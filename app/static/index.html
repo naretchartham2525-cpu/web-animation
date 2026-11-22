@@ -98,6 +98,9 @@ svg.i{width:18px;height:18px;flex-shrink:0;vertical-align:middle;fill:none;strok
 #vRe:not(:empty){margin-top:16px;padding:14px;border:1px solid var(--gline);border-radius:14px;display:grid;gap:10px}
 #vRe .vlab{margin:0}
 #vRe .rerow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#vSubs .sgrid{display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;margin:6px 0}
+#vSubs .num{display:flex;align-items:center;gap:4px}#vSubs .num input{width:64px;text-align:center}
+#vSubs .num button{width:30px;height:30px;padding:0}
 #vRe .rerow .in{flex:1;min-width:180px}
 #vRe .vdrop{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px dashed var(--gline);border-radius:12px;cursor:pointer;font-size:13px;color:var(--muted)}
 #vRe .vdrop:hover,#vRe .vdrop.over{background:var(--soft)}
@@ -815,6 +818,7 @@ select.vhide{position:absolute!important;opacity:0;pointer-events:none;width:1px
       <div class="vrow"><button class="sb" onclick="copyText($('#vCap').value)"><svg class="i"><use href="#i-copy"/></svg>คัดลอก</button><button class="sb" id="vCapRe" onclick="loadCaption(true)"><svg class="i"><use href="#i-spark"/></svg>คิดใหม่</button></div>
       <div class="vlab">ไฟล์และบท</div>
       <div class="vrow" id="vActs"></div>
+      <div id="vSubs"></div>
       <div id="vRe"></div>
       <div class="vdanger" id="vDanger"></div>
     </div>
@@ -1282,7 +1286,8 @@ function renderComposer() {
   $("#oRate").value = O.rate; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%";
   $("#oFont").value = O.font; $("#oSub").value = O.lang;
   $("#oDub").value = O.dub;
-  $("#oSub option[value=both]").textContent = O.dub === "en" ? "อังกฤษ + ไทย" : "ไทย + อังกฤษ";   // ภาษาพากย์เป็นซับหลัก (บน) อีกภาษาเป็นคำแปลบรรทัดล่าง
+  $("#oSub option[value=both]").textContent = O.dub === "en" ? "อังกฤษ + ไทย" : "ไทย + อังกฤษ";
+  $("#oSub option[value=th]").textContent = O.dub === "en" ? "ไทย (แปล)" : "ไทย";   // พากย์อังกฤษ ซับไทยอย่างเดียวได้   // ภาษาพากย์เป็นซับหลัก (บน) อีกภาษาเป็นคำแปลบรรทัดล่าง
   if (O.dub === "en" && O.voice.startsWith("edge:th-") || O.dub === "th" && O.voice.startsWith("edge:en-")) O.voice = "";
   $("#oVoice").innerHTML = voiceOpts(O.voice, tplVoice() === "eleven:auto" ? "ตามเทมเพลต · ElevenLabs" : tplSel?.engine ? (O.dub === "en" ? "เสียงตามสกิล · Edge อังกฤษ ฟรี" : "เสียงตามสกิล · Edge ฟรี") : tplSel && tplVoice() && !(O.dub === "en" && tplVoice().startsWith("edge:th-")) ? `ตามเทมเพลต · ${voiceName(tplVoice()).split(" ·")[0]}` : O.dub === "en" ? "Edge อังกฤษ ฟรี · อัตโนมัติ" : "Edge ฟรี · อัตโนมัติ", O.dub);
   $("#oWm").classList.toggle("on", O.wm);
@@ -1647,7 +1652,7 @@ let vMuted = false, vCur = null;
 function playClip(project, ep, path) {
   const o = OUTS.find(x => x.project === project && x.ep === ep && (!path || x.path === path)) || OUTS.find(x => x.project === project && x.ep === ep && !x.copy); if (!o) return;
   vCur = o; vMuted = false;
-  const src = `/media/${enc(project)}/${o.path}`;
+  const src = `/media/${enc(project)}/${o.path}?v=${Math.round(o.mtime || 0)}`;   // คลิปที่ทำใหม่/ปรับซับ → ไม่ติดแคช
   $("#vName").value = project; $("#vSub").textContent = `EP ${ep}${epTitle(o.title) ? " · " + epTitle(o.title) : ""} · ${fmtDur(o.duration)} · ${fmtWhen(o.mtime)}`;
   $("#vCap").value = ""; loadCaption(false);
   $("#vBody").innerHTML = DEMO ? `<div style="aspect-ratio:9/16;max-height:62vh;margin:auto;border-radius:16px;background:linear-gradient(160deg,${TONES[hashN(project) % TONES.length]});display:grid;place-items:center;color:#fff">${ic("play")}</div>` : `<video id="vid" src="${src}" controls autoplay playsinline></video>`;
@@ -1694,8 +1699,60 @@ function vidActs() {
     ${o.srt ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt}?dl=1">${ic("down")}ซับไทย</a>` : ""}
     ${o.srt_en ? `<a class="sb" href="/media/${enc(o.project)}/${o.srt_en}?dl=1">${ic("down")}ซับ EN</a>` : ""}
     <button class="sb" onclick="toggleMute()">${vMuted ? ic("mute") + "เสียงปิด" : ic("vol") + "เสียงเปิด"}</button>`;
+  subsInit(o);
   reInit(o);
   $("#vDanger").innerHTML = `<button onclick="${o.copy ? `delCopy(dq('${q(o.copy)}'))` : `delClip(dq('${q(o.project)}'),${o.ep})`}">${ic("trash")}ลบคลิปนี้</button><button onclick="delProject(dq('${q(o.project)}'))">${ic("trash")}ลบทั้งเรื่อง</button>`;
+}
+// ปรับซับของคลิปที่เสร็จแล้ว: ภาษา ขนาด ตำแหน่ง (ตัวเลขบนจอกว้าง 1080) → ระบบใส่ซับใหม่ ไม่ต้องทำคลิปใหม่
+let SUBS = null;
+async function subsInit(o) {
+  const box = $("#vSubs"); box.innerHTML = "";
+  if (o.copy || DEMO) return;
+  const r = await api("GET", `/api/projects/${enc(o.project)}/episodes/${o.ep}/subs-style`).catch(() => null);
+  if (!r || vCur !== o) return;
+  if (!r.available) { box.innerHTML = `<div class="vlab">ซับในคลิป</div><div class="small">คลิปนี้ทำก่อนมีระบบปรับซับ · พากย์ใหม่หนึ่งครั้งแล้วจะปรับขนาด/ตำแหน่ง/ภาษาซับได้</div>`; return; }
+  SUBS = {o, ...r, style: {...r.style}};
+  subsRender();
+  if (r.state === "running") subsPoll();
+}
+function subsRender() {
+  const r = SUBS, st = r.style, en = r.dub === "en";
+  const modes = en ? [["en", "อังกฤษ"], ["th", "ไทย (แปล)"], ["both", "อังกฤษ + ไทย"], ["none", "ไม่มีซับ"]]
+                   : [["th", "ไทย"], ["en", "อังกฤษ"], ["both", "ไทย + อังกฤษ"], ["none", "ไม่มีซับ"]];
+  const num = (k, step) => `<span class="num"><button class="sb" onclick="subsStep('${k}',-${step})">−</button>
+    <input class="in" type="number" value="${st[k]}" onchange="SUBS.style['${k}']=+this.value"><button class="sb" onclick="subsStep('${k}',${step})">+</button></span>`;
+  const two = r.mode === "both";
+  $("#vSubs").innerHTML = `<div class="vlab">ซับในคลิป</div>
+    <div class="sgrid">
+      <span>ภาษาซับ</span><select class="in" id="subMode" onchange="SUBS.mode=this.value; subsRender()">${modes.map(([v, t]) => `<option value="${v}" ${v === r.mode ? "selected" : ""}>${t}</option>`).join("")}</select>
+      ${r.mode === "none" ? "" : `<span>ขนาดซับ</span>${num("sub_size", 2)}
+      <span>เลื่อนซับ (− ขึ้น · + ลง)</span>${num("sub_y", 20)}
+      ${two ? `<span>ขนาดคำแปล</span>${num("sub2_size", 2)}<span>เลื่อนคำแปล</span>${num("sub2_y", 10)}` : ""}`}
+    </div>
+    <div class="rerow"><button class="sb acc" id="subGo" onclick="subsGo()">${ic("redo")}ใช้กับคลิปนี้</button>
+      <button class="sb" onclick="SUBS.style={...SUBS.defaults}; subsRender()">ค่าเริ่มต้น</button><span class="small" id="subMsg"></span></div>`;
+}
+function subsStep(k, d) { SUBS.style[k] = (+SUBS.style[k] || 0) + d; subsRender(); }
+async function subsGo() {
+  const {o} = SUBS;
+  try {
+    await api("POST", `/api/projects/${enc(o.project)}/episodes/${o.ep}/subs-style`, {style: SUBS.style, mode: SUBS.mode});
+    subsPoll();
+  } catch (e) { toast(e.message, true); }
+}
+async function subsPoll() {
+  const {o} = SUBS, b = $("#subGo"), m = $("#subMsg");
+  if (b) b.disabled = true;
+  if (m) m.textContent = "กำลังใส่ซับใหม่… (ราวครึ่งนาที)";
+  for (let i = 0; i < 200; i++) {
+    await new Promise(r => setTimeout(r, 3000));
+    if (vCur !== o) return;
+    const r = await api("GET", `/api/projects/${enc(o.project)}/episodes/${o.ep}/subs-style`).catch(() => null);
+    if (!r || r.state === "running") continue;
+    if (r.state === "error") { toast("ปรับซับไม่สำเร็จ: " + (r.error || ""), true); break; }
+    await refreshJobs(); return playClip(o.project, o.ep);     // โหลดคลิปใหม่
+  }
+  if (b) b.disabled = false; if (m) m.textContent = "";
 }
 // แก้เสียงพากย์ของคลิปที่เสร็จแล้ว: เลือกเสียงใหม่ และ/หรือ ใส่ไฟล์เสียงที่อัดเอง → พากย์ใหม่ (บทและภาพเดิม · คลิปเดิมยังอยู่ในคลัง)
 let RE = {file: null};

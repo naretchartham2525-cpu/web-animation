@@ -141,16 +141,34 @@ def _events(start, dur, text, max_chars):
     return out
 
 
+def default_sub_size(w, h):
+    return int(w * 0.068) if h > w else int(h * 0.058)
+
+
 def build_subs(items, w, h, s, watermark="", total=0.0, mode="th"):
     """items: [(start, speech_dur, text_th, text_en)]  mode: th | en | both | none
     คืน (ass, srt_th, srt_en)"""
     portrait = h > w
-    size = int(s.get("subtitle_size") or 0) or (int(w * 0.068) if portrait else int(h * 0.058))
-    en_size = int(size * (0.78 if mode == "both" else 0.92))
+    size = int(s.get("subtitle_size") or 0) or default_sub_size(w, h)
+    en_size = int(size * (float(s.get("_sub2_scale") or 0.78) if mode == "both" else 0.92))   # ภาษาที่ 2 (บรรทัดล่าง)
+    st, k = s.get("_style") or {}, w / 1080          # ค่าที่ผู้ใช้ปรับเอง (ตัวเลขบนจอกว้าง 1080)
+    if st.get("sub_size"):
+        size = int(st["sub_size"] * k)
+        if mode == "en":
+            en_size = size
+    if st.get("sub2_size") and mode == "both":
+        en_size = int(st["sub2_size"] * k)
     max_th = int(s.get("subtitle_max_chars") or 0) or (20 if portrait else 38)
     max_en = 30 if portrait else 52
     margin_v = int(h * (0.16 if portrait else 0.07))
     th_margin = margin_v + int(en_size * 1.55) if mode == "both" else margin_v
+    y1, y2 = int(st.get("sub_y") or 0) * k, int(st.get("sub2_y") or 0) * k   # + = ลง
+    if mode == "both":
+        th_margin, margin_v = int(th_margin - y1), int(margin_v - y1 - y2)   # คำแปลเลื่อนตามซับหลัก + เลื่อนเอง
+    elif mode == "en":
+        margin_v = int(margin_v - y1)
+    else:
+        th_margin = int(th_margin - y1)
     font = s.get("subtitle_font") or "Loma"
     ol = max(3, size // 14)
     ass = [

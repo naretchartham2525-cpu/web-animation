@@ -620,6 +620,30 @@ def voice_sheet():
     return ok(_voice_sheets(text=b.get("text"), tpl=b.get("template"), project=b.get("project")))
 
 
+@app.get("/api/projects/<name>/episodes/<int:ep>/subs-style")
+def subs_style_get(name, ep):
+    """ค่าซับของคลิปที่เสร็จแล้ว (ขนาด/ตำแหน่ง/ภาษา) + สถานะการปรับ"""
+    from . import substyle
+    edir = core.project_dir(name) / f"ep{ep:02d}"
+    meta = substyle.load(edir)
+    if not meta or not (edir / "_clean.mp4").exists():
+        return ok({"available": False})
+    return ok({"available": True, "style": substyle.style_of(meta), "defaults": substyle.defaults(meta),
+               "mode": meta.get("mode"), "dub": meta.get("dub"), **substyle.status(name, ep)})
+
+
+@app.post("/api/projects/<name>/episodes/<int:ep>/subs-style")
+def subs_style_set(name, ep):
+    """ปรับซับของคลิปที่เสร็จแล้ว → export ใหม่จากวิดีโอก่อนใส่ซับ (ไม่ต้องเรนเดอร์ใหม่ · ราวครึ่งนาที)"""
+    from . import substyle
+    b = request.get_json(force=True) or {}
+    if substyle.status(name, ep).get("state") == "running":
+        raise ValueError("กำลังปรับซับคลิปนี้อยู่ รอสักครู่")
+    if not substyle.restyle(name, ep, b.get("style"), b.get("mode")):
+        raise ValueError("คลิปนี้ทำก่อนมีระบบปรับซับ ปรับไม่ได้ · ทำคลิปใหม่ (พากย์ใหม่) หนึ่งครั้งแล้วจะปรับซับได้")
+    return ok({"state": "running"})
+
+
 @app.get("/api/projects/<name>/episodes/<int:ep>/voice-sheet")
 def voice_sheet_ep(name, ep):
     return ok(_voice_sheets(project=name, ep=ep))
