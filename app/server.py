@@ -275,18 +275,29 @@ def episode_revoice(name, ep):
         abort(404)
     if any(j["project"] == name and j["status"] in ("queued", "running", "review") for j in jobs.list()):
         raise ValueError("เรื่องนี้มีงานกำลังทำอยู่ รอให้เสร็จก่อน")
-    vf = _take_voice({"voice_file": b.get("voice_file")}) if b.get("voice_file") else None
     vmap = {k: v for k, v in (b.get("voice_map") or {}).items() if k and v}
     lang_new = b.get("dub_lang") if b.get("dub_lang") in ("th", "en") else None
     np_new = bool(b["narrator_paid"]) if b.get("narrator_paid") is not None else None
-    if not vf and not b.get("voice") and not vmap and not lang_new and np_new is None:
+    sub_new = b.get("sub_lang") if b.get("sub_lang") in ("th", "en", "both", "none") else None   # ภาษาซับแยกจากภาษาพากย์
+    if sub_new and not (b.get("voice") or b.get("voice_file") or vmap or lang_new or np_new is not None):
+        # เปลี่ยนแค่ภาษาซับ → ไม่พากย์ใหม่ ใส่ซับใหม่จากคลิปสะอาดเลย (เร็ว)
+        from . import substyle
+        if substyle.status(name, ep).get("state") == "running":
+            raise ValueError("กำลังปรับซับคลิปนี้อยู่ รอสักครู่")
+        if substyle.restyle(name, ep, None, sub_new):
+            return ok({"state": "running", "subs_only": True})
+    vf = _take_voice({"voice_file": b.get("voice_file")}) if b.get("voice_file") else None
+    if not vf and not b.get("voice") and not vmap and not lang_new and np_new is None and not sub_new:
         raise ValueError("เปลี่ยนเสียงตัวละคร หรือใส่ไฟล์เสียงก่อน")
-    if vmap or lang_new or np_new is not None:     # เสียงตัวละคร/ภาษา/ผู้บรรยาย ที่เปลี่ยน → จำไว้กับเรื่อง (EP ต่อไปใช้ด้วย)
+    if vmap or lang_new or np_new is not None or sub_new:     # เสียงตัวละคร/ภาษา/ผู้บรรยาย ที่เปลี่ยน → จำไว้กับเรื่อง (EP ต่อไปใช้ด้วย)
         from .voicecast import map_key
         p = core.get_project(name) or {}
         opts = dict(p.get("options") or {})
         if lang_new:
             opts["dub_lang"] = lang_new
+        if sub_new:
+            opts["sub_lang"] = sub_new
+            opts["subtitles"] = sub_new != "none"
         if np_new is not None:
             opts["narrator_paid"] = np_new
         mk = map_key(opts)
@@ -309,6 +320,9 @@ def episode_revoice(name, ep):
         o["voice"] = b["voice"]
     if np_new is not None:
         o["narrator_paid"] = np_new
+    if sub_new:
+        o["sub_lang"] = sub_new                    # เปลี่ยนพร้อมพากย์ใหม่ (ไม่มีคลิปสะอาดให้ใส่ซับใหม่เฉยๆ)
+        o["subtitles"] = sub_new != "none"
     if lang_new and lang_new != o.get("dub_lang"):
         o["dub_lang"] = lang_new
         o.pop("voice_map", None)                   # เปลี่ยนภาษา = ชุดเสียงของภาษานั้น

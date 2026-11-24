@@ -106,7 +106,9 @@ def save_paste(name, parsed, start_ep):
     if parsed["bg"]:
         (sdir / "bg").mkdir(exist_ok=True)
         for pid, code in parsed["bg"].items():
-            (sdir / "bg" / f"{core.safe_name(pid)}.py").write_text(code, encoding="utf-8")
+            stem = core.safe_name(pid)
+            (sdir / "bg" / f"{stem}.py").write_text(code, encoding="utf-8")
+            (sdir / "bg" / f"{stem}.png").unlink(missing_ok=True)   # ฉากที่วางใหม่ต้องวาดใหม่ (กันภาพเก่าค้าง)
     for i, ep in enumerate(parsed["episodes"]):
         n = start_ep + i
         ep = {**ep, "ep": n}

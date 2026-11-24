@@ -184,10 +184,19 @@ def patch_voices(R, opts):
                     raise PaidVoiceError(str(ex))
             print(f"voice: ElevenLabs {len(el)} lines · {spent} chars billed ({model})", flush=True)
         if rest:
-            try:
-                await orig_synth(rest, outdir)
-            except Exception as ex:
-                print(f"WARNING AI voice failed for {len(rest)} lines (they stay silent): {str(ex)[:150]}", flush=True)
+            # ทีละประโยค: Edge พังประโยคเดียวไม่ทำให้ทั้งชุดเงียบ · ประโยคที่ยังไม่มีเสียงถูกรายงานชื่อ
+            failed = []
+            for it in rest:
+                out = Path(outdir) / f"{it['key']}.mp3"
+                if out.exists() and out.stat().st_size > 800:
+                    continue
+                try:
+                    await orig_synth([it], outdir)
+                except Exception as ex:  # noqa: BLE001
+                    failed.append(it["tts"][:30])
+                    print(f"WARNING voice line failed: {str(ex)[:120]}", flush=True)
+            if failed:
+                print(f"WARNING {len(failed)} lines still silent (retry พากย์ใหม่): " + " | ".join(failed[:5]), flush=True)
     R._synth_all = synth
 
 

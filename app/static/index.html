@@ -640,8 +640,8 @@ select.vhide{position:absolute!important;opacity:0;pointer-events:none;width:1px
       <div class="grp noeng"><div class="seg" id="segMode" title="บท: วางเอง หรือให้ AI เขียน"><button data-v="manual" class="on">วางบท</button><button data-v="ai">AI เขียน</button></div></div>
       <div class="grp noeng"><div class="dur" title="ความยาวต่อ EP (กดค้างเพื่อเพิ่ม/ลดต่อเนื่อง)"><button class="stp" data-d="-1" aria-label="ลด 1 วินาที"><svg class="i"><use href="#i-minus"/></svg></button><input type="number" id="durNum" min="5" max="600" step="1" aria-label="วินาที"><span class="small">วิ</span><button class="stp" data-d="1" aria-label="เพิ่ม 1 วินาที"><svg class="i"><use href="#i-plus"/></svg></button></div></div>
       <div class="grp"><div class="seg" id="segQ" title="ความคมชัด"><button data-v="sd">SD</button><button data-v="hd" class="on">HD</button><button data-v="fhd">FHD</button></div></div>
-      <div class="grp"><label class="chip subc" title="ภาษาพากย์ (เสียง ซับ และข้อความบนจอเป็นภาษาเดียวกัน)"><svg class="i"><use href="#i-mic"/></svg><select id="oDub"><option value="th">พากย์ไทย</option><option value="en">พากย์อังกฤษ</option></select></label></div>
-      <div class="grp"><label class="chip subc" title="ภาษาซับ"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ไทย</option><option value="en">อังกฤษ</option><option value="both">ไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label></div>
+      <div class="grp"><label class="chip subc" title="ภาษาพากย์ (เสียง ซับ และข้อความบนจอเป็นภาษาเดียวกัน)"><svg class="i"><use href="#i-mic"/></svg><select id="oDub" title="ภาษาพากย์ (เสียงพูดในคลิป)"><option value="th">พากย์ไทย</option><option value="en">พากย์อังกฤษ</option></select></label></div>
+      <div class="grp"><label class="chip subc" title="ภาษาซับ (เลือกแยกจากภาษาพากย์)"><svg class="i"><use href="#i-cc"/></svg><select id="oSub"><option value="th">ซับไทย</option><option value="en">ซับอังกฤษ</option><option value="both">ซับไทย + อังกฤษ</option><option value="none">ไม่มีซับ</option></select></label></div>
       <div class="grp gv"><div class="gctl">
         <label class="chip" title="เสียงพากย์"><svg class="i"><use href="#i-mic"/></svg><select id="oVoice"></select></label>
         <button class="ib sm" title="เสียงตัวละคร: ดู/เปลี่ยนเสียงรายตัว" onclick="openVoices('main')"><svg class="i"><use href="#i-users"/></svg></button>
@@ -1286,8 +1286,11 @@ function renderComposer() {
   $("#oRate").value = O.rate; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%";
   $("#oFont").value = O.font; $("#oSub").value = O.lang;
   $("#oDub").value = O.dub;
-  $("#oSub option[value=both]").textContent = O.dub === "en" ? "อังกฤษ + ไทย" : "ไทย + อังกฤษ";
-  $("#oSub option[value=th]").textContent = O.dub === "en" ? "ไทย (แปล)" : "ไทย";   // พากย์อังกฤษ ซับไทยอย่างเดียวได้   // ภาษาพากย์เป็นซับหลัก (บน) อีกภาษาเป็นคำแปลบรรทัดล่าง
+  // ภาษาซับเลือกแยกจากภาษาพากย์ได้อิสระ (พากย์ไทย+ซับอังกฤษ / พากย์อังกฤษ+ซับไทย ฯลฯ)
+  $("#oSub option[value=th]").textContent = "ซับไทย";
+  $("#oSub option[value=en]").textContent = "ซับอังกฤษ";
+  $("#oSub option[value=both]").textContent = O.dub === "en" ? "ซับอังกฤษ + ไทย (อังกฤษบน)" : "ซับไทย + อังกฤษ (ไทยบน)";
+  $("#oSub").title = "ภาษาซับ · แยกจากภาษาพากย์";
   if (O.dub === "en" && O.voice.startsWith("edge:th-") || O.dub === "th" && O.voice.startsWith("edge:en-")) O.voice = "";
   $("#oVoice").innerHTML = voiceOpts(O.voice, tplVoice() === "eleven:auto" ? "ตามเทมเพลต · ElevenLabs" : tplSel?.engine ? (O.dub === "en" ? "เสียงตามสกิล · Edge อังกฤษ ฟรี" : "เสียงตามสกิล · Edge ฟรี") : tplSel && tplVoice() && !(O.dub === "en" && tplVoice().startsWith("edge:th-")) ? `ตามเทมเพลต · ${voiceName(tplVoice()).split(" ·")[0]}` : O.dub === "en" ? "Edge อังกฤษ ฟรี · อัตโนมัติ" : "Edge ฟรี · อัตโนมัติ", O.dub);
   $("#oWm").classList.toggle("on", O.wm);
@@ -1319,10 +1322,8 @@ document.querySelectorAll(".stp").forEach(b => {
 $("#oRate").oninput = e => { O.rate = +e.target.value; $("#rateLbl").textContent = (O.rate > 0 ? "+" : "") + O.rate + "%"; };
 $("#oFont").onchange = e => O.font = e.target.value;
 $("#oSub").onchange = e => { O.lang = e.target.value; renderComposer(); };
-$("#oDub").onchange = e => {   // ภาษาเดียวกันทั้งคลิป: พากย์อังกฤษ → ซับอังกฤษ (เลือกไทย+อังกฤษ/ไม่มีซับได้)
+$("#oDub").onchange = e => {   // เปลี่ยนแค่ภาษาพากย์ ไม่แตะภาษาซับ (ซับเลือกแยกที่ #oSub)
   O.dub = e.target.value;
-  if (O.dub === "en" && O.lang === "th") O.lang = "en";
-  if (O.dub === "th" && O.lang === "en") O.lang = "th";
   VC.main.map = {}; renderComposer(); autoPreview && autoPreview();
 };
 $("#oVoice").onchange = e => { O.voice = e.target.value; renderComposer(); autoPreview(); };
@@ -1770,6 +1771,7 @@ function reInit(o) {
       ${ic("mic")}<span id="reFile"><b>ใส่ไฟล์เสียงที่อัดเอง</b> · กดหรือลากไฟล์มาวาง (ทั้ง EP ไฟล์เดียว)</span></label>
     <div id="reMoss"></div>
     <div class="rerow"><button class="sb dark" id="reGo" onclick="reGo()">${ic("redo")}พากย์ใหม่</button><span class="small">ใช้บทและภาพเดิม · คลิปเดิมยังอยู่ในคลัง</span></div>`;
+  RE.subPick = undefined;
   reCast(o);
   mossList(o.project);
   const dz = $("#reDrop");
@@ -1789,15 +1791,21 @@ async function reCast(o, lang) {   // ตัวละครใน EP นี้ +
   if (!EL.models.length) await loadEleven();
   const castOpts = vgFor(dub).concat(EL.enabled ? elGroup() : []).map(([g, vs]) => `<optgroup label="${esc(g)}">${vs.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join("")}</optgroup>`).join("");
   const freeOpts = vgFor(dub).map(([g, vs]) => `<optgroup label="${esc(g)}">${vs.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join("")}</optgroup>`).join("");
+  RE.sub0 = p?.options?.sub_lang || "th";                 // ซับที่บันทึกไว้ของเรื่อง
+  const subCur = RE.subPick ?? RE.sub0;                   // เลือกซับไว้แล้วก่อนเปลี่ยนภาษาพากย์ → ไม่หาย
   if (RE.np0 === undefined) RE.np0 = !!p?.options?.narrator_paid;
   RE.np = RE.np ?? RE.np0;
   const isNar = k => !RE.np && ["ผู้บรรยาย", "narration"].includes(k) || k === "system";   // ไม่ใช่ตัวละคร → เสียงฟรี (เว้นแต่เปิดผู้บรรยายใช้ ElevenLabs)
   box.className = ""; box.innerHTML = `<div class="rerow" style="margin-bottom:8px"><b style="min-width:90px">ภาษาพากย์</b>
-    <select class="in" id="reDub"><option value="th" ${dub === "th" ? "selected" : ""}>ไทย</option><option value="en" ${dub === "en" ? "selected" : ""}>อังกฤษ (ซับและข้อความบนจอเป็นอังกฤษด้วย)</option></select></div>
+    <select class="in" id="reDub"><option value="th" ${dub === "th" ? "selected" : ""}>พากย์ไทย</option><option value="en" ${dub === "en" ? "selected" : ""}>พากย์อังกฤษ</option></select></div>
+    <div class="rerow" style="margin-bottom:8px"><b style="min-width:90px">ภาษาซับ</b>
+    <select class="in" id="reSub"><option value="th" ${subCur === "th" ? "selected" : ""}>ซับไทย</option><option value="en" ${subCur === "en" ? "selected" : ""}>ซับอังกฤษ</option><option value="both" ${subCur === "both" ? "selected" : ""}>ซับไทย + อังกฤษ</option><option value="none" ${subCur === "none" ? "selected" : ""}>ไม่มีซับ</option></select>
+    <span class="small">แยกจากภาษาพากย์ เลือกได้ทุกคู่</span></div>
     ${EL.enabled ? `<label class="vcnp" style="margin:0 0 8px"><input type="checkbox" id="reNp" ${RE.np ? "checked" : ""}><span>ผู้บรรยายใช้ ElevenLabs ด้วย<span class="small">ปิดอยู่ = บทบรรยายใช้เสียงฟรีเสมอ ถึงเปลี่ยนเสียงตัวละครเป็น ElevenLabs ส่วนบรรยายก็ยังเป็นเสียงเดิม</span></span></label>` : ""}` + spk.map(x => `<div class="rerow" style="margin-bottom:6px"><b style="min-width:90px" ${isNar(x.key) ? 'title="บรรยาย ใช้เสียงฟรีเท่านั้น"' : ""}>${esc(x.name || x.key)}${isNar(x.key) ? ' <span class="small">· ฟรี</span>' : ""}</b>
     <select class="in" data-rk="${esc(x.key)}"><option value="">${esc("เสียงเดิม" + (cur[x.key] ? ": " + prettyVoice(cur[x.key]) : ""))}</option>${isNar(x.key) ? freeOpts : castOpts}</select></div>`).join("");
   box.querySelectorAll("select[data-rk]").forEach(sel => { sel.value = ""; vpick(sel); });
   $("#reDub").onchange = e => reCast(o, e.target.value);   // เปลี่ยนภาษา → รายการเสียงของภาษานั้น
+  $("#reSub").onchange = e => { RE.subPick = e.target.value; };
   const np = $("#reNp"); if (np) np.onchange = () => { RE.np = np.checked; reCast(o, $("#reDub").value); };
 }
 async function mossList(project) {   // เสียงต้นแบบ MOSS ของตัวละครในเรื่องนี้: ฟัง · ออกแบบใหม่
@@ -1822,7 +1830,8 @@ async function reGo() {
   document.querySelectorAll("#reCast select[data-rk]").forEach(sel => { if (sel.value && sel.value !== (RE.cur || {})[sel.dataset.rk]) vmap[sel.dataset.rk] = sel.value; });
   const dubNew = $("#reDub") && $("#reDub").value !== RE.dub ? $("#reDub").value : undefined;
   const npNew = $("#reNp") && RE.np !== RE.np0 ? RE.np : undefined;
-  if (!Object.keys(vmap).length && !RE.file && !dubNew && npNew === undefined) {
+  const subNew = $("#reSub") && $("#reSub").value !== RE.sub0 ? $("#reSub").value : undefined;
+  if (!Object.keys(vmap).length && !RE.file && !dubNew && npNew === undefined && !subNew) {
     const same = [...document.querySelectorAll("#reCast select[data-rk]")].some(sel => sel.value);
     return toast(same ? "เสียงที่เลือกเป็นเสียงเดิมของคลิปนี้อยู่แล้ว เลือกเสียงอื่น" : "เปลี่ยนเสียงตัวละครอย่างน้อย 1 ตัว หรือใส่ไฟล์เสียงก่อน", true);
   }
@@ -1831,7 +1840,7 @@ async function reGo() {
     let vf = null;
     if (RE.file) { btn.textContent = "กำลังอัปไฟล์เสียง…"; vf = (await upForm("/api/voice-upload", RE.file, p => btn.textContent = `กำลังอัปไฟล์เสียง ${p}%`)).id; }
     btn.textContent = "กำลังส่งงาน…";
-    await api("POST", `/api/projects/${enc(o.project)}/episodes/${o.ep}/revoice`, {voice_map: Object.keys(vmap).length ? vmap : undefined, voice_file: vf ? {"*": vf} : undefined, dub_lang: dubNew, narrator_paid: npNew});
+    await api("POST", `/api/projects/${enc(o.project)}/episodes/${o.ep}/revoice`, {voice_map: Object.keys(vmap).length ? vmap : undefined, voice_file: vf ? {"*": vf} : undefined, dub_lang: dubNew, sub_lang: subNew, narrator_paid: npNew});
   } catch (e) { btn.disabled = false; btn.innerHTML = ic("redo") + "พากย์ใหม่"; return toast(e.message, true); }
   closeAllM(); refreshJobs(); openDrawer();
 }
